@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Diagnostics;
+using System.IO;
 using System.Reflection;
 using System.Text;
 
@@ -24,7 +25,13 @@ namespace DataTrack.Core.Tests
         [ClassInitialize]
         public static void ClassInit(TestContext testContext)
         {
-            DataTrackConfiguration.Init(OutputTypes.All, ConfigType.FilePath, "[insert db.config file path here]");
+            string connectionString =
+                "Data Source=(local);" +
+                "Initial Catalog=data_track_testing;" +
+                "User id=sa;" +
+                "Password=password;";
+
+            DataTrackConfiguration.Init(OutputTypes.All, ConfigType.ConnectionString, connectionString);
 
             using (SqlConnection connection = DataTrackConfiguration.CreateConnection())
             {
@@ -114,9 +121,6 @@ namespace DataTrack.Core.Tests
             //Assert
             Assert.AreNotEqual(testQuery, string.Empty);
             Assert.AreEqual(testQuery, expectedQuery);
-
-            new Transaction<Author>(new InsertQueryBuilder<Author>(author)).Execute();
-            string b = "h2";
         }
 
         [TestMethod]
