@@ -16,6 +16,9 @@ namespace DataTrack.Core.SQL.Delete
 
         public DeleteQueryBuilder(TBase item)
         {
+            // Define the operation type used for transactions
+            OperationType = CRUDOperationTypes.Delete;
+
             // Fetch the table and column names for TBase
             GetTable(BaseType);
             GetColumns(BaseType);

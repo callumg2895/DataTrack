@@ -22,6 +22,7 @@ namespace DataTrack.Core.SQL
 
         public List<TableMappingAttribute> Tables { get; private set; } = new List<TableMappingAttribute>();
         public List<ColumnMappingAttribute> Columns { get; private set; } = new List<ColumnMappingAttribute>();
+        public CRUDOperationTypes OperationType { get; private protected set; }
 
         #endregion
 

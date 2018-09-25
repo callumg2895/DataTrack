@@ -25,6 +25,9 @@ namespace DataTrack.Core.Sql.Read
 
         public ReadQueryBuilder()
         {
+            // Define the operation type used for transactions
+            OperationType = CRUDOperationTypes.Read;
+
             // Fetch the table and column names for TBase
             GetTable(BaseType);
             GetColumns(BaseType);

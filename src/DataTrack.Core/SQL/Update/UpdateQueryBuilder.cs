@@ -14,6 +14,9 @@ namespace DataTrack.Core.SQL.Update
 
         public UpdateQueryBuilder(TBase item)
         {
+            // Define the operation type used for transactions
+            OperationType = CRUDOperationTypes.Update;
+
             // Fetch the table and column names for TBase
             GetTable(BaseType);
             GetColumns(BaseType);

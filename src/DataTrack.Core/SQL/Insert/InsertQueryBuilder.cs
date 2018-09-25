@@ -16,6 +16,9 @@ namespace DataTrack.Core.SQL.Insert
 
         public InsertQueryBuilder(TBase item)
         {
+            // Define the operation type used for transactions
+            OperationType = CRUDOperationTypes.Create;
+
             // Fetch the table and column names for TBase
             GetTable(BaseType);
             GetColumns(BaseType);
