@@ -19,8 +19,9 @@ namespace DataTrack.Core.SQL
         private protected Dictionary<ColumnMappingAttribute, string> ColumnAliases = new Dictionary<ColumnMappingAttribute, string>();
         private protected Dictionary<ColumnMappingAttribute, string> Restrictions = new Dictionary<ColumnMappingAttribute, string>();
         private protected Dictionary<ColumnMappingAttribute, (string Handle, object Value)> Parameters = new Dictionary<ColumnMappingAttribute, (string Handle, object Value)>();
-        private protected List<TableMappingAttribute> Tables = new List<TableMappingAttribute>();
-        private protected List<ColumnMappingAttribute> Columns = new List<ColumnMappingAttribute>();
+
+        public List<TableMappingAttribute> Tables { get; private set; } = new List<TableMappingAttribute>();
+        public List<ColumnMappingAttribute> Columns { get; private set; } = new List<ColumnMappingAttribute>();
 
         #endregion
 
@@ -164,10 +165,6 @@ namespace DataTrack.Core.SQL
 
             return this;
         }
-
-        public virtual List<TableMappingAttribute> GetTables() => this.Tables;
-
-        public virtual List<ColumnMappingAttribute> GetColumns() => this.Columns;
 
         public virtual List<(string Handle, object Value)> GetParameters()
         {

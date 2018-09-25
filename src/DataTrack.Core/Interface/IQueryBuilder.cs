@@ -13,10 +13,6 @@ namespace DataTrack.Core.Interface
 
         IQueryBuilder<TBase> AddRestriction<T, TProp>(string property, RestrictionTypes rType, TProp value);
 
-        List<TableMappingAttribute> GetTables();
-
-        List<ColumnMappingAttribute> GetColumns();
-
         List<(string Handle, object Value)> GetParameters();
     }
 }
