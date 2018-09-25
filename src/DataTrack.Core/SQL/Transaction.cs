@@ -68,30 +68,7 @@ namespace DataTrack.Core.SQL
                         switch (queryBuilder.OperationType)
                         {
                             case CRUDOperationTypes.Read :
-                                List<TBase> readResults = new List<TBase>();
-                                while (reader.Read())
-                                {
-                                    TBase obj = default;
-                                    foreach (ColumnMappingAttribute column in queryBuilder.Columns)
-                                    {
-                                        string propertyName;
-                                        if (column.TryGetPropertyName(typeof(TBase), out propertyName))
-                                        {
-                                            PropertyInfo property = typeof(TBase).GetProperty(propertyName);
-                                            if (reader[column.ColumnName] != DBNull.Value)
-                                                property.SetValue(obj, Convert.ChangeType(reader[column.ColumnName], property.PropertyType));
-                                            else
-                                                property.SetValue(obj, null);
-                                        }
-                                        else
-                                        {
-                                            Logger.Error(MethodBase.GetCurrentMethod(), $"Could not find property in class {typeof(TBase)} mapped to column {column.ColumnName}");
-                                            break;
-                                        }
-                                    }
-                                    readResults.Add(obj);
-                                }
-                                results.Add(readResults);
+                                results.Add(GetResultsForReadQueryBuilder(reader, (ReadQueryBuilder<TBase>)queryBuilder));
                                 reader.NextResult();
                                 break;
                             case CRUDOperationTypes.Create :
@@ -104,6 +81,37 @@ namespace DataTrack.Core.SQL
                 }
             }
 
+            return results;
+        }
+
+        private List<TBase> GetResultsForReadQueryBuilder(SqlDataReader reader, ReadQueryBuilder<TBase> queryBuilder)
+        {
+            List<TBase> results = new List<TBase>();
+            while (reader.Read())
+            {
+                TBase obj = default;
+
+                foreach (ColumnMappingAttribute column in queryBuilder.Columns)
+                {
+                    string propertyName;
+
+                    if (column.TryGetPropertyName(typeof(TBase), out propertyName))
+                    {
+                        PropertyInfo property = typeof(TBase).GetProperty(propertyName);
+
+                        if (reader[column.ColumnName] != DBNull.Value)
+                            property.SetValue(obj, Convert.ChangeType(reader[column.ColumnName], property.PropertyType));
+                        else
+                            property.SetValue(obj, null);
+                    }
+                    else
+                    {
+                        Logger.Error(MethodBase.GetCurrentMethod(), $"Could not find property in class {typeof(TBase)} mapped to column {column.ColumnName}");
+                        break;
+                    }
+                }
+                results.Add(obj);
+            }
             return results;
         }
     }
