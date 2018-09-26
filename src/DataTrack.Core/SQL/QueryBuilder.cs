@@ -128,7 +128,7 @@ namespace DataTrack.Core.SQL
 
         abstract public override string ToString();
 
-        public virtual IQueryBuilder<TBase> AddRestriction<T, TProp>(string property, RestrictionTypes rType, TProp value)
+        public virtual QueryBuilder<TBase> AddRestriction<T, TProp>(string property, RestrictionTypes rType, TProp value)
         {
             Type type = typeof(T);
             TableMappingAttribute tableAttribute;
@@ -158,9 +158,21 @@ namespace DataTrack.Core.SQL
             // against the column attribute for the property.
             Parameters[columnAttribute] = (handle, value);
 
-            restrictionBuilder.Append(ColumnAliases[columnAttribute] + " ");
-            restrictionBuilder.Append(rType.ToSqlString() + " ");
-            restrictionBuilder.Append(handle);
+            switch (rType)
+            {
+                case RestrictionTypes.In:
+                    restrictionBuilder.Append(ColumnAliases[columnAttribute] + " ");
+                    restrictionBuilder.Append(rType.ToSqlString() + " (");
+                    restrictionBuilder.Append(handle);
+                    restrictionBuilder.Append(")");
+                    break;
+                default:
+                    restrictionBuilder.Append(ColumnAliases[columnAttribute] + " ");
+                    restrictionBuilder.Append(rType.ToSqlString() + " ");
+                    restrictionBuilder.Append(handle);
+                    break;
+            }
+
 
             Restrictions[columnAttribute] = restrictionBuilder.ToString();
 

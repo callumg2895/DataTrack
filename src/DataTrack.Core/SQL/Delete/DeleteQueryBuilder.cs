@@ -11,7 +11,6 @@ namespace DataTrack.Core.SQL.Delete
 {
     public class DeleteQueryBuilder<TBase> : QueryBuilder<TBase>
     {
-
         #region Constructors
 
         public DeleteQueryBuilder(TBase item)
@@ -31,12 +30,25 @@ namespace DataTrack.Core.SQL.Delete
                 throw new Exception(message);
             }
 
-            AddPrimaryKeyRestriction(item);
+            AddPrimaryKeyDeleteRestriction(item);
         }
 
         #endregion
 
         #region Methods
+
+        private void AddPrimaryKeyDeleteRestriction(TBase item)
+        {
+            // Find the name and value of the primary key property in the 'item' object
+            ColumnMappingAttribute primaryKeyColumnAttribute;
+            string primaryKeyColumnPropertyname;
+
+            if (TryGetPrimaryKeyColumnForType(typeof(TBase), out primaryKeyColumnAttribute) && primaryKeyColumnAttribute.TryGetPropertyName(BaseType, out primaryKeyColumnPropertyname))
+            {
+                var primaryKeyValue = item.GetPropertyValue(primaryKeyColumnPropertyname);
+                this.AddRestriction<TBase, object>(primaryKeyColumnAttribute.ColumnName, RestrictionTypes.In, primaryKeyValue);
+            }
+        }
 
         public override string ToString()
         {
@@ -55,7 +67,7 @@ namespace DataTrack.Core.SQL.Delete
                 }
 
                 sqlBuilder.AppendLine();
-                sqlBuilder.AppendLine($"delete * from {Tables[0].TableName} as {TableAliases[Tables[0]]}");
+                sqlBuilder.AppendLine($"delete {TableAliases[Tables[0]]} from {Tables[0].TableName} {TableAliases[Tables[0]]}");
                 sqlBuilder.Append(restrictionsBuilder.ToString());
 
                 string sql = sqlBuilder.ToString();

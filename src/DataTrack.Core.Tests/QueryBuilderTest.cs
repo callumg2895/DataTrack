@@ -134,8 +134,8 @@ namespace DataTrack.Core.Tests
             //Act
             StringBuilder sqlBuilder = new StringBuilder();
             sqlBuilder.AppendLine();
-            sqlBuilder.AppendLine("delete * from authors as Author");
-            sqlBuilder.AppendLine("where Author.id = @authors_id");
+            sqlBuilder.AppendLine("delete Author from authors Author");
+            sqlBuilder.AppendLine("where Author.id in (@authors_id)");
 
             expectedQuery = sqlBuilder.ToString();
 

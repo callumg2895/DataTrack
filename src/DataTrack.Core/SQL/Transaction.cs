@@ -13,14 +13,10 @@ using System.Text;
 
 namespace DataTrack.Core.SQL
 {
-    public abstract class Transaction
+    public class Transaction<TBase> where TBase : new()
     {
-        private protected StringBuilder transactionSQLBuilder;
-        private protected string transactionSQL;
-    }
-
-    public class Transaction<T, TBase> : Transaction where T : QueryBuilder<TBase>
-    { 
+        private StringBuilder transactionSQLBuilder;
+        private string transactionSQL;
         private List<QueryBuilder<TBase>> queryBuilders = new List<QueryBuilder<TBase>>();
         private List<(string Handle, object Value)> parameters = new List<(string Handle, object Value)>();
 
@@ -89,7 +85,7 @@ namespace DataTrack.Core.SQL
             List<TBase> results = new List<TBase>();
             while (reader.Read())
             {
-                TBase obj = default;
+                TBase obj = new TBase();
 
                 foreach (ColumnMappingAttribute column in queryBuilder.Columns)
                 {
