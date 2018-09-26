@@ -5,6 +5,7 @@ using DataTrack.Core.Util;
 using DataTrack.Core.Util.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Reflection;
 using System.Text;
 
@@ -154,18 +155,35 @@ namespace DataTrack.Core.SQL
             //      eg: @books_author
             string handle = $"@{columnAttribute.TableName}_{columnAttribute.ColumnName}";
 
-            // Store the value of the parameter against its handle, then store the SQL for the restriction clause
-            // against the column attribute for the property.
-            Parameters[columnAttribute] = (handle, value);
-
+            // Generate the SQL for the restriction clause
             switch (rType)
             {
+                case RestrictionTypes.NotIn:
                 case RestrictionTypes.In:
                     restrictionBuilder.Append(ColumnAliases[columnAttribute] + " ");
                     restrictionBuilder.Append(rType.ToSqlString() + " (");
                     restrictionBuilder.Append(handle);
                     restrictionBuilder.Append(")");
                     break;
+
+                case RestrictionTypes.LessThan:
+                case RestrictionTypes.MoreThan:
+
+                    if (Dictionaries.SQLDataTypes[value.GetType()] == SqlDbType.VarChar)
+                    {
+                        Logger.Error(MethodBase.GetCurrentMethod(), $"Cannot apply '{rType.ToSqlString()}' operator to values of type VarChar");
+                        return this;
+                    }
+                    else
+                    {
+                        restrictionBuilder.Append(ColumnAliases[columnAttribute] + " ");
+                        restrictionBuilder.Append(rType.ToSqlString() + " ");
+                        restrictionBuilder.Append(handle);
+                        break;
+                    }
+
+                case RestrictionTypes.EqualTo:
+                case RestrictionTypes.NotEqualTo:
                 default:
                     restrictionBuilder.Append(ColumnAliases[columnAttribute] + " ");
                     restrictionBuilder.Append(rType.ToSqlString() + " ");
@@ -173,8 +191,10 @@ namespace DataTrack.Core.SQL
                     break;
             }
 
-
+            // Store the SQL for the restriction clause against the column attribute for the 
+            // property, then store the value of the parameter against its handle if no error occurs.
             Restrictions[columnAttribute] = restrictionBuilder.ToString();
+            Parameters[columnAttribute] = (handle, value);
 
             return this;
         }
