@@ -16,6 +16,8 @@ namespace DataTrack.Core.SQL
         #region Members
 
         private protected Type BaseType { get => typeof(TBase); }
+        private protected Dictionary<Type, TableMappingAttribute> TypeTableMapping = new Dictionary<Type, TableMappingAttribute>();
+        private protected Dictionary<Type, List<ColumnMappingAttribute>> TypeColumnMapping = new Dictionary<Type, List<ColumnMappingAttribute>>();
         private protected Dictionary<TableMappingAttribute, string> TableAliases = new Dictionary<TableMappingAttribute, string>();
         private protected Dictionary<ColumnMappingAttribute, string> ColumnAliases = new Dictionary<ColumnMappingAttribute, string>();
         private protected Dictionary<ColumnMappingAttribute, string> Restrictions = new Dictionary<ColumnMappingAttribute, string>();
@@ -34,6 +36,7 @@ namespace DataTrack.Core.SQL
             TableMappingAttribute mappingAttribute;
             if (TryGetTableMappingAttribute(type, out mappingAttribute))
             {
+                TypeTableMapping[type] = mappingAttribute;
                 Tables.Add(mappingAttribute);
                 TableAliases[mappingAttribute] = type.Name;
                 Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded table mapping for class '{type.Name}'");
@@ -47,6 +50,7 @@ namespace DataTrack.Core.SQL
             List<ColumnMappingAttribute> attributes;
             if (TryGetColumnMappingAttributes(type, out attributes))
             {
+                TypeColumnMapping[type] = attributes;
                 Columns.AddRange(attributes);
                 foreach (var attribute in attributes)
                     ColumnAliases[attribute] = $"{type.Name}.{attribute.ColumnName}";
@@ -60,6 +64,13 @@ namespace DataTrack.Core.SQL
         {
             mappingAttribute = null;
 
+            // Check the dictionary first to save using reflection
+            if (TypeTableMapping.ContainsKey(type))
+            {
+                mappingAttribute = TypeTableMapping[type];
+                return true;
+            }
+
             foreach (Attribute attribute in type.GetCustomAttributes())
                 mappingAttribute = attribute as TableMappingAttribute;
 
@@ -69,6 +80,13 @@ namespace DataTrack.Core.SQL
         private protected bool TryGetColumnMappingAttributes(Type type, out List<ColumnMappingAttribute> attributes)
         {
             attributes = new List<ColumnMappingAttribute>();
+
+            // Check the dictionary first to save using reflection
+            if (TypeColumnMapping.ContainsKey(type))
+            {
+                attributes = TypeColumnMapping[type];
+                return true;
+            }
 
             foreach (PropertyInfo property in type.GetProperties())
                 foreach (Attribute attribute in property.GetCustomAttributes())
