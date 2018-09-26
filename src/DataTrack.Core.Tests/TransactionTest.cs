@@ -4,11 +4,13 @@ using DataTrack.Core.SQL;
 using DataTrack.Core.SQL.Delete;
 using DataTrack.Core.SQL.Insert;
 using DataTrack.Core.Tests.TestObjects;
+using DataTrack.Core.Util;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Diagnostics;
+using System.Reflection;
 using System.Text;
 
 namespace DataTrack.Core.Tests
@@ -74,6 +76,7 @@ namespace DataTrack.Core.Tests
             Author author = new Author() { ID = 1, FirstName = "John", LastName = "Smith" };
 
             // Act
+            stopwatch.Start();
             Transaction<Author> t = new Transaction<Author>(new List<QueryBuilder<Author>>()
             {
                 new InsertQueryBuilder<Author>(author),
@@ -83,6 +86,9 @@ namespace DataTrack.Core.Tests
             });
 
             List<Author> result = (List<Author>)t.Execute()[0];
+            stopwatch.Stop();
+
+            Logger.Info(MethodBase.GetCurrentMethod(), $"Transaction executed in {stopwatch.ElapsedMilliseconds}ms");
 
             // Assert
             Assert.AreEqual(result[0].ID, author.ID);
