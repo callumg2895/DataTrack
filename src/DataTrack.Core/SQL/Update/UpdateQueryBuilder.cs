@@ -57,6 +57,9 @@ namespace DataTrack.Core.SQL.Update
             sqlBuilder.Append(setBuilder.ToString());
             sqlBuilder.Append(restrictionsBuilder.ToString());
 
+            // For update statements return the number of rows affected
+            SelectRowCount(ref sqlBuilder);
+
             string sql = sqlBuilder.ToString();
 
             Logger.Info(MethodBase.GetCurrentMethod(), "Generated SQL: " + sql);

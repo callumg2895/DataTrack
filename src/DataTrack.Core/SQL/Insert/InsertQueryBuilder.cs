@@ -61,7 +61,10 @@ namespace DataTrack.Core.SQL.Insert
             sqlBuilder.AppendLine(insertBuilder.ToString());
             sqlBuilder.Append("values (");
             sqlBuilder.AppendLine(valuesBuilder.ToString());
-            
+
+            // For insert statements return the number of rows affected
+            SelectRowCount(ref sqlBuilder);
+
             string sql = sqlBuilder.ToString();
 
             Logger.Info(MethodBase.GetCurrentMethod(), "Generated SQL: " + sql);

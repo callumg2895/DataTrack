@@ -109,6 +109,7 @@ namespace DataTrack.Core.Tests
             sqlBuilder.AppendLine();
             sqlBuilder.AppendLine("insert into authors (id, first_name, last_name)");
             sqlBuilder.AppendLine("values (@authors_id, @authors_first_name, @authors_last_name)");
+            sqlBuilder.AppendLine("select @@rowcount as affected_rows");
 
             expectedQuery = sqlBuilder.ToString();
 
@@ -166,6 +167,7 @@ namespace DataTrack.Core.Tests
             sqlBuilder.AppendLine("first_name = @authors_first_name,");
             sqlBuilder.AppendLine("last_name = @authors_last_name");
             sqlBuilder.AppendLine("where Author.id = @authors_id");
+            sqlBuilder.AppendLine("select @@rowcount as affected_rows");
 
             expectedQuery = sqlBuilder.ToString();
 

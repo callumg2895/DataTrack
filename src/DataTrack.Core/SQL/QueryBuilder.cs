@@ -108,7 +108,7 @@ namespace DataTrack.Core.SQL
             typePKColumn = null;
 
             if (TryGetTableMappingAttribute(type, out typeTable))
-                foreach (ColumnMappingAttribute column in Columns)
+                foreach (ColumnMappingAttribute column in TypeColumnMapping[type])
                     if (column.KeyType == KeyTypes.PrimaryKey && column.TableName == typeTable.TableName)
                     {
                         typePKColumn = column;
@@ -144,6 +144,8 @@ namespace DataTrack.Core.SQL
                 this.AddRestriction<TBase, object>(primaryKeyColumnAttribute.ColumnName, RestrictionTypes.EqualTo, primaryKeyValue);
             }
         }
+
+        private protected void SelectRowCount(ref StringBuilder sqlBuilder) => sqlBuilder.AppendLine("select @@rowcount as affected_rows");
 
         abstract public override string ToString();
 

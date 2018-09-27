@@ -64,11 +64,21 @@ namespace DataTrack.Core.SQL
                         switch (queryBuilder.OperationType)
                         {
                             case CRUDOperationTypes.Read :
+
                                 results.Add(GetResultsForReadQueryBuilder(reader, (ReadQueryBuilder<TBase>)queryBuilder));
                                 reader.NextResult();
                                 break;
+
+
                             case CRUDOperationTypes.Create :
                             case CRUDOperationTypes.Update :
+
+                                // Create and Update operations always check the number of rows affected after the query has executed
+                                if (reader.Read());
+                                    results.Add((object)reader["affected_rows"]);
+                                reader.NextResult();
+                                break;
+
                             case CRUDOperationTypes.Delete :
                                 break;
                         }

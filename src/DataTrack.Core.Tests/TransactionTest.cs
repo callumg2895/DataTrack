@@ -85,15 +85,19 @@ namespace DataTrack.Core.Tests
                 new DeleteQueryBuilder<Author>(author)
             });
 
-            List<Author> result = (List<Author>)t.Execute()[0];
+            List<object> results = t.Execute();
             stopwatch.Stop();
 
             Logger.Info(MethodBase.GetCurrentMethod(), $"Transaction executed in {stopwatch.ElapsedMilliseconds}ms");
 
+            int affectedRows = (int)results[0];
+            Author result = ((List<Author>)results[1])[0];
+
             // Assert
-            Assert.AreEqual(result[0].ID, author.ID);
-            Assert.AreEqual(result[0].FirstName, author.FirstName);
-            Assert.AreEqual(result[0].LastName, author.LastName);
+            Assert.AreEqual(affectedRows, 1);
+            Assert.AreEqual(result.ID, author.ID);
+            Assert.AreEqual(result.FirstName, author.FirstName);
+            Assert.AreEqual(result.LastName, author.LastName);
         }
     }
 }
