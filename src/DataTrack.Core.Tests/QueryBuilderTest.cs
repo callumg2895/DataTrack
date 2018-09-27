@@ -162,10 +162,11 @@ namespace DataTrack.Core.Tests
             //Act
             StringBuilder sqlBuilder = new StringBuilder();
             sqlBuilder.AppendLine();
-            sqlBuilder.AppendLine("update authors as Author");
-            sqlBuilder.AppendLine("set id = @authors_id,");
-            sqlBuilder.AppendLine("first_name = @authors_first_name,");
-            sqlBuilder.AppendLine("last_name = @authors_last_name");
+            sqlBuilder.AppendLine("update Author");
+            sqlBuilder.AppendLine("set Author.id = @authors_id,");
+            sqlBuilder.AppendLine("Author.first_name = @authors_first_name,");
+            sqlBuilder.AppendLine("Author.last_name = @authors_last_name");
+            sqlBuilder.AppendLine("from authors Author");
             sqlBuilder.AppendLine("where Author.id = @authors_id");
             sqlBuilder.AppendLine("select @@rowcount as affected_rows");
 

@@ -41,7 +41,7 @@ namespace DataTrack.Core.SQL.Update
 
             for (int i = 0; i < Columns.Count; i++)
             {
-                setBuilder.Append(Columns[i].ColumnName + " = " + Parameters[Columns[i]].Handle);
+                setBuilder.Append(TableAliases[Tables[0]] + "." + Columns[i].ColumnName + " = " + Parameters[Columns[i]].Handle);
                 setBuilder.AppendLine(i == Columns.Count - 1 ? "" : ",");
 
                 if (Restrictions.ContainsKey(Columns[i]))
@@ -52,9 +52,10 @@ namespace DataTrack.Core.SQL.Update
             }
 
             sqlBuilder.AppendLine();
-            sqlBuilder.AppendLine($"update {Tables[0].TableName} as {TableAliases[Tables[0]]}");
+            sqlBuilder.AppendLine($"update {TableAliases[Tables[0]]}");
             sqlBuilder.Append("set ");
             sqlBuilder.Append(setBuilder.ToString());
+            sqlBuilder.AppendLine($"from {Tables[0].TableName} {TableAliases[Tables[0]]}");
             sqlBuilder.Append(restrictionsBuilder.ToString());
 
             // For update statements return the number of rows affected

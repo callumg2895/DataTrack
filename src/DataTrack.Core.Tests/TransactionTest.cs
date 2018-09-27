@@ -3,6 +3,7 @@ using DataTrack.Core.Sql.Read;
 using DataTrack.Core.SQL;
 using DataTrack.Core.SQL.Delete;
 using DataTrack.Core.SQL.Insert;
+using DataTrack.Core.SQL.Update;
 using DataTrack.Core.Tests.TestObjects;
 using DataTrack.Core.Util;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -98,6 +99,53 @@ namespace DataTrack.Core.Tests
             Assert.AreEqual(result.ID, author.ID);
             Assert.AreEqual(result.FirstName, author.FirstName);
             Assert.AreEqual(result.LastName, author.LastName);
+        }
+
+        [TestMethod]
+        public void TestTransaction_ShouldReturnCorrectObjectBeforeAndAfterUpdate()
+        {
+            // Arrange
+            Author authorBefore = new Author() { ID = 1, FirstName = "John", LastName = "Smith" };
+            Author authorAfter = new Author() { ID = 1, FirstName = "James", LastName = "Smith" };
+
+            // Act
+            stopwatch.Start();
+
+            Transaction<Author> t1 = new Transaction<Author>(new List<QueryBuilder<Author>>()
+            {
+                new InsertQueryBuilder<Author>(authorBefore),
+                new ReadQueryBuilder<Author>()
+                    .AddRestriction<Author, int>("id", RestrictionTypes.EqualTo, authorBefore.ID),
+            });
+
+            Transaction<Author> t2 = new Transaction<Author>(new List<QueryBuilder<Author>>()
+            {
+                new UpdateQueryBuilder<Author>(authorAfter),
+                new ReadQueryBuilder<Author>()
+                    .AddRestriction<Author, int>("id", RestrictionTypes.EqualTo, authorAfter.ID),
+                new DeleteQueryBuilder<Author>(authorAfter),
+            });
+
+            List<object> results1 = t1.Execute();
+            List<object> results2 = t2.Execute();
+            stopwatch.Stop();
+
+            Logger.Info(MethodBase.GetCurrentMethod(), $"Transaction executed in {stopwatch.ElapsedMilliseconds}ms");
+
+            int affectedInsertRows = (int)results1[0];
+            Author beforeUpdate = ((List<Author>)results1[1])[0];
+            int affectedUpdateRows = (int)results2[0];
+            Author afterUpdate = ((List<Author>)results2[1])[0];
+
+            // Assert
+            Assert.AreEqual(affectedInsertRows, 1);
+            Assert.AreEqual(affectedUpdateRows, 1);
+            Assert.AreEqual(beforeUpdate.ID, authorBefore.ID);
+            Assert.AreEqual(beforeUpdate.FirstName, authorBefore.FirstName);
+            Assert.AreEqual(beforeUpdate.LastName, authorBefore.LastName);
+            Assert.AreEqual(afterUpdate.ID, authorAfter.ID);
+            Assert.AreEqual(afterUpdate.FirstName, authorAfter.FirstName);
+            Assert.AreEqual(afterUpdate.LastName, authorAfter.LastName);
         }
     }
 }
