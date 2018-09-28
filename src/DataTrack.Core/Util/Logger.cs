@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 
 namespace DataTrack.Core.Util
 {
@@ -20,51 +21,42 @@ namespace DataTrack.Core.Util
         private static string fullPath;
         private static int currentLength = 0;
 
+        private static Thread loggingThread;
+        private static bool running;
+        private static List<(MethodBase method, string message, OutputTypes type)> logBuffer;
         private static OutputTypes outputType;
 
         public static void Init(OutputTypes consoleOutputType = OutputTypes.None)
         {
             fullPath = $"{filePath}{fileName}{fileIndex}{fileExtension}";
             outputType = consoleOutputType;
+            logBuffer = new List<(MethodBase method, string message, OutputTypes type)>();
+            running = true;
+
             Clear();
             Create();
+
+            loggingThread = new Thread(new ThreadStart(Logging));
+            loggingThread.Start();
         }
 
         private static void Create()
         {
-            currentLength = 0;
+            lock (fullPath)
+            {
+                currentLength = 0;
 
-            while (File.Exists(fullPath))
-                fullPath = $"{filePath}{fileName}{++fileIndex}{fileExtension}";
+                while (File.Exists(fullPath))
+                    fullPath = $"{filePath}{fileName}{++fileIndex}{fileExtension}";
 
-            using (StreamWriter writer = File.CreateText(fullPath)) { };
-
-            Info(MethodBase.GetCurrentMethod(), $"Created file {fileName}{fileIndex}{fileExtension}");
+                using (StreamWriter writer = File.CreateText(fullPath)) { };
+            }
         }
 
         private static void Log(MethodBase method, string message, OutputTypes type)
         {
-            string logOutput = $"{DateTime.Now} | {method.ReflectedType.Name}::{method.Name}() | {message}";
-
-            using (StreamWriter writer = new StreamWriter(fullPath, true))
-            {
-                writer.WriteLine(logOutput);
-                currentLength++;
-            }
-
-            if(outputType == OutputTypes.All || (int)type <= (int)outputType)
-                switch (type)
-                {
-                    case OutputTypes.Error:      WriteErrorLine(logOutput); break;
-                    case OutputTypes.Warning:    WriteWarningLine(logOutput); break;
-                    case OutputTypes.Info:       WriteInfoLine(logOutput); break;
-                    case OutputTypes.None:
-                    default:
-                        break;
-                }
-
-            if (currentLength == maxLogLength)
-                Create();
+            lock (logBuffer)
+                logBuffer.Add((method, message, type));
         }
 
         public static void Info(MethodBase method, string message) => Log(method, $"Info: {message}", OutputTypes.Info);
@@ -73,11 +65,16 @@ namespace DataTrack.Core.Util
 
         public static void Error(MethodBase method, string message) => Log(method, $"Error: {message}", OutputTypes.Error);
 
+        public static void Stop() => running = false;
+
         private static void Clear()
         {
-            string[] files = Directory.GetFiles(filePath, $"{fileName}*");
-            foreach (string file in files)
-                File.Delete(file);
+            lock (fullPath)
+            {
+                string[] files = Directory.GetFiles(filePath, $"{fileName}*");
+                foreach (string file in files)
+                    File.Delete(file);
+            }
         }
 
         private static void WriteWarningLine(string message)
@@ -104,5 +101,49 @@ namespace DataTrack.Core.Util
             Console.ForegroundColor = oldColor;
         }
 
+        private static void Logging()
+        {
+            List<(MethodBase method, string message, OutputTypes type)> threadLogBuffer = new List<(MethodBase method, string message, OutputTypes type)>();
+            
+            while (running)
+            {
+                lock (logBuffer)
+                {
+                    threadLogBuffer.AddRange(logBuffer);
+                    logBuffer.Clear();
+                }
+
+                foreach((MethodBase method, string message, OutputTypes type) message in threadLogBuffer)
+                {
+                    string logOutput = $"{DateTime.Now} | {message.method.ReflectedType.Name}::{message.method.Name}() | {message.message}";
+
+                    lock (fullPath)
+                    {
+                        using (StreamWriter writer = new StreamWriter(fullPath, true))
+                        {
+                            writer.WriteLine(logOutput);
+                            currentLength++;
+                        }
+                    }
+
+                    if (outputType == OutputTypes.All || (int)message.type <= (int)outputType)
+                        switch (message.type)
+                        {
+                            case OutputTypes.Error: WriteErrorLine(logOutput); break;
+                            case OutputTypes.Warning: WriteWarningLine(logOutput); break;
+                            case OutputTypes.Info: WriteInfoLine(logOutput); break;
+                            case OutputTypes.None:
+                            default:
+                                break;
+                        }
+
+                    if (currentLength == maxLogLength)
+                        Create();
+                }
+
+
+                threadLogBuffer.Clear();
+            }
+        }
     }
 }

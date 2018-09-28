@@ -5,6 +5,7 @@ using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Reflection;
+using System.Threading;
 using System.Xml;
 
 namespace DataTrack.Core
@@ -61,9 +62,10 @@ namespace DataTrack.Core
             return connection;
         }
 
+        public static void Dispose() => Logger.Stop();
+
         private static string GetConnectionString(string configPath)
         {
-
             XmlDocument doc = new XmlDocument();
             string xPath = "dbconfig/connection";
             string xPathAttr = "DataTrack";
@@ -89,8 +91,6 @@ namespace DataTrack.Core
                 Logger.Error(MethodBase.GetCurrentMethod(), e.Message);
                 return string.Empty;
             }
-
-
         }
 
         #endregion

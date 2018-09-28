@@ -18,57 +18,9 @@ using System.Text;
 namespace DataTrack.Core.Tests
 {
     [TestClass]
-    public class QueryBuilderTest
+    public class QueryBuilderTest : BaseTest
     {
         private Stopwatch stopwatch = new Stopwatch();
-
-        [ClassInitialize]
-        public static void ClassInit(TestContext testContext)
-        {
-            string connectionString =
-                "Data Source=(local);" +
-                "Initial Catalog=data_track_testing;" +
-                "User id=sa;" +
-                "Password=password;";
-
-            DataTrackConfiguration.Init(OutputTypes.All, ConfigType.ConnectionString, connectionString);
-
-            using (SqlConnection connection = DataTrackConfiguration.CreateConnection())
-            {
-                string sqlInit = @"
-                    if OBJECT_ID('authors','U') is null
-                    begin
-                        create table authors
-                        (
-                            id int not null,
-                            first_name varchar(255) not null,
-                            last_name varchar(255) not null
-                            primary key (id)
-                        )
-                    end";
-
-                using (SqlCommand command = connection.CreateCommand())
-                {
-                    command.CommandText = sqlInit;
-                    command.CommandType = System.Data.CommandType.Text;
-                    command.ExecuteNonQuery();
-                }
-            }
-        }
-
-        [ClassCleanup]
-        public static void ClassCleanup()
-        {
-            using (SqlConnection connection = DataTrackConfiguration.CreateConnection())
-            {
-                using (SqlCommand command = connection.CreateCommand())
-                {
-                    command.CommandText = "exec sp_MSforeachtable @command1 = \"DROP TABLE ?\"";
-                    command.CommandType = System.Data.CommandType.Text;
-                    command.ExecuteNonQuery();
-                }
-            }
-        }
 
         [TestMethod]
         public void TestReadQueryBuilder_ShouldReturnCorrectSQLForObjects()
