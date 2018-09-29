@@ -33,6 +33,13 @@ namespace DataTrack.Core.Tests
                             last_name varchar(255) not null
                             primary key (id)
                         )
+
+                        create table books
+                        (
+                            id int not null,
+                            author_id int not null,
+                            title varchar(255) not null
+                        )
                     end";
 
                 using (SqlCommand command = connection.CreateCommand())

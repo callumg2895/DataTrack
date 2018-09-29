@@ -32,8 +32,37 @@ namespace DataTrack.Core.Tests
             //Act
             StringBuilder sqlBuilder = new StringBuilder();
             sqlBuilder.AppendLine();
+            sqlBuilder.AppendLine("select Book.id, Book.author_id, Book.title ");
+            sqlBuilder.AppendLine("from books as Book ");
+
+            expectedQuery = sqlBuilder.ToString();
+
+            stopwatch.Start();
+            testQuery = new ReadQueryBuilder<Book>().ToString();
+            stopwatch.Stop();
+
+            Logger.Info(MethodBase.GetCurrentMethod(), $"ReadQueryBuilder executed in {stopwatch.ElapsedMilliseconds}ms");
+
+            //Assert
+            Assert.AreNotEqual(testQuery, string.Empty);
+            Assert.AreEqual(testQuery, expectedQuery);
+        }
+
+        [TestMethod]
+        public void TestReadQueryBuilder_ShouldReturnCorrectSQLForObjectsWithChildProperty()
+        {
+            // Arrange
+            string testQuery;
+            string expectedQuery;
+
+            //Act
+            StringBuilder sqlBuilder = new StringBuilder();
+            sqlBuilder.AppendLine();
             sqlBuilder.AppendLine("select Author.id, Author.first_name, Author.last_name ");
             sqlBuilder.AppendLine("from authors as Author ");
+            sqlBuilder.AppendLine();
+            sqlBuilder.AppendLine("select Book.id, Book.author_id, Book.title ");
+            sqlBuilder.AppendLine("from books as Book ");
 
             expectedQuery = sqlBuilder.ToString();
 

@@ -17,6 +17,7 @@ namespace DataTrack.Core.SQL
 
         private protected Type BaseType { get => typeof(TBase); }
         private protected Dictionary<Type, TableMappingAttribute> TypeTableMapping = new Dictionary<Type, TableMappingAttribute>();
+        private protected Dictionary<TableMappingAttribute, Type> TableTypeMapping = new Dictionary<TableMappingAttribute, Type>();
         private protected Dictionary<Type, List<ColumnMappingAttribute>> TypeColumnMapping = new Dictionary<Type, List<ColumnMappingAttribute>>();
         private protected Dictionary<TableMappingAttribute, string> TableAliases = new Dictionary<TableMappingAttribute, string>();
         private protected Dictionary<ColumnMappingAttribute, string> ColumnAliases = new Dictionary<ColumnMappingAttribute, string>();
@@ -31,28 +32,52 @@ namespace DataTrack.Core.SQL
 
         #region Methods
 
-        private protected void GetTable(Type type)
+        private protected void GetTable()
         {
+            Type type = typeof(TBase);
             TableMappingAttribute mappingAttribute;
+
+            // Get the table mapping for TBase
             if (TryGetTableMappingAttribute(type, out mappingAttribute))
             {
                 TypeTableMapping[type] = mappingAttribute;
+                TableTypeMapping[mappingAttribute] = type;
                 Tables.Add(mappingAttribute);
                 TableAliases[mappingAttribute] = type.Name;
                 Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded table mapping for class '{type.Name}'");
             }
             else
                 Logger.Error(MethodBase.GetCurrentMethod(), $"Failed to load table mapping for class '{type.Name}'");
+
+            // Get the table mapping for all child objects
+            foreach (PropertyInfo property in type.GetProperties())
+            {
+                Type propertyType = property.PropertyType;
+
+                // If the property is a generic list, then it fits the profile of a child object
+                if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(List<>))
+                {
+                    Type genericArgumentType = propertyType.GetGenericArguments()[0];
+                    if (TryGetTableMappingAttribute(genericArgumentType, out mappingAttribute))
+                    {
+                        TypeTableMapping[genericArgumentType] = mappingAttribute;
+                        TableTypeMapping[mappingAttribute] = genericArgumentType;
+                        Tables.Add(mappingAttribute);
+                    }
+                }
+            }
         }
 
-        private protected void GetColumns(Type type)
+        private protected void GetColumns()
         {
-            List<ColumnMappingAttribute> attributes;
-            if (TryGetColumnMappingAttributes(type, out attributes))
+            Type type = typeof(TBase);
+            List<ColumnMappingAttribute> columnAttributes;
+
+            if (TryGetColumnMappingAttributes(type, out columnAttributes))
             {
-                TypeColumnMapping[type] = attributes;
-                Columns.AddRange(attributes);
-                foreach (var attribute in attributes)
+                TypeColumnMapping[type] = columnAttributes;
+                Columns.AddRange(columnAttributes);
+                foreach (var attribute in columnAttributes)
                     ColumnAliases[attribute] = $"{type.Name}.{attribute.ColumnName}";
                 Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded column mapping for class '{type.Name}'");
             }

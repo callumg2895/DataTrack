@@ -16,5 +16,8 @@ namespace DataTrack.Core.Tests.TestObjects
 
         [ColumnMapping("authors", "last_name")]
         public virtual string LastName { get; set; }
+
+        [TableMapping("books")]
+        public virtual List<Book> Books { get; set; }
     }
 }
