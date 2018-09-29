@@ -49,5 +49,16 @@ namespace DataTrack.Core.Attributes
             Logger.Error(MethodBase.GetCurrentMethod(), $"Could not find property '{propertyName}' in object with class '{type.Name}' with attached ColumnMappingAttribute");
             return false;
         }
+
+        public string GetPropertyName(Type type)
+        {
+            // Try to find the property with a ColumnMappingAttribute that matches the one in the method call
+            foreach (PropertyInfo property in type.GetProperties())
+                foreach (Attribute attribute in property.GetCustomAttributes())
+                    if ((attribute as ColumnMappingAttribute)?.ColumnName == this.ColumnName)
+                        return property.Name;
+
+            return null;
+        }
     }
 }

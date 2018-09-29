@@ -33,8 +33,7 @@ namespace DataTrack.Core.Tests
             Transaction<Author> t = new Transaction<Author>(new List<QueryBuilder<Author>>()
             {
                 new InsertQueryBuilder<Author>(author),
-                new ReadQueryBuilder<Author>()
-                    .AddRestriction<Author, int>("id", RestrictionTypes.EqualTo, author.ID),
+                new ReadQueryBuilder<Author>(author.ID),
                 new DeleteQueryBuilder<Author>(author)
             });
 
@@ -65,15 +64,13 @@ namespace DataTrack.Core.Tests
             Transaction<Author> t1 = new Transaction<Author>(new List<QueryBuilder<Author>>()
             {
                 new InsertQueryBuilder<Author>(authorBefore),
-                new ReadQueryBuilder<Author>()
-                    .AddRestriction<Author, int>("id", RestrictionTypes.EqualTo, authorBefore.ID),
+                new ReadQueryBuilder<Author>(authorBefore.ID),
             });
 
             Transaction<Author> t2 = new Transaction<Author>(new List<QueryBuilder<Author>>()
             {
                 new UpdateQueryBuilder<Author>(authorAfter),
-                new ReadQueryBuilder<Author>()
-                    .AddRestriction<Author, int>("id", RestrictionTypes.EqualTo, authorAfter.ID),
+                new ReadQueryBuilder<Author>(authorAfter.ID),
                 new DeleteQueryBuilder<Author>(authorAfter),
             });
 

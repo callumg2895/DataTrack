@@ -30,15 +30,18 @@ namespace DataTrack.Core.SQL
         private void BuildTransactionData(QueryBuilder<TBase> queryBuilder)
         {
             queryBuilders.Add(queryBuilder);
-            parameters.AddRange(queryBuilder.GetParameters().Where( p => !parameters.Select(pa => pa.Handle).Contains(p.Handle)));
+
         }
 
         public string BuildTransactionSQL()
         {
             transactionSQLBuilder = new StringBuilder();
 
-            foreach(QueryBuilder<TBase> queryBuilder in queryBuilders)
+            foreach (QueryBuilder<TBase> queryBuilder in queryBuilders)
+            {
                 transactionSQLBuilder.AppendLine(queryBuilder.ToString());
+                parameters.AddRange(queryBuilder.GetParameters().Where(p => !parameters.Select(pa => pa.Handle).Contains(p.Handle)));
+            }
 
             transactionSQL = transactionSQLBuilder.ToString();
 
@@ -65,7 +68,7 @@ namespace DataTrack.Core.SQL
                         {
                             case CRUDOperationTypes.Read :
 
-                                results.Add(GetResultsForReadQueryBuilder(reader, (ReadQueryBuilder<TBase>)queryBuilder));
+                                GetResultsForReadQueryBuilder(reader, (ReadQueryBuilder<TBase>)queryBuilder, ref results);
                                 reader.NextResult();
                                 break;
 
@@ -90,20 +93,23 @@ namespace DataTrack.Core.SQL
             return results;
         }
 
-        private List<TBase> GetResultsForReadQueryBuilder(SqlDataReader reader, ReadQueryBuilder<TBase> queryBuilder)
+        private void GetResultsForReadQueryBuilder(SqlDataReader reader, ReadQueryBuilder<TBase> queryBuilder, ref List<object> results)
         {
-            List<TBase> results = new List<TBase>();
+            List<TBase> readQueryResults = new List<TBase>();
+
+            List<ColumnMappingAttribute> mainColumns = queryBuilder.Columns.Where(c => c.TableName == queryBuilder.Tables[0].TableName).ToList();
+
+            int columnCount = 0;
+
             while (reader.Read())
             {
                 TBase obj = new TBase();
 
-                foreach (ColumnMappingAttribute column in queryBuilder.Columns)
+                foreach (ColumnMappingAttribute column in mainColumns)
                 {
-                    string propertyName;
-
-                    if (column.TryGetPropertyName(typeof(TBase), out propertyName))
+                    if (queryBuilder.ColumnPropertyNames.ContainsKey(column))
                     {
-                        PropertyInfo property = typeof(TBase).GetProperty(propertyName);
+                        PropertyInfo property = typeof(TBase).GetProperty(queryBuilder.ColumnPropertyNames[column]);
 
                         if (reader[column.ColumnName] != DBNull.Value)
                             property.SetValue(obj, Convert.ChangeType(reader[column.ColumnName], property.PropertyType));
@@ -115,10 +121,40 @@ namespace DataTrack.Core.SQL
                         Logger.Error(MethodBase.GetCurrentMethod(), $"Could not find property in class {typeof(TBase)} mapped to column {column.ColumnName}");
                         break;
                     }
+
+                    columnCount++;
+                    readQueryResults.Add(obj);
                 }
-                results.Add(obj);
             }
-            return results;
+
+            for (int tableCount = 1; tableCount < queryBuilder.Tables.Count; tableCount++)
+            {
+                reader.NextResult();
+                Type childType = queryBuilder.TableTypeMapping[queryBuilder.Tables[tableCount]];
+                dynamic childCollection = Activator.CreateInstance(typeof(List<>).MakeGenericType(childType)); 
+
+                while (reader.Read())
+                {
+                    var childItem = Activator.CreateInstance(childType);
+
+                    foreach(PropertyInfo property in childType.GetProperties())
+                    {
+                        property.SetValue(
+                            childItem,
+                            Convert.ChangeType(reader[queryBuilder.Columns[++columnCount].ColumnName], property.PropertyType));
+                    }
+
+                    childCollection.Add(childItem);
+                }
+
+                foreach(TBase obj in readQueryResults)
+                {
+                    PropertyInfo childProperty = queryBuilder.Tables[0].GetChildProperty(typeof(TBase), queryBuilder.Tables[tableCount].TableName);
+                    childProperty.SetValue(obj, childCollection);
+                }
+            }
+
+            results.Add(readQueryResults);
         }
     }
 }

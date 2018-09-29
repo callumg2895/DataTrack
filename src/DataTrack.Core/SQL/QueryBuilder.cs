@@ -16,8 +16,6 @@ namespace DataTrack.Core.SQL
         #region Members
 
         private protected Type BaseType { get => typeof(TBase); }
-        private protected Dictionary<Type, TableMappingAttribute> TypeTableMapping = new Dictionary<Type, TableMappingAttribute>();
-        private protected Dictionary<TableMappingAttribute, Type> TableTypeMapping = new Dictionary<TableMappingAttribute, Type>();
         private protected Dictionary<Type, List<ColumnMappingAttribute>> TypeColumnMapping = new Dictionary<Type, List<ColumnMappingAttribute>>();
         private protected Dictionary<TableMappingAttribute, string> TableAliases = new Dictionary<TableMappingAttribute, string>();
         private protected Dictionary<ColumnMappingAttribute, string> ColumnAliases = new Dictionary<ColumnMappingAttribute, string>();
@@ -26,6 +24,9 @@ namespace DataTrack.Core.SQL
 
         public List<TableMappingAttribute> Tables { get; private set; } = new List<TableMappingAttribute>();
         public List<ColumnMappingAttribute> Columns { get; private set; } = new List<ColumnMappingAttribute>();
+        public Dictionary<Type, TableMappingAttribute> TypeTableMapping { get; private set; } = new Dictionary<Type, TableMappingAttribute>();
+        public Dictionary<TableMappingAttribute, Type> TableTypeMapping { get; private set; } = new Dictionary<TableMappingAttribute, Type>();
+        public Dictionary<ColumnMappingAttribute, string> ColumnPropertyNames { get; private set; } = new Dictionary<ColumnMappingAttribute, string>();
         public CRUDOperationTypes OperationType { get; private protected set; }
 
         #endregion
@@ -77,8 +78,13 @@ namespace DataTrack.Core.SQL
             {
                 TypeColumnMapping[type] = columnAttributes;
                 Columns.AddRange(columnAttributes);
+
                 foreach (var attribute in columnAttributes)
+                {
                     ColumnAliases[attribute] = $"{type.Name}.{attribute.ColumnName}";
+                    ColumnPropertyNames[attribute] = attribute.GetPropertyName(BaseType);
+                }
+
                 Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded column mapping for class '{type.Name}'");
             }
             else
@@ -143,6 +149,22 @@ namespace DataTrack.Core.SQL
             return false;
         }
 
+        private protected bool TryGetForeignKeyColumnForType(Type type, string table, out ColumnMappingAttribute typeFKColumn)
+        {
+            TableMappingAttribute typeTable;
+            typeFKColumn = null;
+
+            if (TryGetTableMappingAttribute(type, out typeTable))
+                foreach (ColumnMappingAttribute column in TypeColumnMapping[type])
+                    if (column.KeyType == KeyTypes.ForeignKey && column.TableName == typeTable.TableName && column.ForeignKeyMapping == table)
+                    {
+                        typeFKColumn = column;
+                        return true;
+                    }
+
+            return false;
+        }
+
         private protected void UpdateParameters(TBase item)
         {
             // For each column mapping attribute, find the value of the property which is decorated by that column attribute
@@ -163,10 +185,22 @@ namespace DataTrack.Core.SQL
             ColumnMappingAttribute primaryKeyColumnAttribute;
             string primaryKeyColumnPropertyname;
 
-            if (TryGetPrimaryKeyColumnForType(typeof(TBase), out primaryKeyColumnAttribute) && primaryKeyColumnAttribute.TryGetPropertyName(BaseType, out primaryKeyColumnPropertyname))
+            if (TryGetPrimaryKeyColumnForType(BaseType, out primaryKeyColumnAttribute) && primaryKeyColumnAttribute.TryGetPropertyName(BaseType, out primaryKeyColumnPropertyname))
             {
                 var primaryKeyValue = item.GetPropertyValue(primaryKeyColumnPropertyname);
-                this.AddRestriction<TBase, object>(primaryKeyColumnAttribute.ColumnName, RestrictionTypes.EqualTo, primaryKeyValue);
+                this.AddRestriction<object>(primaryKeyColumnAttribute.ColumnName, RestrictionTypes.EqualTo, primaryKeyValue);
+            }
+        }
+
+        private protected void AddForeignKeyRestriction(int value, string table)
+        {
+            // Find the name and value of the primary key property in the 'item' object
+            ColumnMappingAttribute foreignKeyColumnAttribute;
+            string primaryKeyColumnPropertyname;
+
+            if (TryGetForeignKeyColumnForType(BaseType, table, out foreignKeyColumnAttribute) && foreignKeyColumnAttribute.TryGetPropertyName(BaseType, out primaryKeyColumnPropertyname))
+            {
+                this.AddRestriction<int>(foreignKeyColumnAttribute.ColumnName, RestrictionTypes.EqualTo, value);
             }
         }
 
@@ -174,17 +208,16 @@ namespace DataTrack.Core.SQL
 
         abstract public override string ToString();
 
-        public virtual QueryBuilder<TBase> AddRestriction<T, TProp>(string property, RestrictionTypes rType, TProp value)
+        public virtual QueryBuilder<TBase> AddRestriction<TProp>(string property, RestrictionTypes rType, TProp value)
         {
-            Type type = typeof(T);
             TableMappingAttribute tableAttribute;
             List<ColumnMappingAttribute> columnAttributes;
             ColumnMappingAttribute columnAttribute;
             StringBuilder restrictionBuilder = new StringBuilder();
 
-            if (!TryGetTableMappingAttribute(type, out tableAttribute) || !TryGetColumnMappingAttributes(type, out columnAttributes))
+            if (!TryGetTableMappingAttribute(BaseType, out tableAttribute) || !TryGetColumnMappingAttributes(BaseType, out columnAttributes))
             {
-                Logger.Error(MethodBase.GetCurrentMethod(), $"Failed to load column mapping for class '{type.Name}'");
+                Logger.Error(MethodBase.GetCurrentMethod(), $"Failed to load column mapping for class '{BaseType.Name}'");
                 return this;
             }
 

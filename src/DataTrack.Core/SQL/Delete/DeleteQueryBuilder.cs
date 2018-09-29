@@ -46,7 +46,7 @@ namespace DataTrack.Core.SQL.Delete
             if (TryGetPrimaryKeyColumnForType(typeof(TBase), out primaryKeyColumnAttribute) && primaryKeyColumnAttribute.TryGetPropertyName(BaseType, out primaryKeyColumnPropertyname))
             {
                 var primaryKeyValue = item.GetPropertyValue(primaryKeyColumnPropertyname);
-                this.AddRestriction<TBase, object>(primaryKeyColumnAttribute.ColumnName, RestrictionTypes.In, primaryKeyValue);
+                this.AddRestriction<object>(primaryKeyColumnAttribute.ColumnName, RestrictionTypes.In, primaryKeyValue);
             }
         }
 

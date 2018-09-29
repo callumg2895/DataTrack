@@ -9,15 +9,26 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Text;
 
 namespace DataTrack.Core.Sql.Read
 {
     public class ReadQueryBuilder<TBase> : QueryBuilder<TBase>
     {
+        #region Members
+
+        private int? ID;
+
+        #endregion
+
         #region Constructors
 
-        public ReadQueryBuilder()
+        public ReadQueryBuilder() : this(null)
+        {
+        }
+
+        public ReadQueryBuilder(int? id)
         {
             // Define the operation type used for transactions
             OperationType = CRUDOperationTypes.Read;
@@ -33,6 +44,11 @@ namespace DataTrack.Core.Sql.Read
                 Logger.Error(MethodBase.GetCurrentMethod(), message);
                 throw new Exception(message);
             }
+
+            this.ID = id;
+
+            if (ID.HasValue)
+                AddRestriction<int>("ID", RestrictionTypes.EqualTo, ID.Value);
         }
 
         #endregion
@@ -58,6 +74,25 @@ namespace DataTrack.Core.Sql.Read
                 else
                 {
                     dynamic queryBuilder = Activator.CreateInstance(typeof(ReadQueryBuilder<>).MakeGenericType(TableTypeMapping[Tables[i]]));
+
+                    if (ID.HasValue)
+                    {
+                        // Make sure that only those child items with a foreign key matching the primary key of TBase are retrieved
+                        MethodInfo addForeignKeyRestriction = queryBuilder.GetType().GetMethod("AddForeignKeyRestriction", BindingFlags.Instance | BindingFlags.NonPublic);
+                        addForeignKeyRestriction.Invoke(queryBuilder, new object[] { ID, Tables[0].TableName });
+
+                        foreach (KeyValuePair<ColumnMappingAttribute, (string Handle, object Value)> item in queryBuilder.Parameters)
+                        {
+                            Parameters.TryAdd(item.Key, (item.Value.Handle, item.Value.Value));
+                            Columns.Add(item.Key);
+                        };
+
+                        foreach(KeyValuePair<ColumnMappingAttribute, string> item in queryBuilder.ColumnPropertyNames)
+                        {
+                            ColumnPropertyNames.Add(item.Key, item.Value);
+                        }
+                    }
+
                     childSqlBuilder.Append(queryBuilder.ToString());
                 }
             }
