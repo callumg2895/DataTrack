@@ -82,12 +82,13 @@ namespace DataTrack.Core.Sql.Read
                         addForeignKeyRestriction.Invoke(queryBuilder, new object[] { ID, Tables[0].TableName });
 
                         foreach (ColumnMappingAttribute column in queryBuilder.Columns)
-                            if (queryBuilder.Parameters.ContainsKey(column) && queryBuilder.ColumnPropertyNames.ContainsKey(column))
-                            {
+                        {
+                            if (queryBuilder.Parameters.ContainsKey(column))
                                 Parameters.TryAdd(column, queryBuilder.Parameters[column]);
+                            if (queryBuilder.ColumnPropertyNames.ContainsKey(column))
                                 ColumnPropertyNames.TryAdd(column, queryBuilder.ColumnPropertyNames[column]);
-                                Columns.Add(column);
-                            }
+                            Columns.Add(column);
+                        }
                     }
 
                     childSqlBuilder.Append(queryBuilder.ToString());

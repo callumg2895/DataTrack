@@ -131,20 +131,23 @@ namespace DataTrack.Core.SQL
             {
                 reader.NextResult();
                 Type childType = queryBuilder.TableTypeMapping[queryBuilder.Tables[tableCount]];
-                dynamic childCollection = Activator.CreateInstance(typeof(List<>).MakeGenericType(childType)); 
+                dynamic childCollection = Activator.CreateInstance(typeof(List<>).MakeGenericType(childType));
+                int originalColumnCount = columnCount;
 
                 while (reader.Read())
                 {
                     var childItem = Activator.CreateInstance(childType);
+                    columnCount = originalColumnCount;
 
                     foreach(PropertyInfo property in childType.GetProperties())
                     {
                         property.SetValue(
                             childItem,
-                            Convert.ChangeType(reader[queryBuilder.Columns[++columnCount].ColumnName], property.PropertyType));
+                            Convert.ChangeType(reader[queryBuilder.Columns[columnCount++].ColumnName], property.PropertyType));
                     }
 
-                    childCollection.Add(childItem);
+                    MethodInfo addItem = childCollection.GetType().GetMethod("Add");
+                    addItem.Invoke(childCollection, new object[] { childItem });
                 }
 
                 foreach(TBase obj in readQueryResults)

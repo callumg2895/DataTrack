@@ -27,20 +27,33 @@ namespace DataTrack.Core.Tests
         {
             // Arrange
             Author author = new Author() { ID = 1, FirstName = "John", LastName = "Smith" };
+            Book book = new Book() { ID = 1, AuthorId = 1, Title = "Amazing Book Title" };
 
             // Act
             stopwatch.Start();
-            Transaction<Author> t = new Transaction<Author>(new List<QueryBuilder<Author>>()
+
+            Transaction<Book> t1 = new Transaction<Book>(new List<QueryBuilder<Book>>()
+            {
+                new InsertQueryBuilder<Book>(book),
+            });
+
+            t1.Execute();
+            stopwatch.Stop();
+
+            Logger.Info(MethodBase.GetCurrentMethod(), $"Transaction<Book> executed in {stopwatch.ElapsedMilliseconds}ms");
+
+            stopwatch.Start();
+            Transaction<Author> t2 = new Transaction<Author>(new List<QueryBuilder<Author>>()
             {
                 new InsertQueryBuilder<Author>(author),
                 new ReadQueryBuilder<Author>(author.ID),
                 new DeleteQueryBuilder<Author>(author)
             });
 
-            List<object> results = t.Execute();
+            List<object> results = t2.Execute();
             stopwatch.Stop();
 
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Transaction executed in {stopwatch.ElapsedMilliseconds}ms");
+            Logger.Info(MethodBase.GetCurrentMethod(), $"Transaction<Author> executed in {stopwatch.ElapsedMilliseconds}ms");
 
             int affectedRows = (int)results[0];
             Author result = ((List<Author>)results[1])[0];
@@ -50,6 +63,8 @@ namespace DataTrack.Core.Tests
             Assert.AreEqual(result.ID, author.ID);
             Assert.AreEqual(result.FirstName, author.FirstName);
             Assert.AreEqual(result.LastName, author.LastName);
+            Assert.AreEqual(result.Books.Count, 1);
+            Assert.AreEqual(result.Books[0].AuthorId, result.ID);
         }
 
         [TestMethod]
@@ -67,6 +82,12 @@ namespace DataTrack.Core.Tests
                 new ReadQueryBuilder<Author>(authorBefore.ID),
             });
 
+            List<object> results1 = t1.Execute();
+            stopwatch.Stop();
+
+            Logger.Info(MethodBase.GetCurrentMethod(), $"Transaction<Author> executed in {stopwatch.ElapsedMilliseconds}ms");
+
+            stopwatch.Start();
             Transaction<Author> t2 = new Transaction<Author>(new List<QueryBuilder<Author>>()
             {
                 new UpdateQueryBuilder<Author>(authorAfter),
@@ -74,11 +95,10 @@ namespace DataTrack.Core.Tests
                 new DeleteQueryBuilder<Author>(authorAfter),
             });
 
-            List<object> results1 = t1.Execute();
             List<object> results2 = t2.Execute();
             stopwatch.Stop();
 
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Transaction executed in {stopwatch.ElapsedMilliseconds}ms");
+            Logger.Info(MethodBase.GetCurrentMethod(), $"Transaction<Author> executed in {stopwatch.ElapsedMilliseconds}ms");
 
             int affectedInsertRows = (int)results1[0];
             Author beforeUpdate = ((List<Author>)results1[1])[0];
