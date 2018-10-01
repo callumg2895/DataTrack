@@ -26,5 +26,17 @@ namespace DataTrack.Core.Attributes
             return null;
         }
 
+        public object GetChildPropertyValues(object instance, string tableName)
+        {
+            Type type = instance.GetType();
+
+            foreach (PropertyInfo property in type.GetProperties())
+                foreach (Attribute attribute in property.GetCustomAttributes())
+                    if ((attribute as TableMappingAttribute)?.TableName == tableName)
+                        return property.GetValue(instance);
+
+            return null;
+        }
+
     }
 }

@@ -12,7 +12,7 @@ namespace DataTrack.Core.SQL.Update
     public class UpdateQueryBuilder<TBase> : QueryBuilder<TBase>
     {
 
-        public UpdateQueryBuilder(TBase item)
+        public UpdateQueryBuilder(TBase item, int parameterIndex = 1)
         {
             // Define the operation type used for transactions
             OperationType = CRUDOperationTypes.Update;
@@ -29,6 +29,7 @@ namespace DataTrack.Core.SQL.Update
                 throw new Exception(message);
             }
 
+            CurrentParameterIndex = parameterIndex;
             UpdateParameters(item);
             AddPrimaryKeyRestriction(item);
         }

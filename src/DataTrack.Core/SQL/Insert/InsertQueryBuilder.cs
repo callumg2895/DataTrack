@@ -12,9 +12,16 @@ namespace DataTrack.Core.SQL.Insert
 {
     public class InsertQueryBuilder<TBase> : QueryBuilder<TBase>
     {
+
+        #region Members
+
+        private TBase Item;
+
+        #endregion
+
         #region Constructors
 
-        public InsertQueryBuilder(TBase item)
+        public InsertQueryBuilder(TBase item, int parameterIndex = 1)
         {
             // Define the operation type used for transactions
             OperationType = CRUDOperationTypes.Create;
@@ -31,7 +38,10 @@ namespace DataTrack.Core.SQL.Insert
                 throw new Exception(message);
             }
 
-            UpdateParameters(item);
+            Item = item;
+            CurrentParameterIndex = parameterIndex;
+
+            UpdateParameters(Item);
         }
 
         #endregion
@@ -41,20 +51,47 @@ namespace DataTrack.Core.SQL.Insert
         public override string ToString()
         {
             StringBuilder sqlBuilder = new StringBuilder();
+            StringBuilder childSqlBuilder = new StringBuilder();
             StringBuilder insertBuilder = new StringBuilder();
             StringBuilder valuesBuilder = new StringBuilder();
 
-            for (int i = 1; i <= Columns.Count; i++)
-                if (i == Columns.Count)
-                {
-                    insertBuilder.Append(Columns[i - 1].ColumnName + ")");
-                    valuesBuilder.Append(Parameters[Columns[i - 1]].Handle + ")");
-                }
+            for (int i = 0; i < Tables.Count; i++)
+            {
+                if (i == 0)
+                    for (int j = 1; j <= Columns.Count; j++)
+                        if (j == Columns.Count)
+                        {
+                            insertBuilder.Append(Columns[j - 1].ColumnName + ")");
+                            valuesBuilder.Append(Parameters[Columns[j - 1]].Handle + ")");
+                        }
+                        else
+                        {
+                            insertBuilder.Append(Columns[j - 1].ColumnName + ", ");
+                            valuesBuilder.Append(Parameters[Columns[j - 1]].Handle + ", ");
+                        }
                 else
-                {
-                    insertBuilder.Append(Columns[i - 1].ColumnName + ", ");
-                    valuesBuilder.Append(Parameters[Columns[i - 1]].Handle + ", ");
-                }  
+                {              
+                    dynamic childItems = Tables[0].GetChildPropertyValues(Item, Tables[i].TableName) ?? new List<object>();
+
+                    foreach( object item in childItems)
+                    {
+                        CurrentParameterIndex++;
+                        dynamic queryBuilder = Activator.CreateInstance(typeof(InsertQueryBuilder<>).MakeGenericType(TableTypeMapping[Tables[i]]), item, CurrentParameterIndex);
+
+                        foreach (ColumnMappingAttribute column in queryBuilder.Columns)
+                        {
+                            if (queryBuilder.Parameters.ContainsKey(column))
+                                Parameters.TryAdd(column, queryBuilder.Parameters[column]);
+                            if (queryBuilder.ColumnPropertyNames.ContainsKey(column))
+                                ColumnPropertyNames.TryAdd(column, queryBuilder.ColumnPropertyNames[column]);
+                            Columns.Add(column);
+                        }
+
+                        childSqlBuilder.Append(queryBuilder.ToString());
+                    }
+                }
+            }
+
 
             sqlBuilder.AppendLine();
             sqlBuilder.Append("insert into " + Tables[0].TableName + " (");
@@ -64,6 +101,8 @@ namespace DataTrack.Core.SQL.Insert
 
             // For insert statements return the number of rows affected
             SelectRowCount(ref sqlBuilder);
+
+            sqlBuilder.Append(childSqlBuilder.ToString());
 
             string sql = sqlBuilder.ToString();
 

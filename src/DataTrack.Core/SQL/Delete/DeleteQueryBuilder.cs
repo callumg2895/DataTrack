@@ -13,7 +13,7 @@ namespace DataTrack.Core.SQL.Delete
     {
         #region Constructors
 
-        public DeleteQueryBuilder(TBase item)
+        public DeleteQueryBuilder(TBase item, int parameterIndex = 1)
         {
             // Define the operation type used for transactions
             OperationType = CRUDOperationTypes.Delete;
@@ -30,6 +30,7 @@ namespace DataTrack.Core.SQL.Delete
                 throw new Exception(message);
             }
 
+            CurrentParameterIndex = parameterIndex;
             AddPrimaryKeyDeleteRestriction(item);
         }
 

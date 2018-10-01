@@ -28,7 +28,7 @@ namespace DataTrack.Core.Sql.Read
         {
         }
 
-        public ReadQueryBuilder(int? id)
+        public ReadQueryBuilder(int? id, int parameterIndex = 1)
         {
             // Define the operation type used for transactions
             OperationType = CRUDOperationTypes.Read;
@@ -46,6 +46,7 @@ namespace DataTrack.Core.Sql.Read
             }
 
             this.ID = id;
+            this.CurrentParameterIndex = parameterIndex;
 
             if (ID.HasValue)
                 AddRestriction<int>("ID", RestrictionTypes.EqualTo, ID.Value);

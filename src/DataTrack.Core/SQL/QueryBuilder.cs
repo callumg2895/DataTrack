@@ -22,6 +22,9 @@ namespace DataTrack.Core.SQL
         private protected Dictionary<ColumnMappingAttribute, string> Restrictions = new Dictionary<ColumnMappingAttribute, string>();
         private protected Dictionary<ColumnMappingAttribute, (string Handle, object Value)> Parameters = new Dictionary<ColumnMappingAttribute, (string Handle, object Value)>();
 
+        // An integer which ensures that all parameter names are unique between queries and subqueries
+        private protected int CurrentParameterIndex;
+
         public List<TableMappingAttribute> Tables { get; private set; } = new List<TableMappingAttribute>();
         public List<ColumnMappingAttribute> Columns { get; private set; } = new List<ColumnMappingAttribute>();
         public Dictionary<Type, TableMappingAttribute> TypeTableMapping { get; private set; } = new Dictionary<Type, TableMappingAttribute>();
@@ -171,7 +174,7 @@ namespace DataTrack.Core.SQL
             // Then update the dictionary of parameters with this value.
             foreach (ColumnMappingAttribute columnAttribute in Columns)
             {
-                string handle = $"@{columnAttribute.TableName}_{columnAttribute.ColumnName}";
+                string handle = $"@{columnAttribute.TableName}_{columnAttribute.ColumnName}_{CurrentParameterIndex}";
                 string propertyName;
 
                 if (columnAttribute.TryGetPropertyName(BaseType, out propertyName))
@@ -231,7 +234,7 @@ namespace DataTrack.Core.SQL
 
             // Generate a handle for SQL parameter. This is in the form @[TableName]_[ColumnName]
             //      eg: @books_author
-            string handle = $"@{columnAttribute.TableName}_{columnAttribute.ColumnName}";
+            string handle = $"@{columnAttribute.TableName}_{columnAttribute.ColumnName}_{CurrentParameterIndex}";
 
             // Generate the SQL for the restriction clause
             switch (rType)
