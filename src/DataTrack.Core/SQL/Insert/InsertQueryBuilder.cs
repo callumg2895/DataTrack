@@ -15,7 +15,7 @@ namespace DataTrack.Core.SQL.Insert
 
         #region Members
 
-        private TBase Item;
+        public TBase Item { get; private set; }
 
         #endregion
 

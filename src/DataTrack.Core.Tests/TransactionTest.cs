@@ -26,31 +26,30 @@ namespace DataTrack.Core.Tests
         public void TestTransaction_ShouldReturnCorrectObjectForReadWithRestriction()
         {
             // Arrange
-            Author author = new Author() { ID = 1, FirstName = "John", LastName = "Smith" };
-            Book book = new Book() { ID = 1, AuthorId = 1, Title = "Amazing Book Title" };
-
-            // Act
-            stopwatch.Start();
-
-            Transaction<Book> t1 = new Transaction<Book>(new List<QueryBuilder<Book>>()
+            Book book = new Book() { ID = 1, AuthorId = 1, Title = "The Great Gatsby" };
+            Author author = new Author()
             {
-                new InsertQueryBuilder<Book>(book),
-            });
-
-            t1.Execute();
-            stopwatch.Stop();
-
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Transaction<Book> executed in {stopwatch.ElapsedMilliseconds}ms");
+                ID = 1,
+                FirstName = "John",
+                LastName = "Smith",
+                Books = new List<Book>() { book }
+            };
 
             stopwatch.Start();
-            Transaction<Author> t2 = new Transaction<Author>(new List<QueryBuilder<Author>>()
+            Transaction<Author> t1 = new Transaction<Author>(new List<QueryBuilder<Author>>()
             {
                 new InsertQueryBuilder<Author>(author),
                 new ReadQueryBuilder<Author>(author.ID),
-                new DeleteQueryBuilder<Author>(author)
+                new DeleteQueryBuilder<Author>(author),
             });
 
-            List<object> results = t2.Execute();
+            Transaction<Book> t2 = new Transaction<Book>(new List<QueryBuilder<Book>>()
+            {
+                new DeleteQueryBuilder<Book>(book)
+            });
+
+            List<object> results = t1.Execute();
+            t2.Execute();
             stopwatch.Stop();
 
             Logger.Info(MethodBase.GetCurrentMethod(), $"Transaction<Author> executed in {stopwatch.ElapsedMilliseconds}ms");
@@ -59,7 +58,7 @@ namespace DataTrack.Core.Tests
             Author result = ((List<Author>)results[1])[0];
 
             // Assert
-            Assert.AreEqual(affectedRows, 1);
+            Assert.AreEqual(affectedRows, 2);
             Assert.AreEqual(result.ID, author.ID);
             Assert.AreEqual(result.FirstName, author.FirstName);
             Assert.AreEqual(result.LastName, author.LastName);
@@ -71,8 +70,8 @@ namespace DataTrack.Core.Tests
         public void TestTransaction_ShouldReturnCorrectObjectBeforeAndAfterUpdate()
         {
             // Arrange
-            Author authorBefore = new Author() { ID = 1, FirstName = "John", LastName = "Smith" };
-            Author authorAfter = new Author() { ID = 1, FirstName = "James", LastName = "Smith" };
+            Author authorBefore = new Author() { ID = 1, FirstName = "John", LastName = "Smith", Books = new List<Book>()};
+            Author authorAfter = new Author() { ID = 1, FirstName = "James", LastName = "Smith", Books = new List<Book>() };
 
             // Act
             stopwatch.Start();

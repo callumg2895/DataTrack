@@ -74,12 +74,47 @@ namespace DataTrack.Core.SQL
 
 
                             case CRUDOperationTypes.Create :
+
+                                int affectedRows = 0;
+
+                                // Create operations always check the number of rows affected after the query has executed
+                                for (int tableCount = 0; tableCount < queryBuilder.Tables.Count; tableCount++)
+                                {
+                                    if (tableCount == 0)
+                                    {
+                                        if (reader.Read())
+                                            affectedRows += (int)(object)reader["affected_rows"];
+
+                                        reader.NextResult();
+                                    }
+                                    else
+                                    {
+                                        dynamic childCollection = queryBuilder.Tables[0].GetChildPropertyValues(
+                                            queryBuilder.GetPropertyValue("Item"),
+                                            queryBuilder.Tables[tableCount].TableName);
+
+                                        foreach (var item in childCollection)
+                                        {
+                                            if (reader.Read())
+                                                affectedRows += (int)(object)reader["affected_rows"];
+
+                                            reader.NextResult();
+                                        }
+                                    }
+                                }
+
+                                results.Add(affectedRows);
+
+                                break;
+
                             case CRUDOperationTypes.Update :
 
-                                // Create and Update operations always check the number of rows affected after the query has executed
-                                if (reader.Read());
-                                    results.Add((object)reader["affected_rows"]);
+                                // Update operations always check the number of rows affected after the query has executed
+                                if (reader.Read())
+                                    results.Add((int)(object)reader["affected_rows"]);
+
                                 reader.NextResult();
+
                                 break;
 
                             case CRUDOperationTypes.Delete :
