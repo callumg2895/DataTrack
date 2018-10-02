@@ -22,7 +22,7 @@ namespace DataTrack.Core.Util
         private static int currentLength = 0;
 
         private static Thread loggingThread;
-        private static bool running;
+        private volatile static bool running;
         private static List<(MethodBase method, string message, OutputTypes type)> logBuffer;
         private static OutputTypes outputType;
 
@@ -140,7 +140,6 @@ namespace DataTrack.Core.Util
                     if (currentLength == maxLogLength)
                         Create();
                 }
-
 
                 threadLogBuffer.Clear();
             }
