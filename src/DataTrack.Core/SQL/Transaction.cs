@@ -1,6 +1,7 @@
 ﻿using DataTrack.Core.Attributes;
 using DataTrack.Core.Enums;
 using DataTrack.Core.Sql.Read;
+using DataTrack.Core.SQL.Insert;
 using DataTrack.Core.Util;
 using DataTrack.Core.Util.Extensions;
 using System;
@@ -10,15 +11,21 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 
 namespace DataTrack.Core.SQL
 {
     public class Transaction<TBase> where TBase : new()
     {
-        private StringBuilder transactionSQLBuilder;
-        private string transactionSQL;
+        #region Members
+
         private List<QueryBuilder<TBase>> queryBuilders = new List<QueryBuilder<TBase>>();
         private List<(string Handle, object Value)> parameters = new List<(string Handle, object Value)>();
+        private Dictionary<QueryBuilder<TBase>, string> querySQLMapping = new Dictionary<QueryBuilder<TBase>, string>();
+
+        #endregion
+
+        #region Constructors
 
         public Transaction(QueryBuilder<TBase> queryBuilder) => BuildTransactionData(queryBuilder);
 
@@ -27,26 +34,9 @@ namespace DataTrack.Core.SQL
             foreach (QueryBuilder<TBase> queryBuilder in queryBuilders) BuildTransactionData(queryBuilder);
         }
 
-        private void BuildTransactionData(QueryBuilder<TBase> queryBuilder)
-        {
-            queryBuilders.Add(queryBuilder);
+        #endregion
 
-        }
-
-        public string BuildTransactionSQL()
-        {
-            transactionSQLBuilder = new StringBuilder();
-
-            foreach (QueryBuilder<TBase> queryBuilder in queryBuilders)
-            {
-                transactionSQLBuilder.AppendLine(queryBuilder.ToString());
-                parameters.AddRange(queryBuilder.GetParameters().Where(p => !parameters.Select(pa => pa.Handle).Contains(p.Handle)));
-            }
-
-            transactionSQL = transactionSQLBuilder.ToString();
-
-            return transactionSQL;
-        }
+        #region Methods
 
         public List<object> Execute()
         {
@@ -66,48 +56,18 @@ namespace DataTrack.Core.SQL
                     {
                         switch (queryBuilder.OperationType)
                         {
-                            case CRUDOperationTypes.Read :
+                            case CRUDOperationTypes.Read:
 
                                 GetResultsForReadQueryBuilder(reader, (ReadQueryBuilder<TBase>)queryBuilder, ref results);
-                                reader.NextResult();
                                 break;
 
 
-                            case CRUDOperationTypes.Create :
+                            case CRUDOperationTypes.Create:
 
-                                int affectedRows = 0;
-
-                                // Create operations always check the number of rows affected after the query has executed
-                                for (int tableCount = 0; tableCount < queryBuilder.Tables.Count; tableCount++)
-                                {
-                                    if (tableCount == 0)
-                                    {
-                                        if (reader.Read())
-                                            affectedRows += (int)(object)reader["affected_rows"];
-
-                                        reader.NextResult();
-                                    }
-                                    else
-                                    {
-                                        dynamic childCollection = queryBuilder.Tables[0].GetChildPropertyValues(
-                                            queryBuilder.GetPropertyValue("Item"),
-                                            queryBuilder.Tables[tableCount].TableName);
-
-                                        foreach (var item in childCollection)
-                                        {
-                                            if (reader.Read())
-                                                affectedRows += (int)(object)reader["affected_rows"];
-
-                                            reader.NextResult();
-                                        }
-                                    }
-                                }
-
-                                results.Add(affectedRows);
-
+                                GetResultForInsertQueryBuilder(reader, (InsertQueryBuilder<TBase>)queryBuilder, ref results);
                                 break;
 
-                            case CRUDOperationTypes.Update :
+                            case CRUDOperationTypes.Update:
 
                                 // Update operations always check the number of rows affected after the query has executed
                                 if (reader.Read())
@@ -117,7 +77,7 @@ namespace DataTrack.Core.SQL
 
                                 break;
 
-                            case CRUDOperationTypes.Delete :
+                            case CRUDOperationTypes.Delete:
                                 break;
                         }
                     }
@@ -126,6 +86,83 @@ namespace DataTrack.Core.SQL
             }
 
             return results;
+        }
+
+        private string BuildTransactionSQL()
+        {
+            StringBuilder transactionSQLBuilder = new StringBuilder();
+
+            foreach (QueryBuilder<TBase> queryBuilder in queryBuilders)
+            {
+                Thread thread = new Thread(() => BuildQuery(queryBuilder));
+                thread.Start();
+            }
+
+            while (true)
+            {
+                lock (querySQLMapping)
+                {
+                    bool done = true;
+                    foreach (QueryBuilder<TBase> queryBuilder in queryBuilders)
+                        done &= querySQLMapping.ContainsKey(queryBuilder);
+
+                    if (done)
+                        break;
+                }
+            }
+
+            foreach (QueryBuilder<TBase> queryBuilder in queryBuilders)
+            {
+                transactionSQLBuilder.Append(querySQLMapping[queryBuilder]);
+                parameters.AddRange(queryBuilder.GetParameters().Where(p => !parameters.Select(pa => pa.Handle).Contains(p.Handle)));
+            }
+
+            return transactionSQLBuilder.ToString();
+        }
+
+        private void BuildTransactionData(QueryBuilder<TBase> queryBuilder) => queryBuilders.Add(queryBuilder);
+
+        private void BuildQuery(QueryBuilder<TBase> queryBuilder)
+        {
+            string sql = queryBuilder.ToString();
+
+            lock (querySQLMapping)
+            {
+                querySQLMapping[queryBuilder] = sql;
+            }
+        }
+
+        private void GetResultForInsertQueryBuilder(SqlDataReader reader, InsertQueryBuilder<TBase> queryBuilder, ref List<object> results)
+        {
+            int affectedRows = 0;
+
+            // Create operations always check the number of rows affected after the query has executed
+            for (int tableCount = 0; tableCount < queryBuilder.Tables.Count; tableCount++)
+            {
+                if (tableCount == 0)
+                {
+                    if (reader.Read())
+                        affectedRows += (int)(object)reader["affected_rows"];
+
+                    reader.NextResult();
+                }
+                else
+                {
+                    dynamic childCollection = queryBuilder.Tables[0].GetChildPropertyValues(
+                        queryBuilder.GetPropertyValue("Item"),
+                        queryBuilder.Tables[tableCount].TableName);
+
+                    foreach (var item in childCollection)
+                    {
+                        if (reader.Read())
+                            affectedRows += (int)(object)reader["affected_rows"];
+
+                        reader.NextResult();
+                    }
+                }
+            }
+
+            results.Add(affectedRows);
         }
 
         private void GetResultsForReadQueryBuilder(SqlDataReader reader, ReadQueryBuilder<TBase> queryBuilder, ref List<object> results)
@@ -193,6 +230,9 @@ namespace DataTrack.Core.SQL
             }
 
             results.Add(readQueryResults);
+            reader.NextResult();
         }
+
+        #endregion
     }
 }
