@@ -12,7 +12,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
 
-namespace DataTrack.Core.Sql.Read
+namespace DataTrack.Core.SQL.Read
 {
     public class ReadQueryBuilder<TBase> : QueryBuilder<TBase>
     {

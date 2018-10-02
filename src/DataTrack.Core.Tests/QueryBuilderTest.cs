@@ -1,5 +1,5 @@
 ﻿using DataTrack.Core.Enums;
-using DataTrack.Core.Sql.Read;
+using DataTrack.Core.SQL.Read;
 using DataTrack.Core.SQL;
 using DataTrack.Core.SQL.Delete;
 using DataTrack.Core.SQL.Insert;
@@ -95,7 +95,7 @@ namespace DataTrack.Core.Tests
             expectedQuery = sqlBuilder.ToString();
 
             stopwatch.Start();
-            testQuery = new InsertQueryBuilder<Author>(author).ToString();
+            testQuery = new SQL.Insert.InsertQueryBuilder<Author>(author).ToString();
             stopwatch.Stop();
 
             Logger.Info(MethodBase.GetCurrentMethod(), $"InsertQueryBuilder executed in {stopwatch.ElapsedMilliseconds}ms");
@@ -133,7 +133,7 @@ namespace DataTrack.Core.Tests
             expectedQuery = sqlBuilder.ToString();
 
             stopwatch.Start();
-            testQuery = new InsertQueryBuilder<Author>(author).ToString();
+            testQuery = new SQL.Insert.InsertQueryBuilder<Author>(author).ToString();
             stopwatch.Stop();
 
             Logger.Info(MethodBase.GetCurrentMethod(), $"InsertQueryBuilder executed in {stopwatch.ElapsedMilliseconds}ms");
@@ -160,7 +160,7 @@ namespace DataTrack.Core.Tests
             expectedQuery = sqlBuilder.ToString();
 
             stopwatch.Start();
-            testQuery = new DeleteQueryBuilder<Author>(author).ToString();
+            testQuery = new SQL.Delete.DeleteQueryBuilder<Author>(author).ToString();
             stopwatch.Stop();
 
             Logger.Info(MethodBase.GetCurrentMethod(), $"DeleteQueryBuilder executed in {stopwatch.ElapsedMilliseconds}ms");

@@ -1,6 +1,6 @@
 ﻿using DataTrack.Core.Attributes;
 using DataTrack.Core.Enums;
-using DataTrack.Core.Sql.Read;
+using DataTrack.Core.SQL.Read;
 using DataTrack.Core.SQL.Insert;
 using DataTrack.Core.Util;
 using DataTrack.Core.Util.Extensions;
