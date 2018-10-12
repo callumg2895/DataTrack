@@ -42,7 +42,7 @@ namespace DataTrack.Core.SQL.Update
 
             for (int i = 0; i < Columns.Count; i++)
             {
-                setBuilder.Append(TableAliases[Tables[0]] + "." + Columns[i].ColumnName + " = " + Parameters[Columns[i]].Handle);
+                setBuilder.Append(TableAliases[Tables[0]] + "." + Columns[i].ColumnName + " = " + Parameters[Columns[i]][0].Handle);
                 setBuilder.AppendLine(i == Columns.Count - 1 ? "" : ",");
 
                 if (Restrictions.ContainsKey(Columns[i]))

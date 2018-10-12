@@ -20,7 +20,6 @@ namespace DataTrack.Core.SQL
         private protected Dictionary<TableMappingAttribute, string> TableAliases = new Dictionary<TableMappingAttribute, string>();
         private protected Dictionary<ColumnMappingAttribute, string> ColumnAliases = new Dictionary<ColumnMappingAttribute, string>();
         private protected Dictionary<ColumnMappingAttribute, string> Restrictions = new Dictionary<ColumnMappingAttribute, string>();
-        private protected Dictionary<ColumnMappingAttribute, (string Handle, object Value)> Parameters = new Dictionary<ColumnMappingAttribute, (string Handle, object Value)>();
 
         // An integer which ensures that all parameter names are unique between queries and subqueries
         private protected int CurrentParameterIndex;
@@ -30,6 +29,7 @@ namespace DataTrack.Core.SQL
         public Dictionary<Type, TableMappingAttribute> TypeTableMapping { get; private set; } = new Dictionary<Type, TableMappingAttribute>();
         public Dictionary<TableMappingAttribute, Type> TableTypeMapping { get; private set; } = new Dictionary<TableMappingAttribute, Type>();
         public Dictionary<ColumnMappingAttribute, string> ColumnPropertyNames { get; private set; } = new Dictionary<ColumnMappingAttribute, string>();
+        public Dictionary<ColumnMappingAttribute, List<(string Handle, object Value)>> Parameters { get; private set; } = new Dictionary<ColumnMappingAttribute, List<(string Handle, object Value)>>();
         public CRUDOperationTypes OperationType { get; private protected set; }
 
         #endregion
@@ -178,7 +178,16 @@ namespace DataTrack.Core.SQL
                 string propertyName;
 
                 if (columnAttribute.TryGetPropertyName(BaseType, out propertyName))
-                    Parameters[columnAttribute] = (handle, item.GetPropertyValue(propertyName));
+                    AddParameter(columnAttribute, (handle, item.GetPropertyValue(propertyName)));
+            }
+        }
+
+        private protected void UpdateParameters(List<TBase> items)
+        {
+            foreach(TBase item in items)
+            {
+                UpdateParameters(item);
+                CurrentParameterIndex++;
             }
         }
 
@@ -208,6 +217,14 @@ namespace DataTrack.Core.SQL
         }
 
         private protected void SelectRowCount(ref StringBuilder sqlBuilder) => sqlBuilder.AppendLine("select @@rowcount as affected_rows");
+
+        private protected void AddParameter(ColumnMappingAttribute column, (string Handle, object Value) parameter)
+        {
+            if (Parameters.ContainsKey(column))
+                Parameters[column].Add(parameter);
+            else
+                Parameters[column] = new List<(string Handle, object Value)>() { parameter };
+        }
 
         abstract public override string ToString();
 
@@ -275,7 +292,7 @@ namespace DataTrack.Core.SQL
             // Store the SQL for the restriction clause against the column attribute for the 
             // property, then store the value of the parameter against its handle if no error occurs.
             Restrictions[columnAttribute] = restrictionBuilder.ToString();
-            Parameters[columnAttribute] = (handle, value);
+            AddParameter(columnAttribute, (handle, value));
 
             return this;
         }
@@ -286,7 +303,7 @@ namespace DataTrack.Core.SQL
 
             foreach (ColumnMappingAttribute column in Columns)
                 if (Parameters.ContainsKey(column))
-                    parameters.Add(Parameters[column]);
+                    parameters.AddRange(Parameters[column]);
 
             return parameters;
         }

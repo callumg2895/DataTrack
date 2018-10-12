@@ -11,18 +11,18 @@ using System.Text;
 
 namespace DataTrack.Core.SQL.Insert
 {
-    public class InsertQueryBuilder<TBase> : QueryBuilder<TBase>
+    public class InsertListQueryBuilder<TBase> : QueryBuilder<TBase>
     {
 
         #region Members
 
-        public TBase Item { get; private set; }
+        public List<TBase> Items { get; private set; }
 
         #endregion
 
         #region Constructors
 
-        public InsertQueryBuilder(TBase item, int parameterIndex = 1)
+        public InsertListQueryBuilder(List<TBase> items, int parameterIndex = 1)
         {
             // Define the operation type used for transactions
             OperationType = CRUDOperationTypes.Create;
@@ -39,10 +39,10 @@ namespace DataTrack.Core.SQL.Insert
                 throw new Exception(message);
             }
 
-            Item = item;
+            Items = items;
             CurrentParameterIndex = parameterIndex;
 
-            UpdateParameters(Item);
+            UpdateParameters(Items);
         }
 
         #endregion
@@ -60,7 +60,6 @@ namespace DataTrack.Core.SQL.Insert
             {
                 int maxParameterCount = Columns.Select(c => Parameters[c].Count).Max();
 
-                // The case when i == 0 corresponds to the table for the TBase object
                 if (i == 0)
                 {
                     for (int j = 1; j <= Columns.Count; j++)
@@ -77,37 +76,6 @@ namespace DataTrack.Core.SQL.Insert
                                 valuesBuilder.Append(Parameters[Columns[k - 1]][j - 1].Handle + ")" + (j == maxParameterCount ? "" : ","));
                             else
                                 valuesBuilder.Append(Parameters[Columns[k - 1]][j - 1].Handle + ", ");
-                }
-                else
-                {
-                    dynamic childItems = Tables[0].GetChildPropertyValues(Item, Tables[i].TableName) ?? new List<object>();
-
-                    if (childItems.Count > 0)
-                    {
-                        CurrentParameterIndex++;
-                        dynamic queryBuilder = Activator.CreateInstance(typeof(InsertListQueryBuilder<>).MakeGenericType(TableTypeMapping[Tables[i]]), childItems, CurrentParameterIndex);
-
-                        foreach (ColumnMappingAttribute column in queryBuilder.Columns)
-                        {
-                            if (queryBuilder.Parameters.ContainsKey(column))
-                            {
-                                if (Parameters.ContainsKey(column))
-                                    Parameters[column].AddRange(queryBuilder.Parameters[column]);
-                                else
-                                {
-                                    Parameters[column] = new List<(string Handle, object Value)>();
-                                    Parameters[column].AddRange(queryBuilder.Parameters[column]);
-                                }
-                            }
-
-                            if (queryBuilder.ColumnPropertyNames.ContainsKey(column))
-                                ColumnPropertyNames.TryAdd(column, queryBuilder.ColumnPropertyNames[column]);
-
-                            Columns.Add(column);
-                        }
-
-                        childSqlBuilder.Append(queryBuilder.ToString());
-                    }
                 }
             }
 

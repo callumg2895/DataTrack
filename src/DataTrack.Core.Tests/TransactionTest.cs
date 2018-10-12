@@ -39,9 +39,9 @@ namespace DataTrack.Core.Tests
             stopwatch.Start();
             Transaction<Author> t1 = new Transaction<Author>(new List<QueryBuilder<Author>>()
             {
-                new SQL.Insert.InsertQueryBuilder<Author>(author),
+                new InsertQueryBuilder<Author>(author),
                 new ReadQueryBuilder<Author>(author.ID),
-                new SQL.Delete.DeleteQueryBuilder<Author>(author),
+                new DeleteQueryBuilder<Author>(author),
             });
 
             Transaction<Book> t2 = new Transaction<Book>(new List<QueryBuilder<Book>>()
@@ -92,7 +92,7 @@ namespace DataTrack.Core.Tests
             {
                 new UpdateQueryBuilder<Author>(authorAfter),
                 new ReadQueryBuilder<Author>(authorAfter.ID),
-                new SQL.Delete.DeleteQueryBuilder<Author>(authorAfter),
+                new DeleteQueryBuilder<Author>(authorAfter),
             });
 
             List<object> results2 = t2.Execute();
