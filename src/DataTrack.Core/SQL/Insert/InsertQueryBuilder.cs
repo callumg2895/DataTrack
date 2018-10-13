@@ -63,20 +63,36 @@ namespace DataTrack.Core.SQL.Insert
                 // The case when i == 0 corresponds to the table for the TBase object
                 if (i == 0)
                 {
-                    for (int j = 1; j <= Columns.Count; j++)
-                        if (j == Columns.Count)
-                            insertBuilder.Append(Columns[j - 1].ColumnName + ")");
-                        else
-                            insertBuilder.Append(Columns[j - 1].ColumnName + ", ");
-
                     for (int j = 1; j <= maxParameterCount; j++)
+                    {
                         for (int k = 1; k <= Columns.Count; k++)
+                        {
+                            if (j == 1)
+                            {
+                                if (k == Columns.Count)
+                                {
+                                    insertBuilder.Append(Columns[k - 1].ColumnName + ")");
+                                }
+                                else
+                                {
+                                    insertBuilder.Append(Columns[k - 1].ColumnName + ", ");
+                                }
+                            }
+
                             if (k == 1)
+                            {
                                 valuesBuilder.Append("(" + Parameters[Columns[k - 1]][j - 1].Handle + ", ");
+                            }
                             else if (k == Columns.Count)
+                            {
                                 valuesBuilder.Append(Parameters[Columns[k - 1]][j - 1].Handle + ")" + (j == maxParameterCount ? "" : ","));
+                            }
                             else
+                            {
                                 valuesBuilder.Append(Parameters[Columns[k - 1]][j - 1].Handle + ", ");
+                            }
+                        }
+                    }
                 }
                 else
                 {
