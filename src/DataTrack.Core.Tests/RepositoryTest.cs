@@ -11,7 +11,7 @@ using System.Reflection;
 namespace DataTrack.Core.Tests
 {
     [TestClass]
-    public class RepositoryTest
+    public class RepositoryTest : BaseTest
     {
 
         private Stopwatch stopwatch = new Stopwatch();
@@ -74,14 +74,9 @@ namespace DataTrack.Core.Tests
 
             // Assert
             Assert.AreEqual(createResult, 3);
-            Assert.AreEqual(authorReadResult.ID, author.ID);
-            Assert.AreEqual(authorReadResult.FirstName, author.FirstName);
-            Assert.AreEqual(authorReadResult.LastName, author.LastName);
-            Assert.AreEqual(authorReadResult.Books.Count, 2);
-            Assert.AreEqual(bookReadResult.ID, book1.ID);
-            Assert.AreEqual(bookReadResult.AuthorId, book1.AuthorId);
-            Assert.AreEqual(bookReadResult.Title, book1.Title);
+            Assert.IsTrue(AuthorsAreEqual(authorReadResult, author));
         }
+
         [TestMethod]
         public void TestRepository_ShouldReadCorrectNumberOfChildItemsAfterInsertingObjectWithLongListOfChildren()
         {

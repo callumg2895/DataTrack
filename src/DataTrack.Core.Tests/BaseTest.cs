@@ -1,4 +1,5 @@
 ﻿using DataTrack.Core.Enums;
+using DataTrack.Core.Tests.TestObjects;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
@@ -71,6 +72,35 @@ namespace DataTrack.Core.Tests
             }
 
             DataTrackConfiguration.Dispose();
+        }
+
+        protected bool AuthorsAreEqual(Author author1, Author author2)
+        {
+            bool equal = true;
+
+            equal &= author1.FirstName == author2.FirstName;
+            equal &= author1.LastName == author2.LastName;
+            equal &= author1.Books.Count == author2.Books.Count;
+
+            if (equal)
+            {
+                for (int i = 0; i < author1.Books.Count; i++)
+                {
+                    equal &= BooksAreEqual(author1.Books[i], author2.Books[i]);
+                }
+            }
+
+            return equal;
+        }
+
+        protected bool BooksAreEqual(Book book1, Book book2)
+        {
+            bool equal = true;
+
+            equal &= book1.AuthorId == book2.AuthorId;
+            equal &= book1.Title == book2.Title;
+
+            return equal;
         }
 
     }

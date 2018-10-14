@@ -6,7 +6,7 @@ using System.Text;
 namespace DataTrack.Core.Tests.TestObjects
 {
     [TableMapping("authors")]
-    class Author
+    public class Author
     {
         [ColumnMapping("authors", "id", Enums.KeyTypes.PrimaryKey)]
         public virtual int ID { get; set; }

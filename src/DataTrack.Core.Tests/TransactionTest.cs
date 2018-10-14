@@ -60,11 +60,7 @@ namespace DataTrack.Core.Tests
 
             // Assert
             Assert.AreEqual(affectedRows, 2);
-            Assert.AreEqual(result.ID, author.ID);
-            Assert.AreEqual(result.FirstName, author.FirstName);
-            Assert.AreEqual(result.LastName, author.LastName);
-            Assert.AreEqual(result.Books.Count, 1);
-            Assert.AreEqual(result.Books[0].AuthorId, result.ID);
+            Assert.IsTrue(AuthorsAreEqual(result, author));
         }
 
         [TestMethod]
@@ -108,12 +104,8 @@ namespace DataTrack.Core.Tests
             // Assert
             Assert.AreEqual(affectedInsertRows, 1);
             Assert.AreEqual(affectedUpdateRows, 1);
-            Assert.AreEqual(beforeUpdate.ID, authorBefore.ID);
-            Assert.AreEqual(beforeUpdate.FirstName, authorBefore.FirstName);
-            Assert.AreEqual(beforeUpdate.LastName, authorBefore.LastName);
-            Assert.AreEqual(afterUpdate.ID, authorAfter.ID);
-            Assert.AreEqual(afterUpdate.FirstName, authorAfter.FirstName);
-            Assert.AreEqual(afterUpdate.LastName, authorAfter.LastName);
+            Assert.IsTrue(AuthorsAreEqual(beforeUpdate, authorBefore));
+            Assert.IsTrue(AuthorsAreEqual(afterUpdate, authorAfter));
         }
     }
 }
