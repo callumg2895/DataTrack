@@ -2,6 +2,7 @@
 using DataTrack.Core.Enums;
 using DataTrack.Core.Interface;
 using DataTrack.Core.Util;
+using DataTrack.Core.Util.DataStructures;
 using DataTrack.Core.Util.Extensions;
 using System;
 using System.Collections.Generic;
@@ -26,8 +27,7 @@ namespace DataTrack.Core.SQL
 
         public List<TableMappingAttribute> Tables { get; private set; } = new List<TableMappingAttribute>();
         public List<ColumnMappingAttribute> Columns { get; private set; } = new List<ColumnMappingAttribute>();
-        public Dictionary<Type, TableMappingAttribute> TypeTableMapping { get; private set; } = new Dictionary<Type, TableMappingAttribute>();
-        public Dictionary<TableMappingAttribute, Type> TableTypeMapping { get; private set; } = new Dictionary<TableMappingAttribute, Type>();
+        public Mapping<Type, TableMappingAttribute> TypeTableMapping { get; private set; } = new Mapping<Type, TableMappingAttribute>();
         public Dictionary<ColumnMappingAttribute, string> ColumnPropertyNames { get; private set; } = new Dictionary<ColumnMappingAttribute, string>();
         public Dictionary<ColumnMappingAttribute, List<(string Handle, object Value)>> Parameters { get; private set; } = new Dictionary<ColumnMappingAttribute, List<(string Handle, object Value)>>();
         public CRUDOperationTypes OperationType { get; private protected set; }
@@ -45,7 +45,6 @@ namespace DataTrack.Core.SQL
             if (TryGetTableMappingAttribute(type, out mappingAttribute))
             {
                 TypeTableMapping[type] = mappingAttribute;
-                TableTypeMapping[mappingAttribute] = type;
                 Tables.Add(mappingAttribute);
                 TableAliases[mappingAttribute] = type.Name;
                 Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded table mapping for class '{type.Name}'");
@@ -65,7 +64,6 @@ namespace DataTrack.Core.SQL
                     if (TryGetTableMappingAttribute(genericArgumentType, out mappingAttribute))
                     {
                         TypeTableMapping[genericArgumentType] = mappingAttribute;
-                        TableTypeMapping[mappingAttribute] = genericArgumentType;
                         Tables.Add(mappingAttribute);
                     }
                 }

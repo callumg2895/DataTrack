@@ -202,7 +202,7 @@ namespace DataTrack.Core.SQL
             for (int tableCount = 1; tableCount < queryBuilder.Tables.Count; tableCount++)
             {
                 reader.NextResult();
-                Type childType = queryBuilder.TableTypeMapping[queryBuilder.Tables[tableCount]];
+                Type childType = queryBuilder.TypeTableMapping[queryBuilder.Tables[tableCount]];
                 dynamic childCollection = Activator.CreateInstance(typeof(List<>).MakeGenericType(childType));
                 int originalColumnCount = columnCount;
 

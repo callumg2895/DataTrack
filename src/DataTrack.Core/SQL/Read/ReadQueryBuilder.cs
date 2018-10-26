@@ -74,7 +74,7 @@ namespace DataTrack.Core.SQL.Read
                     sqlBuilder.AppendLine($"from {Tables[0].TableName} as {TableAliases[Tables[0]]} ");
                 else
                 {
-                    dynamic queryBuilder = Activator.CreateInstance(typeof(ReadQueryBuilder<>).MakeGenericType(TableTypeMapping[Tables[i]]));
+                    dynamic queryBuilder = Activator.CreateInstance(typeof(ReadQueryBuilder<>).MakeGenericType(TypeTableMapping[Tables[i]]));
 
                     if (ID.HasValue)
                     {
