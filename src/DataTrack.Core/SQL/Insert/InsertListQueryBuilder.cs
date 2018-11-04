@@ -51,63 +51,24 @@ namespace DataTrack.Core.SQL.Insert
 
         public override string ToString()
         {
-            StringBuilder sqlBuilder = new StringBuilder();
-            StringBuilder childSqlBuilder = new StringBuilder();
-            StringBuilder insertBuilder = new StringBuilder();
-            StringBuilder valuesBuilder = new StringBuilder();
+            StringBuilder builder = new StringBuilder();
 
+            SQLBuilder sqlBuilder = new SQLBuilder(Parameters);
+
+            builder.AppendLine();
             for (int i = 0; i < Tables.Count; i++)
             {
-                int maxParameterCount = Columns.Select(c => Parameters[c].Count).Max();
-
                 if (i == 0)
                 {
-                    for (int j = 1; j <= maxParameterCount; j++)
-                    {
-                        for (int k = 1; k <= Columns.Count; k++)
-                        {
-                            if (j == 1)
-                            {
-                                if (k == Columns.Count)
-                                {
-                                    insertBuilder.Append(Columns[k - 1].ColumnName + ")");
-                                }
-                                else
-                                {
-                                    insertBuilder.Append(Columns[k - 1].ColumnName + ", ");
-                                }
-                            }
-
-                            if (k == 1)
-                            {
-                                valuesBuilder.Append("(" + Parameters[Columns[k - 1]][j - 1].Handle + ", ");
-                            }
-                            else if (k == Columns.Count)
-                            {
-                                valuesBuilder.Append(Parameters[Columns[k - 1]][j - 1].Handle + ")" + (j == maxParameterCount ? "" : ","));
-                            }
-                            else
-                            {
-                                valuesBuilder.Append(Parameters[Columns[k - 1]][j - 1].Handle + ", ");
-                            }
-                        }
-                    }
+                    builder.AppendLine(sqlBuilder.BuildInsertStatement(Columns, Tables[i]).ToString());
+                    builder.AppendLine(sqlBuilder.BuildValuesStatement(Columns, Tables[i]).ToString());
                 }
             }
 
-
-            sqlBuilder.AppendLine();
-            sqlBuilder.Append("insert into " + Tables[0].TableName + " (");
-            sqlBuilder.AppendLine(insertBuilder.ToString());
-            sqlBuilder.Append("values ");
-            sqlBuilder.AppendLine(valuesBuilder.ToString());
-
             // For insert statements return the number of rows affected
-            SelectRowCount(ref sqlBuilder);
+            SelectRowCount(ref builder);
 
-            sqlBuilder.Append(childSqlBuilder.ToString());
-
-            string sql = sqlBuilder.ToString();
+            string sql = builder.ToString();
 
             Logger.Info(MethodBase.GetCurrentMethod(), "Generated SQL: " + sql);
 
