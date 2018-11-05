@@ -51,24 +51,23 @@ namespace DataTrack.Core.SQL.Insert
 
         public override string ToString()
         {
-            StringBuilder builder = new StringBuilder();
-
             SQLBuilder sqlBuilder = new SQLBuilder(Parameters);
 
-            builder.AppendLine();
+            sqlBuilder.AppendLine();
+
             for (int i = 0; i < Tables.Count; i++)
             {
                 if (i == 0)
                 {
-                    builder.AppendLine(sqlBuilder.BuildInsertStatement(Columns, Tables[i]).ToString());
-                    builder.AppendLine(sqlBuilder.BuildValuesStatement(Columns, Tables[i]).ToString());
+                    sqlBuilder.BuildInsertStatement(Columns, Tables[i]);
+                    sqlBuilder.BuildValuesStatement(Columns, Tables[i]);
                 }
             }
 
             // For insert statements return the number of rows affected
-            SelectRowCount(ref builder);
+            SelectRowCount(ref sqlBuilder);
 
-            string sql = builder.ToString();
+            string sql = sqlBuilder.ToString();
 
             Logger.Info(MethodBase.GetCurrentMethod(), "Generated SQL: " + sql);
 

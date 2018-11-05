@@ -51,10 +51,10 @@ namespace DataTrack.Core.SQL.Insert
 
         public override string ToString()
         {
-            StringBuilder sqlBuilder = new StringBuilder();
+            SQLBuilder sqlBuilder = new SQLBuilder(Parameters);
             StringBuilder childSqlBuilder = new StringBuilder();
-            StringBuilder insertBuilder = new StringBuilder();
-            StringBuilder valuesBuilder = new StringBuilder();
+
+            sqlBuilder.AppendLine();
 
             for (int i = 0; i < Tables.Count; i++)
             {
@@ -63,36 +63,11 @@ namespace DataTrack.Core.SQL.Insert
                 // The case when i == 0 corresponds to the table for the TBase object
                 if (i == 0)
                 {
-                    for (int j = 1; j <= maxParameterCount; j++)
-                    {
-                        for (int k = 1; k <= Columns.Count; k++)
-                        {
-                            if (j == 1)
-                            {
-                                if (k == Columns.Count)
-                                {
-                                    insertBuilder.Append(Columns[k - 1].ColumnName + ")");
-                                }
-                                else
-                                {
-                                    insertBuilder.Append(Columns[k - 1].ColumnName + ", ");
-                                }
-                            }
+                    sqlBuilder.BuildInsertStatement(Columns, Tables[i]);
+                    sqlBuilder.BuildValuesStatement(Columns, Tables[i]);
 
-                            if (k == 1)
-                            {
-                                valuesBuilder.Append("(" + Parameters[Columns[k - 1]][j - 1].Handle + ", ");
-                            }
-                            else if (k == Columns.Count)
-                            {
-                                valuesBuilder.Append(Parameters[Columns[k - 1]][j - 1].Handle + ")" + (j == maxParameterCount ? "" : ","));
-                            }
-                            else
-                            {
-                                valuesBuilder.Append(Parameters[Columns[k - 1]][j - 1].Handle + ", ");
-                            }
-                        }
-                    }
+                    // For insert statements return the number of rows affected
+                    SelectRowCount(ref sqlBuilder);
                 }
                 else
                 {
@@ -122,22 +97,10 @@ namespace DataTrack.Core.SQL.Insert
                             Columns.Add(column);
                         }
 
-                        childSqlBuilder.Append(queryBuilder.ToString());
+                        sqlBuilder.Append(queryBuilder.ToString());
                     }
                 }
             }
-
-
-            sqlBuilder.AppendLine();
-            sqlBuilder.Append("insert into " + Tables[0].TableName + " (");
-            sqlBuilder.AppendLine(insertBuilder.ToString());
-            sqlBuilder.Append("values ");
-            sqlBuilder.AppendLine(valuesBuilder.ToString());
-
-            // For insert statements return the number of rows affected
-            SelectRowCount(ref sqlBuilder);
-
-            sqlBuilder.Append(childSqlBuilder.ToString());
 
             string sql = sqlBuilder.ToString();
 

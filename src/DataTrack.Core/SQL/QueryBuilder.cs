@@ -214,6 +214,8 @@ namespace DataTrack.Core.SQL
             }
         }
 
+        private protected void SelectRowCount(ref SQLBuilder sqlBuilder) => sqlBuilder.AppendLine("select @@rowcount as affected_rows");
+
         private protected void SelectRowCount(ref StringBuilder sqlBuilder) => sqlBuilder.AppendLine("select @@rowcount as affected_rows");
 
         private protected void AddParameter(ColumnMappingAttribute column, (string Handle, object Value) parameter)
