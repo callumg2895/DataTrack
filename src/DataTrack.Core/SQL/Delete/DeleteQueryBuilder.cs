@@ -55,7 +55,7 @@ namespace DataTrack.Core.SQL.Delete
         {
             if (Parameters.Count >= 1)
             {
-                StringBuilder sqlBuilder = new StringBuilder();
+                SQLBuilder sqlBuilder = new SQLBuilder(Parameters);
                 StringBuilder restrictionsBuilder = new StringBuilder();
 
                 for (int i = 0; i < Columns.Count; i++)

@@ -58,8 +58,8 @@ namespace DataTrack.Core.SQL.Read
 
         public override string ToString()
         {
-            StringBuilder sqlBuilder = new StringBuilder();
-            StringBuilder childSqlBuilder = new StringBuilder();
+            SQLBuilder sqlBuilder = new SQLBuilder(Parameters);
+
             sqlBuilder.AppendLine();
             sqlBuilder.Append("select ");
 
@@ -71,7 +71,17 @@ namespace DataTrack.Core.SQL.Read
             for (int i = 0; i < Tables.Count; i++)
             {
                 if (i == 0)
+                {
                     sqlBuilder.AppendLine($"from {Tables[0].TableName} as {TableAliases[Tables[0]]} ");
+
+                    bool first = true;
+                    for (int j = 0; j < Columns.Count; j++)
+                        if (Restrictions.ContainsKey(Columns[i]))
+                        {
+                            sqlBuilder.AppendLine($"{(first ? "where" : "and")} {Restrictions[Columns[j]]}");
+                            first = false;
+                        }
+                }
                 else
                 {
                     dynamic queryBuilder = Activator.CreateInstance(typeof(ReadQueryBuilder<>).MakeGenericType(TypeTableMapping[Tables[i]]));
@@ -92,22 +102,11 @@ namespace DataTrack.Core.SQL.Read
                         }
                     }
 
-                    childSqlBuilder.Append(queryBuilder.ToString());
+                    sqlBuilder.Append(queryBuilder.ToString());
                 }
             }
 
-            bool first = true;
-            for (int i = 0; i < Columns.Count; i++)
-                if (Restrictions.ContainsKey(Columns[i]))
-                {
-                    sqlBuilder.AppendLine($"{(first ? "where" : "and")} {Restrictions[Columns[i]]}");
-                    first = false;
-                }
-
-
-            sqlBuilder.Append(childSqlBuilder.ToString());
             string sql = sqlBuilder.ToString();
-
 
             Logger.Info(MethodBase.GetCurrentMethod(), "Generated SQL: " + sql);
 

@@ -36,7 +36,7 @@ namespace DataTrack.Core.SQL.Update
 
         public override string ToString()
         {
-            StringBuilder sqlBuilder = new StringBuilder();
+            SQLBuilder sqlBuilder = new SQLBuilder(Parameters);
             StringBuilder setBuilder = new StringBuilder();
             StringBuilder restrictionsBuilder = new StringBuilder();
 

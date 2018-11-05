@@ -83,7 +83,6 @@ namespace DataTrack.Core.SQL
 
         public override string ToString() => sql.ToString();
         
-
         #endregion
     }
 }
