@@ -11,6 +11,10 @@ namespace DataTrack.Core.SQL
         #region Members
 
         private Dictionary<ColumnMappingAttribute, List<(string Handle, object Value)>> parameters;
+        private Dictionary<TableMappingAttribute, string> tableAliases;
+        private Dictionary<ColumnMappingAttribute, string> columnAliases;
+        private Dictionary<ColumnMappingAttribute, string> restrictions;
+
         private StringBuilder sql;
 
         #endregion
@@ -18,8 +22,18 @@ namespace DataTrack.Core.SQL
         #region Constructors
 
         public SQLBuilder(Dictionary<ColumnMappingAttribute, List<(string Handle, object Value)>> parameters)
+            : this(parameters, null, null, null) { }
+
+        public SQLBuilder(
+            Dictionary<ColumnMappingAttribute, List<(string Handle, object Value)>> parameters,
+            Dictionary<TableMappingAttribute, string> tableAliases,
+            Dictionary<ColumnMappingAttribute, string> columnAliases,
+            Dictionary<ColumnMappingAttribute, string> restrictions )
         {
             this.parameters = parameters;
+            this.tableAliases = tableAliases ?? new Dictionary<TableMappingAttribute, string>();
+            this.columnAliases = columnAliases ?? new Dictionary<ColumnMappingAttribute, string>();
+            this.restrictions = restrictions ?? new Dictionary<ColumnMappingAttribute, string>();
             this.sql = new StringBuilder();
         }
 
@@ -42,6 +56,48 @@ namespace DataTrack.Core.SQL
             }
 
             sql.AppendLine(")");
+        }
+
+        public void BuildUpdateStatement(List<ColumnMappingAttribute> columns, TableMappingAttribute table)
+        {
+            StringBuilder setBuilder = new StringBuilder();
+            StringBuilder restrictionBuilder = new StringBuilder();
+
+            int processedRestrictions = 0;
+            int totalColumns = columns.Count;
+
+            sql.AppendLine($"update {tableAliases[table]}");
+            sql.Append("set ");
+
+            for (int i = 0; i < totalColumns; i++)
+            {
+                setBuilder.Append(tableAliases[table]);
+                setBuilder.Append(".");
+                setBuilder.Append(columns[i].ColumnName);
+                setBuilder.Append(" = ");
+                setBuilder.Append(parameters[columns[i]][0].Handle);
+                setBuilder.AppendLine(i == totalColumns - 1 
+                    ? "" 
+                    : ",");
+
+                if (restrictions.ContainsKey(columns[i]))
+                {
+                    if (processedRestrictions++ == 0)
+                    {
+                        restrictionBuilder.AppendLine($"from {table.TableName} {tableAliases[table]}");
+                        restrictionBuilder.Append("where ");
+                    }
+                    else
+                    {
+                        restrictionBuilder.Append("and ");
+                    }
+
+                    restrictionBuilder.AppendLine(restrictions[columns[i]]);
+                }
+            }
+
+            sql.Append(setBuilder.ToString());
+            sql.Append(restrictionBuilder.ToString());
         }
 
         public void BuildValuesStatement(List<ColumnMappingAttribute> columns, TableMappingAttribute table)

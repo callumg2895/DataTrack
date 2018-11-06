@@ -36,28 +36,10 @@ namespace DataTrack.Core.SQL.Update
 
         public override string ToString()
         {
-            SQLBuilder sqlBuilder = new SQLBuilder(Parameters);
-            StringBuilder setBuilder = new StringBuilder();
-            StringBuilder restrictionsBuilder = new StringBuilder();
-
-            for (int i = 0; i < Columns.Count; i++)
-            {
-                setBuilder.Append(TableAliases[Tables[0]] + "." + Columns[i].ColumnName + " = " + Parameters[Columns[i]][0].Handle);
-                setBuilder.AppendLine(i == Columns.Count - 1 ? "" : ",");
-
-                if (Restrictions.ContainsKey(Columns[i]))
-                {
-                    restrictionsBuilder.Append(restrictionsBuilder.Length == 0 ? "where " : "and ");
-                    restrictionsBuilder.AppendLine(Restrictions[Columns[i]]);
-                }
-            }
+            SQLBuilder sqlBuilder = new SQLBuilder(Parameters, TableAliases, ColumnAliases, Restrictions);
 
             sqlBuilder.AppendLine();
-            sqlBuilder.AppendLine($"update {TableAliases[Tables[0]]}");
-            sqlBuilder.Append("set ");
-            sqlBuilder.Append(setBuilder.ToString());
-            sqlBuilder.AppendLine($"from {Tables[0].TableName} {TableAliases[Tables[0]]}");
-            sqlBuilder.Append(restrictionsBuilder.ToString());
+            sqlBuilder.BuildUpdateStatement(Columns, Tables[0]);
 
             // For update statements return the number of rows affected
             SelectRowCount(ref sqlBuilder);
