@@ -1,4 +1,5 @@
 ﻿using DataTrack.Core.Attributes;
+using DataTrack.Core.Enums;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,7 +9,7 @@ namespace DataTrack.Core.Tests.TestObjects
     [TableMapping("authors")]
     public class Author
     {
-        [ColumnMapping("authors", "id", Enums.KeyTypes.PrimaryKey)]
+        [ColumnMapping("authors", "id", (byte)KeyTypes.PrimaryKey)]
         public virtual int ID { get; set; }
 
         [ColumnMapping("authors", "first_name")]

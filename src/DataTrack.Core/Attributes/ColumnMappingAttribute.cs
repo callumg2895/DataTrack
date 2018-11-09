@@ -15,20 +15,20 @@ namespace DataTrack.Core.Attributes
     {
         public string TableName { get; private set; }
         public string ColumnName { get; private set; }
-        public KeyTypes KeyType { get; private set; }
+        public byte KeyType { get; private set; }
         public string ForeignKeyMapping { get; private set; }
 
         public ColumnMappingAttribute(string tableName, string columnName)
-            : this(tableName, columnName, KeyTypes.None) { }
+            : this(tableName, columnName, 0) { }
 
-        public ColumnMappingAttribute(string tableName, string columnName, KeyTypes keyType, string foreignKeyMapping = null) 
+        public ColumnMappingAttribute(string tableName, string columnName, byte keyType, string foreignKeyMapping = null) 
         {
             TableName = tableName;
             ColumnName = columnName;
             KeyType = keyType;
             ForeignKeyMapping = foreignKeyMapping;
 
-            if (KeyType == KeyTypes.ForeignKey && string.IsNullOrEmpty(ForeignKeyMapping))
+            if (this.IsForeignKey() && string.IsNullOrEmpty(ForeignKeyMapping))
                 Logger.Warn(MethodBase.GetCurrentMethod(), $"Column '{columnName}' is a foreign key but is not mapped to a table");
         }
 
@@ -60,5 +60,9 @@ namespace DataTrack.Core.Attributes
 
             return null;
         }
+
+        public bool IsForeignKey() => (KeyType & (byte)KeyTypes.ForeignKey) == (byte)KeyTypes.ForeignKey;
+
+        public bool IsPrimaryKey() => (KeyType & (byte)KeyTypes.PrimaryKey) == (byte)KeyTypes.PrimaryKey;
     }
 }

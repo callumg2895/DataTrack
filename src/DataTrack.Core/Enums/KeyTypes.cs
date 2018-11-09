@@ -2,8 +2,7 @@
 {
     public enum KeyTypes
     {
-        None,
-        PrimaryKey,
-        ForeignKey
+        PrimaryKey = 1,
+        ForeignKey = 2
     }
 }

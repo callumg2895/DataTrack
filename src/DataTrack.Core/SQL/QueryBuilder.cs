@@ -136,16 +136,14 @@ namespace DataTrack.Core.SQL
 
         private protected bool TryGetPrimaryKeyColumnForType(Type type, out ColumnMappingAttribute typePKColumn)
         {
-            TableMappingAttribute typeTable;
             typePKColumn = null;
 
-            if (TryGetTableMappingAttribute(type, out typeTable))
-                foreach (ColumnMappingAttribute column in TypeColumnMapping[type])
-                    if (column.KeyType == KeyTypes.PrimaryKey && column.TableName == typeTable.TableName)
-                    {
-                        typePKColumn = column;
-                        return true;
-                    }
+            foreach (ColumnMappingAttribute column in TypeColumnMapping[type])
+                if (column.IsPrimaryKey() )
+                {
+                    typePKColumn = column;
+                    return true;
+                }
 
             return false;
         }
@@ -157,7 +155,7 @@ namespace DataTrack.Core.SQL
 
             if (TryGetTableMappingAttribute(type, out typeTable))
                 foreach (ColumnMappingAttribute column in TypeColumnMapping[type])
-                    if (column.KeyType == KeyTypes.ForeignKey && column.TableName == typeTable.TableName && column.ForeignKeyMapping == table)
+                    if (column.IsForeignKey() && column.TableName == typeTable.TableName && column.ForeignKeyMapping == table)
                     {
                         typeFKColumn = column;
                         return true;
