@@ -42,15 +42,26 @@ namespace DataTrack.Core.SQL
             TableMappingAttribute mappingAttribute;
 
             // Get the table mapping for TBase
-            if (TryGetTableMappingAttribute(type, out mappingAttribute))
+            if (!Dictionaries.MappingCache.ContainsKey(type))
             {
+                if (TryGetTableMappingAttribute(type, out mappingAttribute))
+                {
+                    TypeTableMapping[type] = mappingAttribute;
+                    Tables.Add(mappingAttribute);
+                    TableAliases[mappingAttribute] = type.Name;
+                    Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded table mapping for class '{type.Name}'");
+                }
+                else
+                    Logger.Error(MethodBase.GetCurrentMethod(), $"Failed to load table mapping for class '{type.Name}'");
+            }
+            else
+            {
+                mappingAttribute = Dictionaries.MappingCache[type].Table;
                 TypeTableMapping[type] = mappingAttribute;
                 Tables.Add(mappingAttribute);
                 TableAliases[mappingAttribute] = type.Name;
                 Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded table mapping for class '{type.Name}'");
             }
-            else
-                Logger.Error(MethodBase.GetCurrentMethod(), $"Failed to load table mapping for class '{type.Name}'");
 
             // Get the table mapping for all child objects
             foreach (PropertyInfo property in type.GetProperties())
@@ -75,8 +86,28 @@ namespace DataTrack.Core.SQL
             Type type = typeof(TBase);
             List<ColumnMappingAttribute> columnAttributes;
 
-            if (TryGetColumnMappingAttributes(type, out columnAttributes))
+            if (!Dictionaries.MappingCache.ContainsKey(type))
             {
+                if (TryGetColumnMappingAttributes(type, out columnAttributes))
+                {
+                    TypeColumnMapping[type] = columnAttributes;
+                    Columns.AddRange(columnAttributes);
+
+                    foreach (var attribute in columnAttributes)
+                    {
+                        ColumnAliases[attribute] = $"{type.Name}.{attribute.ColumnName}";
+                        ColumnPropertyNames[attribute] = attribute.GetPropertyName(BaseType);
+                    }
+
+                    Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded column mapping for class '{type.Name}'");
+                }
+                else
+                    Logger.Error(MethodBase.GetCurrentMethod(), $"Failed to load column mapping for class '{type.Name}'");
+            }
+            else
+            {
+                columnAttributes = Dictionaries.MappingCache[type].Columns;
+
                 TypeColumnMapping[type] = columnAttributes;
                 Columns.AddRange(columnAttributes);
 
@@ -85,11 +116,7 @@ namespace DataTrack.Core.SQL
                     ColumnAliases[attribute] = $"{type.Name}.{attribute.ColumnName}";
                     ColumnPropertyNames[attribute] = attribute.GetPropertyName(BaseType);
                 }
-
-                Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded column mapping for class '{type.Name}'");
             }
-            else
-                Logger.Error(MethodBase.GetCurrentMethod(), $"Failed to load column mapping for class '{type.Name}'");
         }
 
         private protected bool TryGetTableMappingAttribute(Type type, out TableMappingAttribute mappingAttribute)

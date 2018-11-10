@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DataTrack.Core.Attributes;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Text;
@@ -15,5 +16,7 @@ namespace DataTrack.Core.Util
             { typeof(int), SqlDbType.Int },
             { typeof(string), SqlDbType.VarChar }
         };
+
+        public static Dictionary<Type, (TableMappingAttribute Table, List<ColumnMappingAttribute> Columns)> MappingCache = new Dictionary<Type, (TableMappingAttribute Table, List<ColumnMappingAttribute> Columns)>();
     }
 }
