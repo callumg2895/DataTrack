@@ -72,11 +72,22 @@ namespace DataTrack.Core.SQL
                 if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(List<>))
                 {
                     Type genericArgumentType = propertyType.GetGenericArguments()[0];
-                    if (TryGetTableMappingAttribute(genericArgumentType, out mappingAttribute))
+
+                    if (!Dictionaries.MappingCache.ContainsKey(type))
                     {
+                        if (TryGetTableMappingAttribute(genericArgumentType, out mappingAttribute))
+                        {
+                            TypeTableMapping[genericArgumentType] = mappingAttribute;
+                            Tables.Add(mappingAttribute);
+                        }
+                    }
+                    else
+                    {
+                        mappingAttribute = Dictionaries.MappingCache[genericArgumentType].Table;
                         TypeTableMapping[genericArgumentType] = mappingAttribute;
                         Tables.Add(mappingAttribute);
                     }
+
                 }
             }
         }
@@ -116,6 +127,14 @@ namespace DataTrack.Core.SQL
                     ColumnAliases[attribute] = $"{type.Name}.{attribute.ColumnName}";
                     ColumnPropertyNames[attribute] = attribute.GetPropertyName(BaseType);
                 }
+            }
+        }
+
+        private protected void CacheMappingData()
+        {
+            if (!Dictionaries.MappingCache.ContainsKey(BaseType))
+            {
+                Dictionaries.MappingCache[BaseType] = (TypeTableMapping[BaseType], TypeColumnMapping[BaseType]);
             }
         }
 

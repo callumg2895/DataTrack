@@ -169,7 +169,7 @@ namespace DataTrack.Core.SQL
         {
             List<TBase> readQueryResults = new List<TBase>();
 
-            List<ColumnMappingAttribute> mainColumns = queryBuilder.Columns.Where(c => c.TableName == queryBuilder.Tables[0].TableName).ToList();
+            List<ColumnMappingAttribute> mainColumns = Dictionaries.MappingCache[typeof(TBase)].Columns;
 
             int columnCount = 0;
 

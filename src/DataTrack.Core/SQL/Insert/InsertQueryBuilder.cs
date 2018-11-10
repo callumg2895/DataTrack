@@ -30,11 +30,7 @@ namespace DataTrack.Core.SQL.Insert
             // Fetch the table and column names for TBase
             GetTable();
             GetColumns();
-
-            if (!Dictionaries.MappingCache.ContainsKey(typeof(TBase)))
-            {
-                Dictionaries.MappingCache[typeof(TBase)] = (TypeTableMapping[typeof(TBase)], TypeColumnMapping[typeof(TBase)]);
-            }
+            CacheMappingData();
 
             // Check for valid Table/Columns
             if (Tables.Count < 0 || Columns.Count < 0)

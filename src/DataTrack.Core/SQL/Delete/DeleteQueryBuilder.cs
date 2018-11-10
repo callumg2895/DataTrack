@@ -21,6 +21,7 @@ namespace DataTrack.Core.SQL.Delete
             // Fetch the table and column names for TBase
             GetTable();
             GetColumns();
+            CacheMappingData();
 
             if (!Dictionaries.MappingCache.ContainsKey(typeof(TBase)))
             {
