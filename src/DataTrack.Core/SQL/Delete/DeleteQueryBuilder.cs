@@ -23,11 +23,6 @@ namespace DataTrack.Core.SQL.Delete
             GetColumns();
             CacheMappingData();
 
-            if (!Dictionaries.MappingCache.ContainsKey(typeof(TBase)))
-            {
-                Dictionaries.MappingCache[typeof(TBase)] = (TypeTableMapping[typeof(TBase)], TypeColumnMapping[typeof(TBase)]);
-            }
-
             // Check for valid Table/Columns
             if (Tables.Count < 0 || Columns.Count < 0)
             {
