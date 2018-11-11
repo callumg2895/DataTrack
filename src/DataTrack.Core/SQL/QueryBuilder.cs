@@ -36,7 +36,26 @@ namespace DataTrack.Core.SQL
 
         #region Methods
 
-        private protected void GetTable()
+        private protected void Init(CRUDOperationTypes opType)
+        {
+            // Define the operation type used for transactions
+            OperationType = opType;
+
+            // Fetch the table and column names for TBase
+            GetTable();
+            GetColumns();
+            CacheMappingData();
+
+            // Check for valid Table/Columns
+            if (Tables.Count < 0 || Columns.Count < 0)
+            {
+                string message = $"Mapping data for class '{BaseType.Name}' was incomplete/empty";
+                Logger.Error(MethodBase.GetCurrentMethod(), message);
+                throw new Exception(message);
+            }
+        }
+
+        private void GetTable()
         {
             Type type = typeof(TBase);
             TableMappingAttribute mappingAttribute;
@@ -92,7 +111,7 @@ namespace DataTrack.Core.SQL
             }
         }
 
-        private protected void GetColumns()
+        private void GetColumns()
         {
             Type type = typeof(TBase);
             List<ColumnMappingAttribute> columnAttributes;
@@ -127,10 +146,12 @@ namespace DataTrack.Core.SQL
                     ColumnAliases[attribute] = $"{type.Name}.{attribute.ColumnName}";
                     ColumnPropertyNames[attribute] = attribute.GetPropertyName(BaseType);
                 }
+
+                Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded column mapping for class '{type.Name}'");
             }
         }
 
-        private protected void CacheMappingData()
+        private void CacheMappingData()
         {
             if (!Dictionaries.MappingCache.ContainsKey(BaseType))
             {

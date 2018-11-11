@@ -30,21 +30,7 @@ namespace DataTrack.Core.SQL.Read
 
         public ReadQueryBuilder(int? id, int parameterIndex = 1)
         {
-            // Define the operation type used for transactions
-            OperationType = CRUDOperationTypes.Read;
-
-            // Fetch the table and column names for TBase
-            GetTable();
-            GetColumns();
-            CacheMappingData();
-
-            // Check for valid Table/Columns
-            if (Tables.Count < 0 || Columns.Count < 0)
-            {
-                string message = $"Mapping data for class '{BaseType.Name}' was incomplete/empty";
-                Logger.Error(MethodBase.GetCurrentMethod(), message);
-                throw new Exception(message);
-            }
+            Init(CRUDOperationTypes.Read);
 
             this.ID = id;
             this.CurrentParameterIndex = parameterIndex;
