@@ -45,30 +45,15 @@ namespace DataTrack.Core.SQL.Read
 
         public override string ToString()
         {
-            SQLBuilder sqlBuilder = new SQLBuilder(Parameters);
+            SQLBuilder sqlBuilder = new SQLBuilder(Parameters, TableAliases, ColumnAliases, Restrictions);
 
             sqlBuilder.AppendLine();
-            sqlBuilder.Append("select ");
-
-            for (int i = 0; i < Columns.Count; i++)
-                sqlBuilder.Append(string.Concat(ColumnAliases[Columns[i]], i == Columns.Count - 1 ? " " : ", "));
-
-            sqlBuilder.AppendLine();
+            sqlBuilder.BuildSelectStatement(Columns);
 
             for (int i = 0; i < Tables.Count; i++)
             {
                 if (i == 0)
-                {
-                    sqlBuilder.AppendLine($"from {Tables[0].TableName} as {TableAliases[Tables[0]]} ");
-
-                    bool first = true;
-                    for (int j = 0; j < Columns.Count; j++)
-                        if (Restrictions.ContainsKey(Columns[i]))
-                        {
-                            sqlBuilder.AppendLine($"{(first ? "where" : "and")} {Restrictions[Columns[j]]}");
-                            first = false;
-                        }
-                }
+                    sqlBuilder.BuildFromStatement(Columns, Tables[0]);
                 else
                 {
                     dynamic queryBuilder = Activator.CreateInstance(typeof(ReadQueryBuilder<>).MakeGenericType(TypeTableMapping[Tables[i]]));

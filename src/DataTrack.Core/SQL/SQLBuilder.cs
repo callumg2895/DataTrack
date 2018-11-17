@@ -43,8 +43,7 @@ namespace DataTrack.Core.SQL
 
         public void BuildInsertStatement(List<ColumnMappingAttribute> columns, TableMappingAttribute table)
         {
-            if (columns.Count == 0)
-                return;
+            if (columns.Count == 0) return;
 
             sql.Append("insert into " + table.TableName + " (");
 
@@ -102,8 +101,7 @@ namespace DataTrack.Core.SQL
 
         public void BuildValuesStatement(List<ColumnMappingAttribute> columns, TableMappingAttribute table)
         {
-            if (columns.Count == 0)
-                return;
+            if (columns.Count == 0) return;
 
             // Assert that all colums for a given table have the same number of parameters
             int paramCount = columns.Select(c => parameters[c].Count).Max();
@@ -129,6 +127,50 @@ namespace DataTrack.Core.SQL
             }
 
             sql.AppendLine();
+        }
+
+        public void BuildSelectStatement(List<ColumnMappingAttribute> columns)
+        {
+            if (columns.Count == 0) return;
+
+            sql.Append("select ");
+            sql.Append(columnAliases[columns[0]]);
+
+            for (int i = 1; i < columns.Count; i++)
+            {
+                sql.Append(", ");
+                sql.Append(columnAliases[columns[i]]);
+            }
+
+            sql.AppendLine();
+        }
+
+        public void BuildFromStatement(List<ColumnMappingAttribute> columns, TableMappingAttribute table)
+        {
+            if (string.IsNullOrEmpty(table.TableName) || columns.Count == 0) return;
+
+            sql.Append("from ")
+               .Append(table.TableName)
+               .Append(" as ")
+               .AppendLine(tableAliases[table]);
+
+            bool first = true;
+
+            for (int i = 1; i < columns.Count; i++)
+            {
+                if (restrictions.ContainsKey(columns[i]))
+                {
+                    if (first)
+                    {
+                        sql.Append("where ");
+                        first = false;
+                    }
+                    else sql.Append("and ");
+
+                    sql.AppendLine(restrictions[columns[i]]);
+                    first = false;
+                }
+            }
         }
 
         public void Append(string text) => sql.Append(text);

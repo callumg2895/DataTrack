@@ -32,8 +32,8 @@ namespace DataTrack.Core.Tests
             //Act
             StringBuilder sqlBuilder = new StringBuilder();
             sqlBuilder.AppendLine();
-            sqlBuilder.AppendLine("select Book.id, Book.author_id, Book.title ");
-            sqlBuilder.AppendLine("from books as Book ");
+            sqlBuilder.AppendLine("select Book.id, Book.author_id, Book.title");
+            sqlBuilder.AppendLine("from books as Book");
 
             expectedQuery = sqlBuilder.ToString();
 
@@ -58,11 +58,11 @@ namespace DataTrack.Core.Tests
             //Act
             StringBuilder sqlBuilder = new StringBuilder();
             sqlBuilder.AppendLine();
-            sqlBuilder.AppendLine("select Author.id, Author.first_name, Author.last_name ");
-            sqlBuilder.AppendLine("from authors as Author ");
+            sqlBuilder.AppendLine("select Author.id, Author.first_name, Author.last_name");
+            sqlBuilder.AppendLine("from authors as Author");
             sqlBuilder.AppendLine();
-            sqlBuilder.AppendLine("select Book.id, Book.author_id, Book.title ");
-            sqlBuilder.AppendLine("from books as Book ");
+            sqlBuilder.AppendLine("select Book.id, Book.author_id, Book.title");
+            sqlBuilder.AppendLine("from books as Book");
 
             expectedQuery = sqlBuilder.ToString();
 
