@@ -150,7 +150,6 @@ namespace DataTrack.Core.Tests
 
             int createResult;
             Author authorReadResult;
-            Book bookReadResult;
 
             //Act
             stopwatch.Start();
