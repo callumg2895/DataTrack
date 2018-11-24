@@ -1,11 +1,7 @@
-﻿using DataTrack.Core.SQL.Read;
-using DataTrack.Core.SQL.Insert;
-using DataTrack.Core.SQL.Update;
-using DataTrack.Core.SQL.Delete;
-using DataTrack.Core.SQL;
+﻿using DataTrack.Core.SQL;
+using DataTrack.Core.SQL.QueryBuilders;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Reflection;
 using DataTrack.Core.Enums;
 

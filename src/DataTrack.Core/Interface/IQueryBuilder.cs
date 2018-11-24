@@ -1,9 +1,6 @@
-﻿using DataTrack.Core.Attributes;
-using DataTrack.Core.Enums;
-using DataTrack.Core.SQL;
-using System;
+﻿using DataTrack.Core.Enums;
+using DataTrack.Core.SQL.QueryBuilders;
 using System.Collections.Generic;
-using System.Text;
 
 namespace DataTrack.Core.Interface
 {

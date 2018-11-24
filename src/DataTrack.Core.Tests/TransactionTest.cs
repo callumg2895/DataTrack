@@ -1,9 +1,6 @@
 ﻿using DataTrack.Core.Enums;
-using DataTrack.Core.SQL.Read;
 using DataTrack.Core.SQL;
-using DataTrack.Core.SQL.Delete;
-using DataTrack.Core.SQL.Insert;
-using DataTrack.Core.SQL.Update;
+using DataTrack.Core.SQL.QueryBuilders;
 using DataTrack.Core.Tests.TestObjects;
 using DataTrack.Core.Util;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -46,7 +43,7 @@ namespace DataTrack.Core.Tests
 
             Transaction<Book> t2 = new Transaction<Book>(new List<QueryBuilder<Book>>()
             {
-                new SQL.Delete.DeleteQueryBuilder<Book>(book)
+                new DeleteQueryBuilder<Book>(book)
             });
 
             List<object> results = t1.Execute();
@@ -74,7 +71,7 @@ namespace DataTrack.Core.Tests
             stopwatch.Start();
             Transaction<Author> t1 = new Transaction<Author>(new List<QueryBuilder<Author>>()
             {
-                new SQL.Insert.InsertQueryBuilder<Author>(authorBefore),
+                new InsertQueryBuilder<Author>(authorBefore),
                 new ReadQueryBuilder<Author>(authorBefore.ID),
             });
 

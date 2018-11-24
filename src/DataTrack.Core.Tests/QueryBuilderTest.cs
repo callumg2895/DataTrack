@@ -1,9 +1,6 @@
 ﻿using DataTrack.Core.Enums;
-using DataTrack.Core.SQL.Read;
 using DataTrack.Core.SQL;
-using DataTrack.Core.SQL.Delete;
-using DataTrack.Core.SQL.Insert;
-using DataTrack.Core.SQL.Update;
+using DataTrack.Core.SQL.QueryBuilders;
 using DataTrack.Core.Tests.TestObjects;
 using DataTrack.Core.Util;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -95,7 +92,7 @@ namespace DataTrack.Core.Tests
             expectedQuery = sqlBuilder.ToString();
 
             stopwatch.Start();
-            testQuery = new SQL.Insert.InsertQueryBuilder<Author>(author).ToString();
+            testQuery = new InsertQueryBuilder<Author>(author).ToString();
             stopwatch.Stop();
 
             Logger.Info(MethodBase.GetCurrentMethod(), $"InsertQueryBuilder executed in {stopwatch.ElapsedMilliseconds}ms");
@@ -133,7 +130,7 @@ namespace DataTrack.Core.Tests
             expectedQuery = sqlBuilder.ToString();
 
             stopwatch.Start();
-            testQuery = new SQL.Insert.InsertQueryBuilder<Author>(author).ToString();
+            testQuery = new InsertQueryBuilder<Author>(author).ToString();
             stopwatch.Stop();
 
             Logger.Info(MethodBase.GetCurrentMethod(), $"InsertQueryBuilder executed in {stopwatch.ElapsedMilliseconds}ms");
@@ -160,7 +157,7 @@ namespace DataTrack.Core.Tests
             expectedQuery = sqlBuilder.ToString();
 
             stopwatch.Start();
-            testQuery = new SQL.Delete.DeleteQueryBuilder<Author>(author).ToString();
+            testQuery = new DeleteQueryBuilder<Author>(author).ToString();
             stopwatch.Stop();
 
             Logger.Info(MethodBase.GetCurrentMethod(), $"DeleteQueryBuilder executed in {stopwatch.ElapsedMilliseconds}ms");
