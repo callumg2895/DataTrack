@@ -1,5 +1,5 @@
 ﻿using DataTrack.Core.SQL;
-using DataTrack.Core.SQL.QueryBuilders;
+using DataTrack.Core.SQL.QueryBuilderObjects;
 using System;
 using System.Collections.Generic;
 using System.Reflection;

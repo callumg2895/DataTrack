@@ -10,7 +10,7 @@ using System.Data;
 using System.Reflection;
 using System.Text;
 
-namespace DataTrack.Core.SQL.QueryBuilders
+namespace DataTrack.Core.SQL.QueryBuilderObjects
 {
     public abstract class QueryBuilder<TBase> : IQueryBuilder<TBase>
     {

@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 
-namespace DataTrack.Core.SQL.QueryBuilders
+namespace DataTrack.Core.SQL.QueryBuilderObjects
 {
     public class DeleteQueryBuilder<TBase> : QueryBuilder<TBase>
     {

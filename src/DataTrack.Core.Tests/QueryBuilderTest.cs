@@ -1,14 +1,9 @@
-﻿using DataTrack.Core.Enums;
-using DataTrack.Core.SQL;
-using DataTrack.Core.SQL.QueryBuilders;
+﻿using DataTrack.Core.SQL.QueryBuilderObjects;
 using DataTrack.Core.Tests.TestObjects;
 using DataTrack.Core.Util;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Diagnostics;
-using System.IO;
 using System.Reflection;
 using System.Text;
 
