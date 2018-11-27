@@ -38,50 +38,50 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
 
         public override string ToString()
         {
-            SQLBuilder sqlBuilder = new SQLBuilder(Parameters);
+            SQLBuilder sqlBuilder = new SQLBuilder(Query.Parameters);
             StringBuilder childSqlBuilder = new StringBuilder();
 
             sqlBuilder.AppendLine();
 
-            for (int i = 0; i < Tables.Count; i++)
+            for (int i = 0; i < Query.Tables.Count; i++)
             {
-                int maxParameterCount = Columns.Select(c => Parameters[c].Count).Max();
+                int maxParameterCount = Query.Columns.Select(c => Query.Parameters[c].Count).Max();
 
                 // The case when i == 0 corresponds to the table for the TBase object
                 if (i == 0)
                 {
-                    sqlBuilder.BuildInsertStatement(Columns, Tables[i]);
-                    sqlBuilder.BuildValuesStatement(Columns, Tables[i]);
+                    sqlBuilder.BuildInsertStatement(Query.Columns, Query.Tables[i]);
+                    sqlBuilder.BuildValuesStatement(Query.Columns, Query.Tables[i]);
 
                     // For insert statements return the number of rows affected
                     SelectRowCount(ref sqlBuilder);
                 }
                 else
                 {
-                    dynamic childItems = Tables[0].GetChildPropertyValues(Item, Tables[i].TableName) ?? new List<object>();
+                    dynamic childItems = Query.Tables[0].GetChildPropertyValues(Item, Query.Tables[i].TableName) ?? new List<object>();
 
                     if (childItems.Count > 0)
                     {
                         CurrentParameterIndex++;
-                        dynamic queryBuilder = Activator.CreateInstance(typeof(InsertListQueryBuilder<>).MakeGenericType(TypeTableMapping[Tables[i]]), childItems, CurrentParameterIndex);
+                        dynamic queryBuilder = Activator.CreateInstance(typeof(InsertListQueryBuilder<>).MakeGenericType(Query.TypeTableMapping[Query.Tables[i]]), childItems, CurrentParameterIndex);
 
-                        foreach (ColumnMappingAttribute column in queryBuilder.Columns)
+                        foreach (ColumnMappingAttribute column in queryBuilder.Query.Columns)
                         {
-                            if (queryBuilder.Parameters.ContainsKey(column))
+                            if (queryBuilder.Query.Parameters.ContainsKey(column))
                             {
-                                if (Parameters.ContainsKey(column))
-                                    Parameters[column].AddRange(queryBuilder.Parameters[column]);
+                                if (Query.Parameters.ContainsKey(column))
+                                    Query.Parameters[column].AddRange(queryBuilder.Query.Parameters[column]);
                                 else
                                 {
-                                    Parameters[column] = new List<(string Handle, object Value)>();
-                                    Parameters[column].AddRange(queryBuilder.Parameters[column]);
+                                    Query.Parameters[column] = new List<(string Handle, object Value)>();
+                                    Query.Parameters[column].AddRange(queryBuilder.Query.Parameters[column]);
                                 }
                             }
 
-                            if (queryBuilder.ColumnPropertyNames.ContainsKey(column))
-                                ColumnPropertyNames.TryAdd(column, queryBuilder.ColumnPropertyNames[column]);
+                            if (queryBuilder.Query.ColumnPropertyNames.ContainsKey(column))
+                                Query.ColumnPropertyNames.TryAdd(column, queryBuilder.Query.ColumnPropertyNames[column]);
 
-                            Columns.Add(column);
+                            Query.Columns.Add(column);
                         }
 
                         sqlBuilder.Append(queryBuilder.ToString());

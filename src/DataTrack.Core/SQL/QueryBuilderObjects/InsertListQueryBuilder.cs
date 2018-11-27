@@ -38,16 +38,16 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
 
         public override string ToString()
         {
-            SQLBuilder sqlBuilder = new SQLBuilder(Parameters);
+            SQLBuilder sqlBuilder = new SQLBuilder(Query.Parameters);
 
             sqlBuilder.AppendLine();
 
-            for (int i = 0; i < Tables.Count; i++)
+            for (int i = 0; i < Query.Tables.Count; i++)
             {
                 if (i == 0)
                 {
-                    sqlBuilder.BuildInsertStatement(Columns, Tables[i]);
-                    sqlBuilder.BuildValuesStatement(Columns, Tables[i]);
+                    sqlBuilder.BuildInsertStatement(Query.Columns, Query.Tables[i]);
+                    sqlBuilder.BuildValuesStatement(Query.Columns, Query.Tables[i]);
                 }
             }
 

@@ -40,22 +40,22 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
 
         public override string ToString()
         {
-            if (Parameters.Count >= 1)
+            if (Query.Parameters.Count >= 1)
             {
-                SQLBuilder sqlBuilder = new SQLBuilder(Parameters);
+                SQLBuilder sqlBuilder = new SQLBuilder(Query.Parameters);
                 StringBuilder restrictionsBuilder = new StringBuilder();
 
-                for (int i = 0; i < Columns.Count; i++)
+                for (int i = 0; i < Query.Columns.Count; i++)
                 {
-                    if (Restrictions.ContainsKey(Columns[i]))
+                    if (Restrictions.ContainsKey(Query.Columns[i]))
                     {
                         restrictionsBuilder.Append(restrictionsBuilder.Length == 0 ? "where " : "and ");
-                        restrictionsBuilder.AppendLine(Restrictions[Columns[i]]);
+                        restrictionsBuilder.AppendLine(Restrictions[Query.Columns[i]]);
                     }
                 }
 
                 sqlBuilder.AppendLine();
-                sqlBuilder.AppendLine($"delete {TableAliases[Tables[0]]} from {Tables[0].TableName} {TableAliases[Tables[0]]}");
+                sqlBuilder.AppendLine($"delete {TableAliases[Query.Tables[0]]} from {Query.Tables[0].TableName} {TableAliases[Query.Tables[0]]}");
                 sqlBuilder.Append(restrictionsBuilder.ToString());
 
                 string sql = sqlBuilder.ToString();

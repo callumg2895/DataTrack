@@ -18,10 +18,10 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
 
         public override string ToString()
         {
-            SQLBuilder sqlBuilder = new SQLBuilder(Parameters, TableAliases, ColumnAliases, Restrictions);
+            SQLBuilder sqlBuilder = new SQLBuilder(Query.Parameters, TableAliases, ColumnAliases, Restrictions);
 
             sqlBuilder.AppendLine();
-            sqlBuilder.BuildUpdateStatement(Columns, Tables[0]);
+            sqlBuilder.BuildUpdateStatement(Query.Columns, Query.Tables[0]);
 
             // For update statements return the number of rows affected
             SelectRowCount(ref sqlBuilder);

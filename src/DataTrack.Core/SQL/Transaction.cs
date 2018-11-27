@@ -53,7 +53,7 @@ namespace DataTrack.Core.SQL
                 {
                     foreach (QueryBuilder<TBase> queryBuilder in queryBuilders)
                     {
-                        switch (queryBuilder.OperationType)
+                        switch (queryBuilder.Query.OperationType)
                         {
                             case CRUDOperationTypes.Read:
 
@@ -136,7 +136,7 @@ namespace DataTrack.Core.SQL
             int affectedRows = 0;
 
             // Create operations always check the number of rows affected after the query has executed
-            for (int tableCount = 0; tableCount < queryBuilder.Tables.Count; tableCount++)
+            for (int tableCount = 0; tableCount < queryBuilder.Query.Tables.Count; tableCount++)
             {
                 if (tableCount == 0)
                 {
@@ -147,9 +147,9 @@ namespace DataTrack.Core.SQL
                 }
                 else
                 {
-                    dynamic childCollection = queryBuilder.Tables[0].GetChildPropertyValues(
+                    dynamic childCollection = queryBuilder.Query.Tables[0].GetChildPropertyValues(
                         queryBuilder.GetPropertyValue("Item"),
-                        queryBuilder.Tables[tableCount].TableName);
+                        queryBuilder.Query.Tables[tableCount].TableName);
 
                     foreach (var item in childCollection)
                     {
@@ -178,9 +178,9 @@ namespace DataTrack.Core.SQL
 
                 foreach (ColumnMappingAttribute column in mainColumns)
                 {
-                    if (queryBuilder.ColumnPropertyNames.ContainsKey(column))
+                    if (queryBuilder.Query.ColumnPropertyNames.ContainsKey(column))
                     {
-                        PropertyInfo property = typeof(TBase).GetProperty(queryBuilder.ColumnPropertyNames[column]);
+                        PropertyInfo property = typeof(TBase).GetProperty(queryBuilder.Query.ColumnPropertyNames[column]);
 
                         if (reader[column.ColumnName] != DBNull.Value)
                             property.SetValue(obj, Convert.ChangeType(reader[column.ColumnName], property.PropertyType));
@@ -198,10 +198,10 @@ namespace DataTrack.Core.SQL
                 }
             }
 
-            for (int tableCount = 1; tableCount < queryBuilder.Tables.Count; tableCount++)
+            for (int tableCount = 1; tableCount < queryBuilder.Query.Tables.Count; tableCount++)
             {
                 reader.NextResult();
-                Type childType = queryBuilder.TypeTableMapping[queryBuilder.Tables[tableCount]];
+                Type childType = queryBuilder.Query.TypeTableMapping[queryBuilder.Query.Tables[tableCount]];
                 dynamic childCollection = Activator.CreateInstance(typeof(List<>).MakeGenericType(childType));
                 int originalColumnCount = columnCount;
 
@@ -214,7 +214,7 @@ namespace DataTrack.Core.SQL
                     {
                         property.SetValue(
                             childItem,
-                            Convert.ChangeType(reader[queryBuilder.Columns[columnCount++].ColumnName], property.PropertyType));
+                            Convert.ChangeType(reader[queryBuilder.Query.Columns[columnCount++].ColumnName], property.PropertyType));
                     }
 
                     MethodInfo addItem = childCollection.GetType().GetMethod("Add");
@@ -223,7 +223,7 @@ namespace DataTrack.Core.SQL
 
                 foreach(TBase obj in readQueryResults)
                 {
-                    PropertyInfo childProperty = queryBuilder.Tables[0].GetChildProperty(typeof(TBase), queryBuilder.Tables[tableCount].TableName);
+                    PropertyInfo childProperty = queryBuilder.Query.Tables[0].GetChildProperty(typeof(TBase), queryBuilder.Query.Tables[tableCount].TableName);
                     childProperty.SetValue(obj, childCollection);
                 }
             }

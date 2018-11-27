@@ -1,8 +1,8 @@
 ﻿using DataTrack.Core.Attributes;
 using DataTrack.Core.Enums;
 using DataTrack.Core.Interface;
+using DataTrack.Core.SQL.QueryObjects;
 using DataTrack.Core.Util;
-using DataTrack.Core.Util.DataStructures;
 using DataTrack.Core.Util.Extensions;
 using System;
 using System.Collections.Generic;
@@ -17,20 +17,13 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
         #region Members
 
         private protected Type BaseType { get => typeof(TBase); }
-        private protected Dictionary<Type, List<ColumnMappingAttribute>> TypeColumnMapping = new Dictionary<Type, List<ColumnMappingAttribute>>();
         private protected Dictionary<TableMappingAttribute, string> TableAliases = new Dictionary<TableMappingAttribute, string>();
         private protected Dictionary<ColumnMappingAttribute, string> ColumnAliases = new Dictionary<ColumnMappingAttribute, string>();
         private protected Dictionary<ColumnMappingAttribute, string> Restrictions = new Dictionary<ColumnMappingAttribute, string>();
+        public Query<TBase> Query { get; private protected set; } = new Query<TBase>();
 
         // An integer which ensures that all parameter names are unique between queries and subqueries
         private protected int CurrentParameterIndex;
-
-        public List<TableMappingAttribute> Tables { get; private set; } = new List<TableMappingAttribute>();
-        public List<ColumnMappingAttribute> Columns { get; private set; } = new List<ColumnMappingAttribute>();
-        public Mapping<Type, TableMappingAttribute> TypeTableMapping { get; private set; } = new Mapping<Type, TableMappingAttribute>();
-        public Dictionary<ColumnMappingAttribute, string> ColumnPropertyNames { get; private set; } = new Dictionary<ColumnMappingAttribute, string>();
-        public Dictionary<ColumnMappingAttribute, List<(string Handle, object Value)>> Parameters { get; private set; } = new Dictionary<ColumnMappingAttribute, List<(string Handle, object Value)>>();
-        public CRUDOperationTypes OperationType { get; private protected set; }
 
         #endregion
 
@@ -39,7 +32,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
         private protected void Init(CRUDOperationTypes opType)
         {
             // Define the operation type used for transactions
-            OperationType = opType;
+            Query.OperationType = opType;
 
             // Fetch the table and column names for TBase
             GetTable();
@@ -47,7 +40,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             CacheMappingData();
 
             // Check for valid Table/Columns
-            if (Tables.Count < 0 || Columns.Count < 0)
+            if (Query.Tables.Count < 0 || Query.Columns.Count < 0)
             {
                 string message = $"Mapping data for class '{BaseType.Name}' was incomplete/empty";
                 Logger.Error(MethodBase.GetCurrentMethod(), message);
@@ -65,8 +58,8 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             {
                 if (TryGetTableMappingAttribute(type, out mappingAttribute))
                 {
-                    TypeTableMapping[type] = mappingAttribute;
-                    Tables.Add(mappingAttribute);
+                    Query.TypeTableMapping[type] = mappingAttribute;
+                    Query.Tables.Add(mappingAttribute);
                     TableAliases[mappingAttribute] = type.Name;
                     Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded table mapping for class '{type.Name}'");
                 }
@@ -76,8 +69,8 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             else
             {
                 mappingAttribute = Dictionaries.MappingCache[type].Table;
-                TypeTableMapping[type] = mappingAttribute;
-                Tables.Add(mappingAttribute);
+                Query.TypeTableMapping[type] = mappingAttribute;
+                Query.Tables.Add(mappingAttribute);
                 TableAliases[mappingAttribute] = type.Name;
                 Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded table mapping for class '{type.Name}'");
             }
@@ -96,15 +89,15 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
                     {
                         if (TryGetTableMappingAttribute(genericArgumentType, out mappingAttribute))
                         {
-                            TypeTableMapping[genericArgumentType] = mappingAttribute;
-                            Tables.Add(mappingAttribute);
+                            Query.TypeTableMapping[genericArgumentType] = mappingAttribute;
+                            Query.Tables.Add(mappingAttribute);
                         }
                     }
                     else
                     {
                         mappingAttribute = Dictionaries.MappingCache[genericArgumentType].Table;
-                        TypeTableMapping[genericArgumentType] = mappingAttribute;
-                        Tables.Add(mappingAttribute);
+                        Query.TypeTableMapping[genericArgumentType] = mappingAttribute;
+                        Query.Tables.Add(mappingAttribute);
                     }
 
                 }
@@ -120,13 +113,13 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             {
                 if (TryGetColumnMappingAttributes(type, out columnAttributes))
                 {
-                    TypeColumnMapping[type] = columnAttributes;
-                    Columns.AddRange(columnAttributes);
+                    Query.TypeColumnMapping[type] = columnAttributes;
+                    Query.Columns.AddRange(columnAttributes);
 
                     foreach (var attribute in columnAttributes)
                     {
                         ColumnAliases[attribute] = $"{type.Name}.{attribute.ColumnName}";
-                        ColumnPropertyNames[attribute] = attribute.GetPropertyName(BaseType);
+                        Query.ColumnPropertyNames[attribute] = attribute.GetPropertyName(BaseType);
                     }
 
                     Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded column mapping for class '{type.Name}'");
@@ -138,13 +131,13 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             {
                 columnAttributes = Dictionaries.MappingCache[type].Columns;
 
-                TypeColumnMapping[type] = columnAttributes;
-                Columns.AddRange(columnAttributes);
+                Query.TypeColumnMapping[type] = columnAttributes;
+                Query.Columns.AddRange(columnAttributes);
 
                 foreach (var attribute in columnAttributes)
                 {
                     ColumnAliases[attribute] = $"{type.Name}.{attribute.ColumnName}";
-                    ColumnPropertyNames[attribute] = attribute.GetPropertyName(BaseType);
+                    Query.ColumnPropertyNames[attribute] = attribute.GetPropertyName(BaseType);
                 }
 
                 Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded column mapping for class '{type.Name}'");
@@ -155,7 +148,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
         {
             if (!Dictionaries.MappingCache.ContainsKey(BaseType))
             {
-                Dictionaries.MappingCache[BaseType] = (TypeTableMapping[BaseType], TypeColumnMapping[BaseType]);
+                Dictionaries.MappingCache[BaseType] = (Query.TypeTableMapping[BaseType], Query.TypeColumnMapping[BaseType]);
             }
         }
 
@@ -164,9 +157,9 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             mappingAttribute = null;
 
             // Check the dictionary first to save using reflection
-            if (TypeTableMapping.ContainsKey(type))
+            if (Query.TypeTableMapping.ContainsKey(type))
             {
-                mappingAttribute = TypeTableMapping[type];
+                mappingAttribute = Query.TypeTableMapping[type];
                 return true;
             }
 
@@ -181,9 +174,9 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             attributes = new List<ColumnMappingAttribute>();
 
             // Check the dictionary first to save using reflection
-            if (TypeColumnMapping.ContainsKey(type))
+            if (Query.TypeColumnMapping.ContainsKey(type))
             {
-                attributes = TypeColumnMapping[type];
+                attributes = Query.TypeColumnMapping[type];
                 return true;
             }
 
@@ -205,7 +198,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
         {
             typePKColumn = null;
 
-            foreach (ColumnMappingAttribute column in TypeColumnMapping[type])
+            foreach (ColumnMappingAttribute column in Query.TypeColumnMapping[type])
                 if (column.IsPrimaryKey() )
                 {
                     typePKColumn = column;
@@ -221,7 +214,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             typeFKColumn = null;
 
             if (TryGetTableMappingAttribute(type, out typeTable))
-                foreach (ColumnMappingAttribute column in TypeColumnMapping[type])
+                foreach (ColumnMappingAttribute column in Query.TypeColumnMapping[type])
                     if (column.IsForeignKey() && column.TableName == typeTable.TableName && column.ForeignKeyMapping == table)
                     {
                         typeFKColumn = column;
@@ -235,7 +228,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
         {
             // For each column mapping attribute, find the value of the property which is decorated by that column attribute
             // Then update the dictionary of parameters with this value.
-            foreach (ColumnMappingAttribute columnAttribute in Columns)
+            foreach (ColumnMappingAttribute columnAttribute in Query.Columns)
             {
                 string handle = $"@{columnAttribute.TableName}_{columnAttribute.ColumnName}_{CurrentParameterIndex}";
                 string propertyName;
@@ -283,10 +276,10 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
 
         private protected void AddParameter(ColumnMappingAttribute column, (string Handle, object Value) parameter)
         {
-            if (Parameters.ContainsKey(column))
-                Parameters[column].Add(parameter);
+            if (Query.Parameters.ContainsKey(column))
+                Query.Parameters[column].Add(parameter);
             else
-                Parameters[column] = new List<(string Handle, object Value)>() { parameter };
+                Query.Parameters[column] = new List<(string Handle, object Value)>() { parameter };
         }
 
         abstract public override string ToString();
@@ -364,9 +357,9 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
         {
             List<(string Handle, object Value)> parameters = new List<(string Handle, object Value)>();
 
-            foreach (ColumnMappingAttribute column in Columns)
-                if (Parameters.ContainsKey(column))
-                    parameters.AddRange(Parameters[column]);
+            foreach (ColumnMappingAttribute column in Query.Columns)
+                if (Query.Parameters.ContainsKey(column))
+                    parameters.AddRange(Query.Parameters[column]);
 
             return parameters;
         }

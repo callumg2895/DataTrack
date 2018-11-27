@@ -37,32 +37,34 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
 
         public override string ToString()
         {
-            SQLBuilder sqlBuilder = new SQLBuilder(Parameters, TableAliases, ColumnAliases, Restrictions);
+            SQLBuilder sqlBuilder = new SQLBuilder(Query.Parameters, TableAliases, ColumnAliases, Restrictions);
 
             sqlBuilder.AppendLine();
-            sqlBuilder.BuildSelectStatement(Columns);
+            sqlBuilder.BuildSelectStatement(Query.Columns);
 
-            for (int i = 0; i < Tables.Count; i++)
+            for (int i = 0; i < Query.Tables.Count; i++)
             {
                 if (i == 0)
-                    sqlBuilder.BuildFromStatement(Columns, Tables[0]);
+                    sqlBuilder.BuildFromStatement(Query.Columns, Query.Tables[0]);
                 else
                 {
-                    dynamic queryBuilder = Activator.CreateInstance(typeof(ReadQueryBuilder<>).MakeGenericType(TypeTableMapping[Tables[i]]));
+                    dynamic queryBuilder = Activator.CreateInstance(typeof(ReadQueryBuilder<>).MakeGenericType(Query.TypeTableMapping[Query.Tables[i]]));
 
                     if (ID.HasValue)
                     {
                         // Make sure that only those child items with a foreign key matching the primary key of TBase are retrieved
                         MethodInfo addForeignKeyRestriction = queryBuilder.GetType().GetMethod("AddForeignKeyRestriction", BindingFlags.Instance | BindingFlags.NonPublic);
-                        addForeignKeyRestriction.Invoke(queryBuilder, new object[] { ID, Tables[0].TableName });
+                        addForeignKeyRestriction.Invoke(queryBuilder, new object[] { ID, Query.Tables[0].TableName });
 
-                        foreach (ColumnMappingAttribute column in queryBuilder.Columns)
+                        foreach (ColumnMappingAttribute column in queryBuilder.Query.Columns)
                         {
-                            if (queryBuilder.Parameters.ContainsKey(column))
-                                Parameters.TryAdd(column, queryBuilder.Parameters[column]);
-                            if (queryBuilder.ColumnPropertyNames.ContainsKey(column))
-                                ColumnPropertyNames.TryAdd(column, queryBuilder.ColumnPropertyNames[column]);
-                            Columns.Add(column);
+                            if (queryBuilder.Query.Parameters.ContainsKey(column))
+                                Query.Parameters.TryAdd(column, queryBuilder.Query.Parameters[column]);
+
+                            if (queryBuilder.Query.ColumnPropertyNames.ContainsKey(column))
+                                Query.ColumnPropertyNames.TryAdd(column, queryBuilder.Query.ColumnPropertyNames[column]);
+
+                            Query.Columns.Add(column);
                         }
                     }
 
