@@ -1,6 +1,7 @@
 ﻿using DataTrack.Core.Attributes;
 using DataTrack.Core.Enums;
 using DataTrack.Core.SQL.QueryBuilderObjects;
+using DataTrack.Core.SQL.QueryObjects;
 using DataTrack.Core.Util;
 using DataTrack.Core.Util.Extensions;
 using System;
@@ -20,7 +21,7 @@ namespace DataTrack.Core.SQL
 
         private List<QueryBuilder<TBase>> queryBuilders = new List<QueryBuilder<TBase>>();
         private List<(string Handle, object Value)> parameters = new List<(string Handle, object Value)>();
-        private Dictionary<QueryBuilder<TBase>, string> querySQLMapping = new Dictionary<QueryBuilder<TBase>, string>();
+        private Dictionary<QueryBuilder<TBase>, Query<TBase>> queryMapping = new Dictionary<QueryBuilder<TBase>, Query<TBase>>();
 
         #endregion
 
@@ -99,11 +100,11 @@ namespace DataTrack.Core.SQL
 
             while (true)
             {
-                lock (querySQLMapping)
+                lock (queryMapping)
                 {
                     bool done = true;
                     foreach (QueryBuilder<TBase> queryBuilder in queryBuilders)
-                        done &= querySQLMapping.ContainsKey(queryBuilder);
+                        done &= queryMapping.ContainsKey(queryBuilder);
 
                     if (done)
                         break;
@@ -112,7 +113,7 @@ namespace DataTrack.Core.SQL
 
             foreach (QueryBuilder<TBase> queryBuilder in queryBuilders)
             {
-                transactionSQLBuilder.Append(querySQLMapping[queryBuilder]);
+                transactionSQLBuilder.Append(queryMapping[queryBuilder].QueryString);
                 parameters.AddRange(queryBuilder.Query.GetParameters().Where(p => !parameters.Select(pa => pa.Handle).Contains(p.Handle)));
             }
 
@@ -123,11 +124,11 @@ namespace DataTrack.Core.SQL
 
         private void BuildQuery(QueryBuilder<TBase> queryBuilder)
         {
-            string sql = queryBuilder.ToString();
+            Query<TBase> query = queryBuilder.GetQuery();
 
-            lock (querySQLMapping)
+            lock (queryMapping)
             {
-                querySQLMapping[queryBuilder] = sql;
+                queryMapping[queryBuilder] = query;
             }
         }
 

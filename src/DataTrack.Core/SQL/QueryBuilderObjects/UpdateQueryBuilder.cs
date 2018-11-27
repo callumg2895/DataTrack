@@ -1,4 +1,5 @@
 ﻿using DataTrack.Core.Enums;
+using DataTrack.Core.SQL.QueryObjects;
 using DataTrack.Core.Util;
 using System.Reflection;
 
@@ -16,7 +17,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             AddPrimaryKeyRestriction(item);
         }
 
-        public override string ToString()
+        public override Query<TBase> GetQuery()
         {
             SQLBuilder sqlBuilder = new SQLBuilder(Query.Parameters, TableAliases, ColumnAliases, Restrictions);
 
@@ -30,7 +31,9 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
 
             Logger.Info(MethodBase.GetCurrentMethod(), "Generated SQL: " + sql);
 
-            return sql;
+            Query.QueryString = sql;
+
+            return Query;
         }
 
     }

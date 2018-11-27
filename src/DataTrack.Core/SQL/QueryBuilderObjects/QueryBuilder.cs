@@ -20,7 +20,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
         private protected Dictionary<TableMappingAttribute, string> TableAliases = new Dictionary<TableMappingAttribute, string>();
         private protected Dictionary<ColumnMappingAttribute, string> ColumnAliases = new Dictionary<ColumnMappingAttribute, string>();
         private protected Dictionary<ColumnMappingAttribute, string> Restrictions = new Dictionary<ColumnMappingAttribute, string>();
-        public Query<TBase> Query { get; private protected set; } = new Query<TBase>();
+        internal Query<TBase> Query = new Query<TBase>();
 
         // An integer which ensures that all parameter names are unique between queries and subqueries
         private protected int CurrentParameterIndex;
@@ -234,7 +234,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
                 string propertyName;
 
                 if (columnAttribute.TryGetPropertyName(BaseType, out propertyName))
-                    AddParameter(columnAttribute, (handle, item.GetPropertyValue(propertyName)));
+                    Query.AddParameter(columnAttribute, (handle, item.GetPropertyValue(propertyName)));
             }
         }
 
@@ -274,15 +274,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
 
         private protected void SelectRowCount(ref SQLBuilder sqlBuilder) => sqlBuilder.AppendLine("select @@rowcount as affected_rows");
 
-        private protected void AddParameter(ColumnMappingAttribute column, (string Handle, object Value) parameter)
-        {
-            if (Query.Parameters.ContainsKey(column))
-                Query.Parameters[column].Add(parameter);
-            else
-                Query.Parameters[column] = new List<(string Handle, object Value)>() { parameter };
-        }
-
-        abstract public override string ToString();
+        abstract public Query<TBase> GetQuery();
 
         public virtual QueryBuilder<TBase> AddRestriction<TProp>(string property, RestrictionTypes rType, TProp value)
         {
@@ -348,7 +340,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             // Store the SQL for the restriction clause against the column attribute for the 
             // property, then store the value of the parameter against its handle if no error occurs.
             Restrictions[columnAttribute] = restrictionBuilder.ToString();
-            AddParameter(columnAttribute, (handle, value));
+            Query.AddParameter(columnAttribute, (handle, value));
 
             return this;
         }

@@ -30,7 +30,7 @@ namespace DataTrack.Core.Tests
             expectedQuery = sqlBuilder.ToString();
 
             stopwatch.Start();
-            testQuery = new ReadQueryBuilder<Book>().ToString();
+            testQuery = new ReadQueryBuilder<Book>().GetQuery().QueryString;
             stopwatch.Stop();
 
             Logger.Info(MethodBase.GetCurrentMethod(), $"ReadQueryBuilder executed in {stopwatch.ElapsedMilliseconds}ms");
@@ -59,7 +59,7 @@ namespace DataTrack.Core.Tests
             expectedQuery = sqlBuilder.ToString();
 
             stopwatch.Start();
-            testQuery = new ReadQueryBuilder<Author>().ToString();
+            testQuery = new ReadQueryBuilder<Author>().GetQuery().QueryString;
             stopwatch.Stop();
 
             Logger.Info(MethodBase.GetCurrentMethod(), $"ReadQueryBuilder executed in {stopwatch.ElapsedMilliseconds}ms");
@@ -87,7 +87,7 @@ namespace DataTrack.Core.Tests
             expectedQuery = sqlBuilder.ToString();
 
             stopwatch.Start();
-            testQuery = new InsertQueryBuilder<Author>(author).ToString();
+            testQuery = new InsertQueryBuilder<Author>(author).GetQuery().QueryString;
             stopwatch.Stop();
 
             Logger.Info(MethodBase.GetCurrentMethod(), $"InsertQueryBuilder executed in {stopwatch.ElapsedMilliseconds}ms");
@@ -125,7 +125,7 @@ namespace DataTrack.Core.Tests
             expectedQuery = sqlBuilder.ToString();
 
             stopwatch.Start();
-            testQuery = new InsertQueryBuilder<Author>(author).ToString();
+            testQuery = new InsertQueryBuilder<Author>(author).GetQuery().QueryString;
             stopwatch.Stop();
 
             Logger.Info(MethodBase.GetCurrentMethod(), $"InsertQueryBuilder executed in {stopwatch.ElapsedMilliseconds}ms");
@@ -152,7 +152,7 @@ namespace DataTrack.Core.Tests
             expectedQuery = sqlBuilder.ToString();
 
             stopwatch.Start();
-            testQuery = new DeleteQueryBuilder<Author>(author).ToString();
+            testQuery = new DeleteQueryBuilder<Author>(author).GetQuery().QueryString;
             stopwatch.Stop();
 
             Logger.Info(MethodBase.GetCurrentMethod(), $"DeleteQueryBuilder executed in {stopwatch.ElapsedMilliseconds}ms");
@@ -184,7 +184,7 @@ namespace DataTrack.Core.Tests
             expectedQuery = sqlBuilder.ToString();
 
             stopwatch.Start();
-            testQuery = new UpdateQueryBuilder<Author>(author).ToString();
+            testQuery = new UpdateQueryBuilder<Author>(author).GetQuery().QueryString;
             stopwatch.Stop();
 
             Logger.Info(MethodBase.GetCurrentMethod(), $"UpdateQueryBuilder executed in {stopwatch.ElapsedMilliseconds}ms");

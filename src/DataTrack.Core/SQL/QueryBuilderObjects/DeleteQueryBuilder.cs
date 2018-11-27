@@ -1,5 +1,6 @@
 ﻿using DataTrack.Core.Attributes;
 using DataTrack.Core.Enums;
+using DataTrack.Core.SQL.QueryObjects;
 using DataTrack.Core.Util;
 using DataTrack.Core.Util.Extensions;
 using System;
@@ -38,7 +39,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             }
         }
 
-        public override string ToString()
+        public override Query<TBase> GetQuery()
         {
             if (Query.Parameters.Count >= 1)
             {
@@ -62,10 +63,14 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
 
                 Logger.Info(MethodBase.GetCurrentMethod(), "Generated SQL: " + sql);
 
-                return sql;
+                Query.QueryString = sql;
+            }
+            else
+            {
+                Query.QueryString = string.Empty;
             }
 
-            return string.Empty;
+            return Query;
         }
 
         #endregion

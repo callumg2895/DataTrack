@@ -1,6 +1,7 @@
 ﻿using DataTrack.Core.Attributes;
 using DataTrack.Core.Enums;
 using DataTrack.Core.Interface;
+using DataTrack.Core.SQL.QueryObjects;
 using DataTrack.Core.Util;
 using DataTrack.Core.Util.Extensions;
 using System;
@@ -36,7 +37,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
 
         #region Methods
 
-        public override string ToString()
+        public override Query<TBase> GetQuery()
         {
             SQLBuilder sqlBuilder = new SQLBuilder(Query.Parameters);
             StringBuilder childSqlBuilder = new StringBuilder();
@@ -84,7 +85,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
                             Query.Columns.Add(column);
                         }
 
-                        sqlBuilder.Append(queryBuilder.ToString());
+                        sqlBuilder.Append(queryBuilder.GetQuery().QueryString);
                     }
                 }
             }
@@ -93,7 +94,9 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
 
             Logger.Info(MethodBase.GetCurrentMethod(), "Generated SQL: " + sql);
 
-            return sql;
+            Query.QueryString = sql;
+
+            return Query;
         }
 
         #endregion Methods

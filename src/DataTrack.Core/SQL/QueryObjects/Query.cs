@@ -3,6 +3,7 @@ using DataTrack.Core.Enums;
 using DataTrack.Core.Util.DataStructures;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Text;
 
 namespace DataTrack.Core.SQL.QueryObjects
@@ -10,6 +11,8 @@ namespace DataTrack.Core.SQL.QueryObjects
     public class Query<TBase>
     {
         #region Members
+
+        private Type BaseType = typeof(TBase);
 
         public List<TableMappingAttribute> Tables { get; set; } = new List<TableMappingAttribute>();
         public List<ColumnMappingAttribute> Columns { get; set; } = new List<ColumnMappingAttribute>();
@@ -37,6 +40,14 @@ namespace DataTrack.Core.SQL.QueryObjects
                     parameters.AddRange(Parameters[column]);
 
             return parameters;
+        }
+
+        public void AddParameter(ColumnMappingAttribute column, (string Handle, object Value) parameter)
+        {
+            if (Parameters.ContainsKey(column))
+                Parameters[column].Add(parameter);
+            else
+                Parameters[column] = new List<(string Handle, object Value)>() { parameter };
         }
 
         #endregion
