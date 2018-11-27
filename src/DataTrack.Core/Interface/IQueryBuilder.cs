@@ -10,7 +10,5 @@ namespace DataTrack.Core.Interface
         string ToString();
 
         QueryBuilder<TBase> AddRestriction<TProp>(string property, RestrictionTypes rType, TProp value);
-
-        List<(string Handle, object Value)> GetParameters();
     }
 }

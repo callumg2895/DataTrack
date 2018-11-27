@@ -113,7 +113,7 @@ namespace DataTrack.Core.SQL
             foreach (QueryBuilder<TBase> queryBuilder in queryBuilders)
             {
                 transactionSQLBuilder.Append(querySQLMapping[queryBuilder]);
-                parameters.AddRange(queryBuilder.GetParameters().Where(p => !parameters.Select(pa => pa.Handle).Contains(p.Handle)));
+                parameters.AddRange(queryBuilder.Query.GetParameters().Where(p => !parameters.Select(pa => pa.Handle).Contains(p.Handle)));
             }
 
             return transactionSQLBuilder.ToString();

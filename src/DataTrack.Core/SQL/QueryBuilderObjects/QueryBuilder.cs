@@ -353,17 +353,6 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             return this;
         }
 
-        public virtual List<(string Handle, object Value)> GetParameters()
-        {
-            List<(string Handle, object Value)> parameters = new List<(string Handle, object Value)>();
-
-            foreach (ColumnMappingAttribute column in Query.Columns)
-                if (Query.Parameters.ContainsKey(column))
-                    parameters.AddRange(Query.Parameters[column]);
-
-            return parameters;
-        }
-
         #endregion
     }
 }
