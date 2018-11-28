@@ -76,31 +76,34 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             }
 
             // Get the table mapping for all child objects
-            foreach (PropertyInfo property in type.GetProperties())
+            type.GetProperties().ForEach(prop => MapProperty(prop));
+        }
+
+        private void MapProperty(PropertyInfo property)
+        {
+            Type propertyType = property.PropertyType;
+            TableMappingAttribute mappingAttribute;
+
+            // If the property is a generic list, then it fits the profile of a child object
+            if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(List<>))
             {
-                Type propertyType = property.PropertyType;
+                Type genericArgumentType = propertyType.GetGenericArguments()[0];
 
-                // If the property is a generic list, then it fits the profile of a child object
-                if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(List<>))
+                if (!Dictionaries.MappingCache.ContainsKey(BaseType))
                 {
-                    Type genericArgumentType = propertyType.GetGenericArguments()[0];
-
-                    if (!Dictionaries.MappingCache.ContainsKey(type))
+                    if (TryGetTableMappingAttribute(genericArgumentType, out mappingAttribute))
                     {
-                        if (TryGetTableMappingAttribute(genericArgumentType, out mappingAttribute))
-                        {
-                            Query.TypeTableMapping[genericArgumentType] = mappingAttribute;
-                            Query.Tables.Add(mappingAttribute);
-                        }
-                    }
-                    else
-                    {
-                        mappingAttribute = Dictionaries.MappingCache[genericArgumentType].Table;
                         Query.TypeTableMapping[genericArgumentType] = mappingAttribute;
                         Query.Tables.Add(mappingAttribute);
                     }
-
                 }
+                else
+                {
+                    mappingAttribute = Dictionaries.MappingCache[genericArgumentType].Table;
+                    Query.TypeTableMapping[genericArgumentType] = mappingAttribute;
+                    Query.Tables.Add(mappingAttribute);
+                }
+
             }
         }
 
@@ -224,28 +227,27 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             return false;
         }
 
-        private protected void UpdateParameters(TBase item)
-        {
-            // For each column mapping attribute, find the value of the property which is decorated by that column attribute
-            // Then update the dictionary of parameters with this value.
-            foreach (ColumnMappingAttribute columnAttribute in Query.Columns)
-            {
-                string handle = $"@{columnAttribute.TableName}_{columnAttribute.ColumnName}_{CurrentParameterIndex}";
-                string propertyName;
+        private protected void UpdateParameters(TBase item) 
+            => Query.Columns.ForEach(
+                columnAttribute =>
+                {
+                    // For each column in the Query, find the value of the property which is decorated by that column attribute
+                    // Then update the dictionary of parameters with this value.
 
-                if (columnAttribute.TryGetPropertyName(BaseType, out propertyName))
-                    Query.AddParameter(columnAttribute, (handle, item.GetPropertyValue(propertyName)));
-            }
-        }
+                    string handle = $"@{columnAttribute.TableName}_{columnAttribute.ColumnName}_{CurrentParameterIndex}";
+                    string propertyName;
+
+                    if (columnAttribute.TryGetPropertyName(BaseType, out propertyName))
+                        Query.AddParameter(columnAttribute, (handle, item.GetPropertyValue(propertyName)));
+                });
 
         private protected void UpdateParameters(List<TBase> items)
-        {
-            foreach(TBase item in items)
+            => items.ForEach(item =>
             {
                 UpdateParameters(item);
                 CurrentParameterIndex++;
-            }
-        }
+            });
+        
 
         private protected void AddPrimaryKeyRestriction(TBase item)
         {
