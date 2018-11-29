@@ -72,7 +72,7 @@ namespace DataTrack.Core.SQL.QueryObjects
                         case CRUDOperationTypes.Update:     return GetResultsForUpdateQuery(reader);
                         case CRUDOperationTypes.Delete:
                         default:
-
+                            
                             return null;
                     }                          
             }
@@ -165,12 +165,8 @@ namespace DataTrack.Core.SQL.QueryObjects
                     var childItem = Activator.CreateInstance(childType);
                     columnCount = originalColumnCount;
 
-                    foreach (PropertyInfo property in childType.GetProperties())
-                    {
-                        property.SetValue(
-                            childItem,
-                            Convert.ChangeType(reader[Columns[columnCount++].ColumnName], property.PropertyType));
-                    }
+                    childType.GetProperties()
+                             .ForEach(prop => prop.SetValue(childItem, Convert.ChangeType(reader[Columns[columnCount++].ColumnName], prop.PropertyType)));
 
                     MethodInfo addItem = childCollection.GetType().GetMethod("Add");
                     addItem.Invoke(childCollection, new object[] { childItem });
