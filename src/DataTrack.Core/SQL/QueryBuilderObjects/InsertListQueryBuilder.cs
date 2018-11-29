@@ -12,7 +12,7 @@ using System.Text;
 
 namespace DataTrack.Core.SQL.QueryBuilderObjects
 {
-    public class InsertListQueryBuilder<TBase> : QueryBuilder<TBase>
+    public class InsertListQueryBuilder<TBase> : QueryBuilder<TBase> where TBase : new()
     {
 
         #region Members

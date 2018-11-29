@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace DataTrack.Core.SQL.QueryBuilderObjects
 {
-    public class UpdateQueryBuilder<TBase> : QueryBuilder<TBase>
+    public class UpdateQueryBuilder<TBase> : QueryBuilder<TBase> where TBase : new()
     {
 
         public UpdateQueryBuilder(TBase item, int parameterIndex = 1)

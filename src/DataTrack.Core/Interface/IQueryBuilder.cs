@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace DataTrack.Core.Interface
 {
-    public interface IQueryBuilder<TBase>
+    public interface IQueryBuilder<TBase> where TBase : new()
     {
         Query<TBase> GetQuery();
         QueryBuilder<TBase> AddRestriction<TProp>(string property, RestrictionTypes rType, TProp value);

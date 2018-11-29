@@ -10,7 +10,7 @@ using System.Text;
 
 namespace DataTrack.Core.SQL.QueryBuilderObjects
 {
-    public class DeleteQueryBuilder<TBase> : QueryBuilder<TBase>
+    public class DeleteQueryBuilder<TBase> : QueryBuilder<TBase> where TBase : new()
     {
         #region Constructors
 

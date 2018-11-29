@@ -11,23 +11,13 @@ namespace DataTrack.Core.Repository
     {
         #region Create
 
-        public static int Create(TBase item)
-        {
-            Transaction<TBase> transaction = new Transaction<TBase>(new InsertQueryBuilder<TBase>(item));
-
-            return (int)transaction.Execute()[0];
-        }
-
+        public static int Create(TBase item) => new InsertQueryBuilder<TBase>(item).GetQuery().Execute();
+        
         #endregion
 
         #region Read
 
-        public static TBase GetByID(int id)
-        {
-            Transaction<TBase> transaction = new Transaction<TBase>(new ReadQueryBuilder<TBase>(id));
-
-            return (TBase)((List<TBase>)transaction.Execute()[0])[0];
-        }
+        public static TBase GetByID(int id) => new ReadQueryBuilder<TBase>(id).GetQuery().Execute()[0];
 
         public static List<TBase> GetByProperty(string propName, RestrictionTypes restriction, object propValue)
         {
@@ -39,32 +29,21 @@ namespace DataTrack.Core.Repository
             addRestriction = readBuilder.GetType().GetMethod("AddRestriction", BindingFlags.Instance | BindingFlags.Public);
             addRestriction.MakeGenericMethod(propType).Invoke(readBuilder, new object[] { propName, restriction, propValue });
 
-            Transaction<TBase> transaction = new Transaction<TBase>(readBuilder);
-
-            return (List<TBase>)transaction.Execute()[0];
+            return readBuilder.GetQuery().Execute();
         }
 
         #endregion
 
         #region Update
 
-        public static int Update(TBase item)
-        {
-            Transaction<TBase> transaction = new Transaction<TBase>(new UpdateQueryBuilder<TBase>(item));
+        public static int Update(TBase item) => new UpdateQueryBuilder<TBase>(item).GetQuery().Execute();
 
-            return (int)transaction.Execute()[0];
-        }
 
         #endregion
 
         #region Delete
 
-        public static void Delete(TBase item)
-        {
-            Transaction<TBase> transaction = new Transaction<TBase>(new DeleteQueryBuilder<TBase>(item));
-
-            transaction.Execute();
-        }
+        public static void Delete(TBase item) => new DeleteQueryBuilder<TBase>(item).GetQuery().Execute();
 
         #endregion
     }
