@@ -78,7 +78,7 @@ namespace DataTrack.Core.Tests
             using (Transaction<Author> t1 = new Transaction<Author>(new List<Query<Author>>()
             {
                 new InsertQueryBuilder<Author>(authorBefore).GetQuery(),
-                new ReadQueryBuilder<Author>(authorBefore.ID, 9).GetQuery(),
+                new ReadQueryBuilder<Author>(authorBefore.ID).GetQuery(),
             }))
             {
                 results1 = t1.Execute();
@@ -94,8 +94,8 @@ namespace DataTrack.Core.Tests
             using (Transaction<Author> t2 = new Transaction<Author>(new List<Query<Author>>()
             {
                 new UpdateQueryBuilder<Author>(authorAfter).GetQuery(),
-                new ReadQueryBuilder<Author>(authorAfter.ID, 5).GetQuery(),
-                new DeleteQueryBuilder<Author>(authorAfter, 10).GetQuery(),
+                new ReadQueryBuilder<Author>(authorAfter.ID).GetQuery(),
+                new DeleteQueryBuilder<Author>(authorAfter).GetQuery(),
             }))
             {
                 results2 = t2.Execute();
