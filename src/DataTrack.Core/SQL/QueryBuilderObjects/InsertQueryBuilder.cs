@@ -63,7 +63,6 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
 
                     if (childItems.Count > 0)
                     {
-                        CurrentParameterIndex++;
                         dynamic queryBuilder = Activator.CreateInstance(typeof(InsertListQueryBuilder<>).MakeGenericType(Query.TypeTableMapping[Query.Tables[i]]), childItems, CurrentParameterIndex);
 
                         foreach (ColumnMappingAttribute column in queryBuilder.Query.Columns)

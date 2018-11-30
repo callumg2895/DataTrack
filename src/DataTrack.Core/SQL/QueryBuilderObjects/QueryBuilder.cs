@@ -89,7 +89,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             {
                 Type genericArgumentType = propertyType.GetGenericArguments()[0];
 
-                if (!Dictionaries.MappingCache.ContainsKey(BaseType))
+                if (!Dictionaries.MappingCache.ContainsKey(genericArgumentType))
                 {
                     if (TryGetTableMappingAttribute(genericArgumentType, out mappingAttribute))
                     {
@@ -227,8 +227,9 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             return false;
         }
 
-        private protected void UpdateParameters(TBase item) 
-            => Query.Columns.ForEach(
+        private protected void UpdateParameters(TBase item)
+        {
+            Query.Columns.ForEach(
                 columnAttribute =>
                 {
                     // For each column in the Query, find the value of the property which is decorated by that column attribute
@@ -241,11 +242,13 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
                         Query.AddParameter(columnAttribute, (handle, item.GetPropertyValue(propertyName)));
                 });
 
+            CurrentParameterIndex++;
+        }
+
         private protected void UpdateParameters(List<TBase> items)
             => items.ForEach(item =>
             {
                 UpdateParameters(item);
-                CurrentParameterIndex++;
             });
         
 
