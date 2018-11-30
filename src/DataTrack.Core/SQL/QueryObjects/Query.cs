@@ -78,6 +78,26 @@ namespace DataTrack.Core.SQL.QueryObjects
             }
         }
 
+        internal dynamic Execute(SqlCommand command, SqlTransaction transaction)
+        {
+            command.Transaction = transaction;
+            command.CommandType = CommandType.Text;
+            command.CommandText = QueryString;
+            command.AddParameters(GetParameters());
+
+            using (SqlDataReader reader = command.ExecuteReader())
+                switch (OperationType)
+                {
+                    case CRUDOperationTypes.Read: return GetResultsForReadQuery(reader);
+                    case CRUDOperationTypes.Create: return GetResultForInsertQuery(reader);
+                    case CRUDOperationTypes.Update: return GetResultsForUpdateQuery(reader);
+                    case CRUDOperationTypes.Delete:
+                    default:
+
+                        return null;
+                }
+        }
+
         private int GetResultForInsertQuery(SqlDataReader reader)
         {
             int affectedRows = 0;

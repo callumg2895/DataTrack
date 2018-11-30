@@ -178,7 +178,7 @@ namespace DataTrack.Core.Tests
             sqlBuilder.AppendLine("Author.first_name = @authors_first_name_1,");
             sqlBuilder.AppendLine("Author.last_name = @authors_last_name_1");
             sqlBuilder.AppendLine("from authors Author");
-            sqlBuilder.AppendLine("where Author.id = @authors_id_1");
+            sqlBuilder.AppendLine("where Author.id = @authors_id_2");
             sqlBuilder.AppendLine("select @@rowcount as affected_rows");
 
             expectedQuery = sqlBuilder.ToString();

@@ -1,5 +1,6 @@
 ﻿using DataTrack.Core.SQL;
 using DataTrack.Core.SQL.QueryBuilderObjects;
+using DataTrack.Core.SQL.QueryObjects;
 using DataTrack.Core.Tests.TestObjects;
 using DataTrack.Core.Util;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -20,6 +21,7 @@ namespace DataTrack.Core.Tests
         {
             // Arrange
             Book book = new Book() { ID = 1, AuthorId = 1, Title = "The Great Gatsby" };
+
             Author author = new Author()
             {
                 ID = 1,
@@ -28,22 +30,27 @@ namespace DataTrack.Core.Tests
                 Books = new List<Book>() { book }
             };
 
+            List<object> results = null;
+
             //Act
             stopwatch.Start();
-            Transaction<Author> t1 = new Transaction<Author>(new List<QueryBuilder<Author>>()
-            {
-                new InsertQueryBuilder<Author>(author),
-                new ReadQueryBuilder<Author>(author.ID),
-                new DeleteQueryBuilder<Author>(author),
-            });
 
-            Transaction<Book> t2 = new Transaction<Book>(new List<QueryBuilder<Book>>()
+            using (Transaction<Author> t1 = new Transaction<Author>(new List<Query<Author>>(){
+                new InsertQueryBuilder<Author>(author).GetQuery(),
+                new ReadQueryBuilder<Author>(author.ID).GetQuery(),
+                new DeleteQueryBuilder<Author>(author).GetQuery(),
+            }))
             {
-                new DeleteQueryBuilder<Book>(book)
-            });
+                results = t1.Execute();
+                t1.Commit();
+            }
 
-            List<object> results = t1.Execute();
-            t2.Execute();
+            using (Transaction<Book> t2 = new Transaction<Book>(new DeleteQueryBuilder<Book>(book).GetQuery()))
+            {
+                t2.Execute();
+                t2.Commit();
+            }
+
             stopwatch.Stop();
 
             Logger.Info(MethodBase.GetCurrentMethod(), $"Transaction<Author> executed in {stopwatch.ElapsedMilliseconds}ms");
@@ -62,29 +69,39 @@ namespace DataTrack.Core.Tests
             // Arrange
             Author authorBefore = new Author() { ID = 1, FirstName = "John", LastName = "Smith", Books = new List<Book>()};
             Author authorAfter = new Author() { ID = 1, FirstName = "James", LastName = "Smith", Books = new List<Book>() };
+            List<object> results1 = null;
+            List<object> results2 = null;
 
             // Act
             stopwatch.Start();
-            Transaction<Author> t1 = new Transaction<Author>(new List<QueryBuilder<Author>>()
-            {
-                new InsertQueryBuilder<Author>(authorBefore),
-                new ReadQueryBuilder<Author>(authorBefore.ID),
-            });
 
-            List<object> results1 = t1.Execute();
+            using (Transaction<Author> t1 = new Transaction<Author>(new List<Query<Author>>()
+            {
+                new InsertQueryBuilder<Author>(authorBefore).GetQuery(),
+                new ReadQueryBuilder<Author>(authorBefore.ID, 9).GetQuery(),
+            }))
+            {
+                results1 = t1.Execute();
+                t1.Commit();
+            }
+
             stopwatch.Stop();
 
             Logger.Info(MethodBase.GetCurrentMethod(), $"Transaction<Author> executed in {stopwatch.ElapsedMilliseconds}ms");
 
             stopwatch.Start();
-            Transaction<Author> t2 = new Transaction<Author>(new List<QueryBuilder<Author>>()
-            {
-                new UpdateQueryBuilder<Author>(authorAfter),
-                new ReadQueryBuilder<Author>(authorAfter.ID),
-                new DeleteQueryBuilder<Author>(authorAfter),
-            });
 
-            List<object> results2 = t2.Execute();
+            using (Transaction<Author> t2 = new Transaction<Author>(new List<Query<Author>>()
+            {
+                new UpdateQueryBuilder<Author>(authorAfter).GetQuery(),
+                new ReadQueryBuilder<Author>(authorAfter.ID, 5).GetQuery(),
+                new DeleteQueryBuilder<Author>(authorAfter, 10).GetQuery(),
+            }))
+            {
+                results2 = t2.Execute();
+                t2.Commit();
+            }
+
             stopwatch.Stop();
 
             Logger.Info(MethodBase.GetCurrentMethod(), $"Transaction<Author> executed in {stopwatch.ElapsedMilliseconds}ms");
