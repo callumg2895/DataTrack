@@ -132,9 +132,8 @@ namespace DataTrack.Core.Tests
             int resultsAfterRollBack;
             int resultsAfterDelete;
 
-            new DeleteQueryBuilder<Author>(author).GetQuery().Execute();
-
             // Act
+            stopwatch.Start();
 
             new InsertQueryBuilder<Author>(author).GetQuery().Execute();
 
@@ -149,6 +148,9 @@ namespace DataTrack.Core.Tests
             new DeleteQueryBuilder<Author>(author).GetQuery().Execute();
 
             resultsAfterDelete = new ReadQueryBuilder<Author>(author.ID).GetQuery().Execute().Count;
+
+            stopwatch.Stop();
+            Logger.Info(MethodBase.GetCurrentMethod(), $"Transaction<Author> executed in {stopwatch.ElapsedMilliseconds}ms");
 
             //Assert
             Assert.AreEqual(resultsAfterRollBack, 1);
