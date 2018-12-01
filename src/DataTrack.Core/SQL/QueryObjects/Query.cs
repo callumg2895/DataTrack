@@ -169,8 +169,9 @@ namespace DataTrack.Core.SQL.QueryObjects
                     }
 
                     columnCount++;
-                    results.Add(obj);
                 }
+
+                results.Add(obj);
             }
 
             for (int tableCount = 1; tableCount < Tables.Count; tableCount++)

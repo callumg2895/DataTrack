@@ -117,5 +117,44 @@ namespace DataTrack.Core.Tests
             Assert.IsTrue(AuthorsAreEqual(beforeUpdate, authorBefore));
             Assert.IsTrue(AuthorsAreEqual(afterUpdate, authorAfter));
         }
+
+        [TestMethod]
+        public void TestTransaction_ShouldNotDeleteIfTransactionRolledBack()
+        {
+            // Arrange
+            Author author = new Author()
+            {
+                ID = 1,
+                FirstName = "John",
+                LastName = "Smith",
+            };
+
+            int resultsAfterRollBack;
+            int resultsAfterDelete;
+
+            new DeleteQueryBuilder<Author>(author).GetQuery().Execute();
+
+            // Act
+
+            new InsertQueryBuilder<Author>(author).GetQuery().Execute();
+
+            using (Transaction<Author> t = new Transaction<Author>(new DeleteQueryBuilder<Author>(author).GetQuery()))
+            {
+                t.Execute();
+                t.RollBack();
+            }
+
+            resultsAfterRollBack = new ReadQueryBuilder<Author>(author.ID).GetQuery().Execute().Count;
+
+            new DeleteQueryBuilder<Author>(author).GetQuery().Execute();
+
+            resultsAfterDelete = new ReadQueryBuilder<Author>(author.ID).GetQuery().Execute().Count;
+
+            //Assert
+            Assert.AreEqual(resultsAfterRollBack, 1);
+            Assert.AreEqual(resultsAfterDelete, 0);
+
+
+        }
     }
 }
