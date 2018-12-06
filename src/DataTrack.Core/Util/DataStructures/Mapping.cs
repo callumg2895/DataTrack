@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace DataTrack.Core.Util.DataStructures
 {
@@ -11,8 +10,8 @@ namespace DataTrack.Core.Util.DataStructures
 
         public T2 this[T1 item]
         {
-            get => forward.ContainsKey(item) 
-                ? forward[item] 
+            get => forward.ContainsKey(item)
+                ? forward[item]
                 : throw new ArgumentOutOfRangeException($"Mapping does not contain key '{item.ToString()}'");
             set
             {
@@ -28,7 +27,7 @@ namespace DataTrack.Core.Util.DataStructures
 
         public T1 this[T2 item]
         {
-            get => reverse.ContainsKey(item) 
+            get => reverse.ContainsKey(item)
                 ? reverse[item]
                 : throw new ArgumentOutOfRangeException($"Mapping does not contain key '{item.ToString()}'");
 

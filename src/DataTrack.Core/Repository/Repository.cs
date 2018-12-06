@@ -1,9 +1,8 @@
-﻿using DataTrack.Core.SQL;
+﻿using DataTrack.Core.Enums;
 using DataTrack.Core.SQL.QueryBuilderObjects;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using DataTrack.Core.Enums;
 
 namespace DataTrack.Core.Repository
 {
@@ -12,7 +11,7 @@ namespace DataTrack.Core.Repository
         #region Create
 
         public static int Create(TBase item) => new InsertQueryBuilder<TBase>(item).GetQuery().Execute();
-        
+
         #endregion
 
         #region Read

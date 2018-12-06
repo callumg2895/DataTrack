@@ -1,9 +1,7 @@
 ﻿using DataTrack.Core.Attributes;
 using DataTrack.Core.Enums;
-using DataTrack.Core.Interface;
 using DataTrack.Core.SQL.QueryObjects;
 using DataTrack.Core.Util;
-using DataTrack.Core.Util.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;

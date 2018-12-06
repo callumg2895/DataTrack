@@ -1,12 +1,7 @@
-﻿using DataTrack.Core.Util;
+﻿using DataTrack.Core.Enums;
+using DataTrack.Core.Util;
 using System;
-using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
-using System.Data.SqlClient;
-using System.Data.SqlTypes;
-using System.Data;
-using DataTrack.Core.Enums;
 
 namespace DataTrack.Core.Attributes
 {
@@ -21,7 +16,7 @@ namespace DataTrack.Core.Attributes
         public ColumnMappingAttribute(string tableName, string columnName)
             : this(tableName, columnName, 0) { }
 
-        public ColumnMappingAttribute(string tableName, string columnName, byte keyType, string foreignKeyMapping = null) 
+        public ColumnMappingAttribute(string tableName, string columnName, byte keyType, string foreignKeyMapping = null)
         {
             TableName = tableName;
             ColumnName = columnName;
@@ -36,7 +31,7 @@ namespace DataTrack.Core.Attributes
         {
             PropertyInfo[] properties = type.GetProperties();
             propertyName = null;
-            
+
             // Try to find the property with a ColumnMappingAttribute that matches the one in the method call
             foreach (PropertyInfo property in properties)
                 foreach (Attribute attribute in property.GetCustomAttributes())

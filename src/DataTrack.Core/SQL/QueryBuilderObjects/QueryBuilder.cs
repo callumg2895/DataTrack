@@ -202,7 +202,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             typePKColumn = null;
 
             foreach (ColumnMappingAttribute column in Query.TypeColumnMapping[type])
-                if (column.IsPrimaryKey() )
+                if (column.IsPrimaryKey())
                 {
                     typePKColumn = column;
                     return true;
@@ -250,7 +250,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             {
                 UpdateParameters(item);
             });
-        
+
 
         private protected void AddPrimaryKeyRestriction(TBase item)
         {

@@ -1,5 +1,4 @@
 ﻿using DataTrack.Core.Attributes;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -28,7 +27,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             Dictionary<ColumnMappingAttribute, List<(string Handle, object Value)>> parameters,
             Dictionary<TableMappingAttribute, string> tableAliases,
             Dictionary<ColumnMappingAttribute, string> columnAliases,
-            Dictionary<ColumnMappingAttribute, string> restrictions )
+            Dictionary<ColumnMappingAttribute, string> restrictions)
         {
             this.parameters = parameters;
             this.tableAliases = tableAliases ?? new Dictionary<TableMappingAttribute, string>();
@@ -75,8 +74,8 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
                 setBuilder.Append(columns[i].ColumnName);
                 setBuilder.Append(" = ");
                 setBuilder.Append(parameters[columns[i]][0].Handle);
-                setBuilder.AppendLine(i == totalColumns - 1 
-                    ? "" 
+                setBuilder.AppendLine(i == totalColumns - 1
+                    ? ""
                     : ",");
 
                 if (restrictions.ContainsKey(columns[i]))
@@ -107,7 +106,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             int paramCount = columns.Select(c => parameters[c].Count).Max();
 
             sql.Append("values ");
-            
+
             // For each set of parameters, we create a seperate set of values:
             // eg: values (set 1), (set 2), (set 3)
             for (int j = 0; j < paramCount; j++)
@@ -180,7 +179,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
         public void AppendLine(string text) => sql.AppendLine(text);
 
         public override string ToString() => sql.ToString();
-        
+
         #endregion
     }
 }

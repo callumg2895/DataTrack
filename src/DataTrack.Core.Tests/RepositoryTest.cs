@@ -1,11 +1,9 @@
-﻿using DataTrack.Core.Tests.TestObjects;
+﻿using DataTrack.Core.Repository;
+using DataTrack.Core.Tests.TestObjects;
 using DataTrack.Core.Util;
-using DataTrack.Core.Repository;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 using System.Reflection;
 
 namespace DataTrack.Core.Tests

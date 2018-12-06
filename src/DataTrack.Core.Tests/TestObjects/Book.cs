@@ -1,8 +1,5 @@
 ﻿using DataTrack.Core.Attributes;
 using DataTrack.Core.Enums;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace DataTrack.Core.Tests.TestObjects
 {

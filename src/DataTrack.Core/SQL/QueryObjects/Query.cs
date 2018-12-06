@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Reflection;
-using System.Text;
 
 namespace DataTrack.Core.SQL.QueryObjects
 {
@@ -67,14 +66,14 @@ namespace DataTrack.Core.SQL.QueryObjects
                 using (SqlDataReader reader = command.ExecuteReader())
                     switch (OperationType)
                     {
-                        case CRUDOperationTypes.Read:       return GetResultsForReadQuery(reader);
-                        case CRUDOperationTypes.Create:     return GetResultForInsertQuery(reader);
-                        case CRUDOperationTypes.Update:     return GetResultsForUpdateQuery(reader);
+                        case CRUDOperationTypes.Read: return GetResultsForReadQuery(reader);
+                        case CRUDOperationTypes.Create: return GetResultForInsertQuery(reader);
+                        case CRUDOperationTypes.Update: return GetResultsForUpdateQuery(reader);
                         case CRUDOperationTypes.Delete:
                         default:
-                            
+
                             return null;
-                    }                          
+                    }
             }
         }
 
@@ -108,7 +107,7 @@ namespace DataTrack.Core.SQL.QueryObjects
                 if (tableCount == 0)
                 {
                     if (reader.Read())
-                        affectedRows += (int)(object)reader["affected_rows"];
+                        affectedRows += (int)reader["affected_rows"];
 
                     reader.NextResult();
                 }
@@ -129,7 +128,7 @@ namespace DataTrack.Core.SQL.QueryObjects
                     for (int i = 0; i < childObjects; i++)
                     {
                         if (reader.Read())
-                            affectedRows += (int)(object)reader["affected_rows"];
+                            affectedRows += (int)reader["affected_rows"];
 
                         reader.NextResult();
                     }

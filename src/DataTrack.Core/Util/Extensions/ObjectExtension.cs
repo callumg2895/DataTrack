@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace DataTrack.Core.Util.Extensions
+﻿namespace DataTrack.Core.Util.Extensions
 {
     public static class ObjectExtension
     {

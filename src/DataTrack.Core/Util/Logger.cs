@@ -1,10 +1,8 @@
 ﻿using DataTrack.Core.Enums;
-using DataTrack.Core.Util.Extensions;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using System.Text;
 using System.Threading;
 
 namespace DataTrack.Core.Util
@@ -104,7 +102,7 @@ namespace DataTrack.Core.Util
         private static void Logging()
         {
             List<(MethodBase method, string message, OutputTypes type)> threadLogBuffer = new List<(MethodBase method, string message, OutputTypes type)>();
-            
+
             while (running)
             {
                 lock (logBuffer)
@@ -113,7 +111,7 @@ namespace DataTrack.Core.Util
                     logBuffer.Clear();
                 }
 
-                foreach((MethodBase method, string message, OutputTypes type) message in threadLogBuffer)
+                foreach ((MethodBase method, string message, OutputTypes type) message in threadLogBuffer)
                 {
                     string logOutput = $"{DateTime.Now} | {message.method.ReflectedType.Name}::{message.method.Name}() | {message.message}";
 

@@ -1,17 +1,7 @@
-﻿using DataTrack.Core.Attributes;
-using DataTrack.Core.Enums;
-using DataTrack.Core.SQL.QueryBuilderObjects;
-using DataTrack.Core.SQL.QueryObjects;
-using DataTrack.Core.Util;
-using DataTrack.Core.Util.Extensions;
+﻿using DataTrack.Core.SQL.QueryObjects;
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading;
 
 namespace DataTrack.Core.SQL
 {
@@ -30,7 +20,7 @@ namespace DataTrack.Core.SQL
         private Transaction()
         {
             connection = DataTrackConfiguration.CreateConnection();
-            transaction = connection.BeginTransaction();      
+            transaction = connection.BeginTransaction();
         }
 
         public Transaction(Query<TBase> query)
