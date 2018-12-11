@@ -9,14 +9,13 @@ namespace DataTrack.Core.Util
 {
     public static class Logger
     {
-
-        private const string filePath = @".\";
         private const string fileName = @"DataTrackLog_";
         private const string fileExtension = @".txt";
         private const int maxLogLength = 10000;
 
         private static int fileIndex = 0;
         private static string fullPath;
+        private static string filePath = Path.GetPathRoot(Environment.SystemDirectory) + "DataTrack";
         private static int currentLength = 0;
 
         private static Thread loggingThread;
@@ -26,10 +25,13 @@ namespace DataTrack.Core.Util
 
         public static void Init(OutputTypes consoleOutputType = OutputTypes.None)
         {
-            fullPath = $"{filePath}{fileName}{fileIndex}{fileExtension}";
+            fullPath = $@"{filePath}\{fileName}{fileIndex}{fileExtension}";
             outputType = consoleOutputType;
             logBuffer = new List<(MethodBase method, string message, OutputTypes type)>();
             running = true;
+
+            if (!Directory.Exists(filePath))
+                Directory.CreateDirectory(filePath);
 
             Clear();
             Create();
