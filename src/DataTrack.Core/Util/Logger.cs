@@ -1,4 +1,5 @@
 ﻿using DataTrack.Core.Enums;
+using DataTrack.Core.Util.Extensions;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,6 +16,8 @@ namespace DataTrack.Core.Util
 
         private static int fileIndex = 0;
         private static string fullPath;
+        private static DateTime fileDate = DateTime.Now.Date;
+        private static string fileDateString = fileDate.ToShortDateString().Replace("/", "_");
         private static string filePath = Path.GetPathRoot(Environment.SystemDirectory) + "DataTrack";
         private static int currentLength = 0;
 
@@ -25,7 +28,7 @@ namespace DataTrack.Core.Util
 
         public static void Init(OutputTypes consoleOutputType = OutputTypes.None)
         {
-            fullPath = $@"{filePath}\{fileName}{fileIndex}{fileExtension}";
+            fullPath = $@"{filePath}\{fileDateString}_{fileName}{fileIndex}{fileExtension}";
             outputType = consoleOutputType;
             logBuffer = new List<(MethodBase method, string message, OutputTypes type)>();
             running = true;
@@ -47,7 +50,7 @@ namespace DataTrack.Core.Util
                 currentLength = 0;
 
                 while (File.Exists(fullPath))
-                    fullPath = $"{filePath}{fileName}{++fileIndex}{fileExtension}";
+                    fullPath = $@"{filePath}\{fileDateString}_{fileName}{++fileIndex}{fileExtension}";
 
                 using (StreamWriter writer = File.CreateText(fullPath)) { };
             }
@@ -71,9 +74,8 @@ namespace DataTrack.Core.Util
         {
             lock (fullPath)
             {
-                string[] files = Directory.GetFiles(filePath, $"{fileName}*");
-                foreach (string file in files)
-                    File.Delete(file);
+                string[] files = Directory.GetFiles(filePath, $"{fileDateString}_{fileName}*");
+                files.ForEach(file => File.Delete(file));
             }
         }
 
@@ -137,8 +139,12 @@ namespace DataTrack.Core.Util
                                 break;
                         }
 
-                    if (currentLength == maxLogLength)
+                    if (currentLength == maxLogLength || DateTime.Now.Date > fileDate)
+                    {
+                        fileDate = DateTime.Now.Date;
                         Create();
+                    }
+
                 }
 
                 threadLogBuffer.Clear();
