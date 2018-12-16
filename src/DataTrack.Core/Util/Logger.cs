@@ -117,7 +117,7 @@ namespace DataTrack.Core.Util
 
                 foreach ((MethodBase method, string message, OutputTypes type) message in threadLogBuffer)
                 {
-                    string logOutput = $"{DateTime.Now} | {message.method.ReflectedType.Name}::{message.method.Name}() | {message.message}";
+                    string logOutput = $"{DateTime.Now.ToLongTimeString()} | {message.method.ReflectedType.Name}::{message.method.Name}() | {message.message}";
 
                     lock (fullPath)
                     {
