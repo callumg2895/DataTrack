@@ -14,8 +14,6 @@ namespace DataTrack.Core.Tests
     public class TransactionTest : BaseTest
     {
 
-        private Stopwatch stopwatch = new Stopwatch();
-
         [TestMethod]
         public void TestTransaction_ShouldReturnCorrectObjectForReadWithRestriction()
         {
@@ -33,8 +31,6 @@ namespace DataTrack.Core.Tests
             List<object> results = null;
 
             //Act
-            stopwatch.Start();
-
             using (Transaction<Author> t1 = new Transaction<Author>(new List<Query<Author>>(){
                 new InsertQueryBuilder<Author>(author).GetQuery(),
                 new ReadQueryBuilder<Author>(author.ID).GetQuery(),
@@ -50,10 +46,6 @@ namespace DataTrack.Core.Tests
                 t2.Execute();
                 t2.Commit();
             }
-
-            stopwatch.Stop();
-
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Transaction<Author> executed in {stopwatch.ElapsedMilliseconds}ms");
 
             int affectedRows = (int)results[0];
             Author result = ((List<Author>)results[1])[0];
@@ -73,7 +65,6 @@ namespace DataTrack.Core.Tests
             List<object> results2 = null;
 
             // Act
-            stopwatch.Start();
 
             using (Transaction<Author> t1 = new Transaction<Author>(new List<Query<Author>>()
             {
@@ -85,12 +76,6 @@ namespace DataTrack.Core.Tests
                 t1.Commit();
             }
 
-            stopwatch.Stop();
-
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Transaction<Author> executed in {stopwatch.ElapsedMilliseconds}ms");
-
-            stopwatch.Start();
-
             using (Transaction<Author> t2 = new Transaction<Author>(new List<Query<Author>>()
             {
                 new UpdateQueryBuilder<Author>(authorAfter).GetQuery(),
@@ -101,10 +86,6 @@ namespace DataTrack.Core.Tests
                 results2 = t2.Execute();
                 t2.Commit();
             }
-
-            stopwatch.Stop();
-
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Transaction<Author> executed in {stopwatch.ElapsedMilliseconds}ms");
 
             int affectedInsertRows = (int)results1[0];
             Author beforeUpdate = ((List<Author>)results1[1])[0];
@@ -133,7 +114,6 @@ namespace DataTrack.Core.Tests
             int resultsAfterDelete;
 
             // Act
-            stopwatch.Start();
 
             new InsertQueryBuilder<Author>(author).GetQuery().Execute();
 
@@ -148,9 +128,6 @@ namespace DataTrack.Core.Tests
             new DeleteQueryBuilder<Author>(author).GetQuery().Execute();
 
             resultsAfterDelete = new ReadQueryBuilder<Author>(author.ID).GetQuery().Execute().Count;
-
-            stopwatch.Stop();
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Transaction<Author> executed in {stopwatch.ElapsedMilliseconds}ms");
 
             //Assert
             Assert.AreEqual(resultsAfterRollBack, 1);

@@ -12,7 +12,6 @@ namespace DataTrack.Core.Tests
     [TestClass]
     public class QueryBuilderTest : BaseTest
     {
-        private Stopwatch stopwatch = new Stopwatch();
 
         [TestMethod]
         public void TestReadQueryBuilder_ShouldReturnCorrectSQLForObjects()
@@ -28,12 +27,7 @@ namespace DataTrack.Core.Tests
             sqlBuilder.AppendLine("from books as Book");
 
             expectedQuery = sqlBuilder.ToString();
-
-            stopwatch.Start();
             testQuery = new ReadQueryBuilder<Book>().GetQuery().QueryString;
-            stopwatch.Stop();
-
-            Logger.Info(MethodBase.GetCurrentMethod(), $"ReadQueryBuilder executed in {stopwatch.ElapsedMilliseconds}ms");
 
             //Assert
             Assert.AreNotEqual(testQuery, string.Empty);
@@ -57,12 +51,7 @@ namespace DataTrack.Core.Tests
             sqlBuilder.AppendLine("from books as Book");
 
             expectedQuery = sqlBuilder.ToString();
-
-            stopwatch.Start();
             testQuery = new ReadQueryBuilder<Author>().GetQuery().QueryString;
-            stopwatch.Stop();
-
-            Logger.Info(MethodBase.GetCurrentMethod(), $"ReadQueryBuilder executed in {stopwatch.ElapsedMilliseconds}ms");
 
             //Assert
             Assert.AreNotEqual(testQuery, string.Empty);
@@ -85,12 +74,7 @@ namespace DataTrack.Core.Tests
             sqlBuilder.AppendLine("select @@rowcount as affected_rows");
 
             expectedQuery = sqlBuilder.ToString();
-
-            stopwatch.Start();
             testQuery = new InsertQueryBuilder<Author>(author).GetQuery().QueryString;
-            stopwatch.Stop();
-
-            Logger.Info(MethodBase.GetCurrentMethod(), $"InsertQueryBuilder executed in {stopwatch.ElapsedMilliseconds}ms");
 
             //Assert
             Assert.AreNotEqual(testQuery, string.Empty);
@@ -123,12 +107,7 @@ namespace DataTrack.Core.Tests
             sqlBuilder.AppendLine("select @@rowcount as affected_rows");
 
             expectedQuery = sqlBuilder.ToString();
-
-            stopwatch.Start();
             testQuery = new InsertQueryBuilder<Author>(author).GetQuery().QueryString;
-            stopwatch.Stop();
-
-            Logger.Info(MethodBase.GetCurrentMethod(), $"InsertQueryBuilder executed in {stopwatch.ElapsedMilliseconds}ms");
 
             //Assert
             Assert.AreNotEqual(testQuery, string.Empty);
@@ -151,12 +130,7 @@ namespace DataTrack.Core.Tests
             sqlBuilder.AppendLine("select @@rowcount as affected_rows");
 
             expectedQuery = sqlBuilder.ToString();
-
-            stopwatch.Start();
             testQuery = new DeleteQueryBuilder<Author>(author).GetQuery().QueryString;
-            stopwatch.Stop();
-
-            Logger.Info(MethodBase.GetCurrentMethod(), $"DeleteQueryBuilder executed in {stopwatch.ElapsedMilliseconds}ms");
 
             //Assert
             Assert.AreNotEqual(testQuery, string.Empty);
@@ -183,12 +157,7 @@ namespace DataTrack.Core.Tests
             sqlBuilder.AppendLine("select @@rowcount as affected_rows");
 
             expectedQuery = sqlBuilder.ToString();
-
-            stopwatch.Start();
             testQuery = new UpdateQueryBuilder<Author>(author).GetQuery().QueryString;
-            stopwatch.Stop();
-
-            Logger.Info(MethodBase.GetCurrentMethod(), $"UpdateQueryBuilder executed in {stopwatch.ElapsedMilliseconds}ms");
 
             //Assert
             Assert.AreNotEqual(testQuery, string.Empty);

@@ -12,8 +12,6 @@ namespace DataTrack.Core.Tests
     public class RepositoryTest : BaseTest
     {
 
-        private Stopwatch stopwatch = new Stopwatch();
-
         [TestMethod]
         public void TestRepository_ShouldReturnCorrectObjectForReadWithRestriction()
         {
@@ -33,42 +31,12 @@ namespace DataTrack.Core.Tests
             Book bookReadResult;
 
             //Act
-            stopwatch.Start();
             createResult = Repository<Author>.Create(author);
-            stopwatch.Stop();
-            long authorInsertTime = stopwatch.ElapsedMilliseconds;
-
-            stopwatch.Restart();
             authorReadResult = Repository<Author>.GetByID(author.ID);
-            stopwatch.Stop();
-            long authorReadTime = stopwatch.ElapsedMilliseconds;
-
-            stopwatch.Restart();
             bookReadResult = Repository<Book>.GetByID(book1.ID);
-            stopwatch.Stop();
-            long bookReadTime = stopwatch.ElapsedMilliseconds;
-
-            stopwatch.Restart();
             Repository<Book>.Delete(book1);
-            stopwatch.Stop();
-            long book1DeleteTime = stopwatch.ElapsedMilliseconds;
-
-            stopwatch.Restart();
             Repository<Book>.Delete(book2);
-            stopwatch.Stop();
-            long book2DeleteTime = stopwatch.ElapsedMilliseconds;
-
-            stopwatch.Restart();
             Repository<Author>.Delete(author);
-            stopwatch.Stop();
-            long authorDeleteTime = stopwatch.ElapsedMilliseconds;
-
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Inserted 'Author' object in in {authorInsertTime}ms");
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Read 'Author' object in {authorReadTime}ms");
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Read 'Book' object in {bookReadTime}ms");
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Deleted 'Book' object in {book1DeleteTime}ms");
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Deleted 'Book' object in {book2DeleteTime}ms");
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Deleted 'Author' object in {authorDeleteTime}ms");
 
             // Assert
             Assert.AreEqual(createResult, 3);
@@ -93,36 +61,11 @@ namespace DataTrack.Core.Tests
             List<Book> bookReadResult;
 
             //Act
-            stopwatch.Start();
             createResult = Repository<Author>.Create(author);
-            stopwatch.Stop();
-            long authorInsertTime = stopwatch.ElapsedMilliseconds;
-
-            stopwatch.Restart();
             bookReadResult = Repository<Book>.GetByProperty("title", Enums.RestrictionTypes.EqualTo, "The Great Gatsby");
-            stopwatch.Stop();
-            long bookReadTime = stopwatch.ElapsedMilliseconds;
-
-            stopwatch.Restart();
             Repository<Book>.Delete(book1);
-            stopwatch.Stop();
-            long book1DeleteTime = stopwatch.ElapsedMilliseconds;
-
-            stopwatch.Restart();
             Repository<Book>.Delete(book2);
-            stopwatch.Stop();
-            long book2DeleteTime = stopwatch.ElapsedMilliseconds;
-
-            stopwatch.Restart();
             Repository<Author>.Delete(author);
-            stopwatch.Stop();
-            long authorDeleteTime = stopwatch.ElapsedMilliseconds;
-
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Inserted 'Author' object in in {authorInsertTime}ms");
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Read 'Book' object in {bookReadTime}ms");
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Deleted 'Book' object in {book1DeleteTime}ms");
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Deleted 'Book' object in {book2DeleteTime}ms");
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Deleted 'Author' object in {authorDeleteTime}ms");
 
             // Assert
             Assert.AreEqual(createResult, 3);
@@ -150,54 +93,14 @@ namespace DataTrack.Core.Tests
             Author authorReadResult;
 
             //Act
-            stopwatch.Start();
             createResult = Repository<Author>.Create(author);
-            stopwatch.Stop();
-            long authorInsertTime = stopwatch.ElapsedMilliseconds;
-
-            stopwatch.Restart();
             authorReadResult = Repository<Author>.GetByID(author.ID);
-            stopwatch.Stop();
-            long authorReadTime = stopwatch.ElapsedMilliseconds;
-
-            stopwatch.Restart();
             Repository<Book>.Delete(book1);
-            stopwatch.Stop();
-            long book1DeleteTime = stopwatch.ElapsedMilliseconds;
-
-            stopwatch.Restart();
             Repository<Book>.Delete(book2);
-            stopwatch.Stop();
-            long book2DeleteTime = stopwatch.ElapsedMilliseconds;
-
-            stopwatch.Restart();
             Repository<Book>.Delete(book3);
-            stopwatch.Stop();
-            long book3DeleteTime = stopwatch.ElapsedMilliseconds;
-
-            stopwatch.Restart();
             Repository<Book>.Delete(book4);
-            stopwatch.Stop();
-            long book4DeleteTime = stopwatch.ElapsedMilliseconds;
-
-            stopwatch.Restart();
             Repository<Book>.Delete(book5);
-            stopwatch.Stop();
-            long book5DeleteTime = stopwatch.ElapsedMilliseconds;
-
-            stopwatch.Restart();
             Repository<Author>.Delete(author);
-            stopwatch.Stop();
-            long authorDeleteTime = stopwatch.ElapsedMilliseconds;
-
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Inserted 'Author' object in in {authorInsertTime}ms");
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Read 'Author' object in {authorReadTime}ms");
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Deleted 'Book' object in {book1DeleteTime}ms");
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Deleted 'Book' object in {book2DeleteTime}ms");
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Deleted 'Book' object in {book3DeleteTime}ms");
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Deleted 'Book' object in {book4DeleteTime}ms");
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Deleted 'Book' object in {book5DeleteTime}ms");
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Deleted 'Author' object in {authorDeleteTime}ms");
 
             // Assert
             Assert.AreEqual(createResult, 6);
