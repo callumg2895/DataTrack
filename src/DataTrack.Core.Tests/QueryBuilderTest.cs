@@ -148,6 +148,7 @@ namespace DataTrack.Core.Tests
             sqlBuilder.AppendLine();
             sqlBuilder.AppendLine("delete Author from authors Author");
             sqlBuilder.AppendLine("where Author.id in (@authors_id_1)");
+            sqlBuilder.AppendLine("select @@rowcount as affected_rows");
 
             expectedQuery = sqlBuilder.ToString();
 

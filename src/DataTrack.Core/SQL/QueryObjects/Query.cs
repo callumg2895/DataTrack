@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Reflection;
 
 namespace DataTrack.Core.SQL.QueryObjects
@@ -15,7 +16,8 @@ namespace DataTrack.Core.SQL.QueryObjects
     {
         #region Members
 
-        private Type BaseType = typeof(TBase);
+        private Type baseType;
+        private Stopwatch stopwatch;
 
         public List<TableMappingAttribute> Tables { get; set; } = new List<TableMappingAttribute>();
         public List<ColumnMappingAttribute> Columns { get; set; } = new List<ColumnMappingAttribute>();
@@ -29,6 +31,12 @@ namespace DataTrack.Core.SQL.QueryObjects
         #endregion
 
         #region Constructors
+
+        public Query()
+        {
+            baseType = typeof(TBase);
+            stopwatch = new Stopwatch();
+        }
 
         #endregion
 
@@ -65,6 +73,8 @@ namespace DataTrack.Core.SQL.QueryObjects
 
         internal dynamic Execute(SqlCommand command, SqlTransaction transaction = null)
         {
+            stopwatch.Start();
+
             if (transaction != null)
                 command.Transaction = transaction;
 
@@ -79,9 +89,10 @@ namespace DataTrack.Core.SQL.QueryObjects
                     case CRUDOperationTypes.Read: return GetResultsForReadQuery(reader);
                     case CRUDOperationTypes.Create: return GetResultForInsertQuery(reader);
                     case CRUDOperationTypes.Update: return GetResultsForUpdateQuery(reader);
-                    case CRUDOperationTypes.Delete:
+                    case CRUDOperationTypes.Delete: return GetResultsForDeleteQuery(reader);
                     default:
-
+                        stopwatch.Stop();
+                        Logger.Error(MethodBase.GetCurrentMethod(), "No valid operation to perform.");
                         return null;
                 }
             }
@@ -125,6 +136,10 @@ namespace DataTrack.Core.SQL.QueryObjects
                 }
             }
 
+            stopwatch.Stop();
+
+            Logger.Info(MethodBase.GetCurrentMethod(), $"Executed Insert ({stopwatch.GetElapsedMicroseconds()}\u03BCs): {affectedRows} row{(affectedRows > 1 ? "s" : "")} affected");
+            
             return affectedRows;
         }
 
@@ -132,7 +147,7 @@ namespace DataTrack.Core.SQL.QueryObjects
         {
             List<TBase> results = new List<TBase>();
 
-            List<ColumnMappingAttribute> mainColumns = TypeColumnMapping[BaseType];
+            List<ColumnMappingAttribute> mainColumns = TypeColumnMapping[baseType];
 
             int columnCount = 0;
 
@@ -144,7 +159,7 @@ namespace DataTrack.Core.SQL.QueryObjects
                 {
                     if (ColumnPropertyNames.ContainsKey(column))
                     {
-                        PropertyInfo property = BaseType.GetProperty(ColumnPropertyNames[column]);
+                        PropertyInfo property = baseType.GetProperty(ColumnPropertyNames[column]);
 
                         if (reader[column.ColumnName] != DBNull.Value)
                             property.SetValue(obj, Convert.ChangeType(reader[column.ColumnName], property.PropertyType));
@@ -184,17 +199,41 @@ namespace DataTrack.Core.SQL.QueryObjects
 
                 foreach (TBase obj in results)
                 {
-                    PropertyInfo childProperty = Tables[0].GetChildProperty(BaseType, Tables[tableCount].TableName);
+                    PropertyInfo childProperty = Tables[0].GetChildProperty(baseType, Tables[tableCount].TableName);
                     childProperty.SetValue(obj, childCollection);
                 }
             }
+
+            stopwatch.Stop();
+
+            Logger.Info(MethodBase.GetCurrentMethod(), $"Executed Read ({stopwatch.GetElapsedMicroseconds()}\u03BCs): {results.Count} result{(results.Count > 1 ? "s" : "")} retrieved");
 
             return results;
         }
 
         private int GetResultsForUpdateQuery(SqlDataReader reader)
+        { 
             // Update operations always check the number of rows affected after the query has executed
-            => reader.Read() ? (int)reader["affected_rows"] : 0;
+            int affectedRows = reader.Read() ? (int)reader["affected_rows"] : 0;
+
+            stopwatch.Stop();
+
+            Logger.Info(MethodBase.GetCurrentMethod(), $"Executed Update ({stopwatch.GetElapsedMicroseconds()}\u03BCs): {affectedRows} row{(affectedRows > 1 ? "s" : "")} affected");
+
+            return affectedRows;
+        }
+
+        private int GetResultsForDeleteQuery(SqlDataReader reader)
+        {
+            // Update operations always check the number of rows affected after the query has executed
+            int affectedRows = reader.Read() ? (int)reader["affected_rows"] : 0;
+
+            stopwatch.Stop();
+
+            Logger.Info(MethodBase.GetCurrentMethod(), $"Executed Delete ({stopwatch.GetElapsedMicroseconds()}\u03BCs): {affectedRows} row{(affectedRows > 1 ? "s" : "")} affected");
+
+            return affectedRows;
+        }
 
         #endregion
     }

@@ -57,6 +57,9 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
                 sqlBuilder.AppendLine($"delete {TableAliases[Query.Tables[0]]} from {Query.Tables[0].TableName} {TableAliases[Query.Tables[0]]}");
                 sqlBuilder.Append(restrictionsBuilder.ToString());
 
+                // For insert statements return the number of rows affected
+                SelectRowCount(ref sqlBuilder);
+
                 string sql = sqlBuilder.ToString();
 
                 Logger.Info(MethodBase.GetCurrentMethod(), "Generated SQL: " + sql);

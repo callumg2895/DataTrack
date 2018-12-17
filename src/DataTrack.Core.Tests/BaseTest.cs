@@ -17,7 +17,7 @@ namespace DataTrack.Core.Tests
                 "User id=sa;" +
                 "Password=password;";
 
-            DataTrackConfiguration.Init(OutputTypes.None, ConfigType.ConnectionString, connectionString);
+            DataTrackConfiguration.Init(false, ConfigType.ConnectionString, connectionString);
 
             using (SqlConnection connection = DataTrackConfiguration.CreateConnection())
             {

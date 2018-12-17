@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 
 namespace DataTrack.Core.Util
@@ -23,14 +24,14 @@ namespace DataTrack.Core.Util
 
         private static Thread loggingThread;
         private volatile static bool running;
-        private static List<(MethodBase method, string message, OutputTypes type)> logBuffer;
-        private static OutputTypes outputType;
+        private static List<(MethodBase Method, string Message, LogLevel Type)> logBuffer;
+        private static bool _enableConsoleLogging;
 
-        public static void Init(OutputTypes consoleOutputType = OutputTypes.None)
+        public static void Init(bool enableConsoleLogging)
         {
             fullPath = $@"{filePath}\{fileDateString}_{fileName}{fileIndex}{fileExtension}";
-            outputType = consoleOutputType;
-            logBuffer = new List<(MethodBase method, string message, OutputTypes type)>();
+            _enableConsoleLogging = enableConsoleLogging;
+            logBuffer = new List<(MethodBase method, string message, LogLevel type)>();
             running = true;
 
             if (!Directory.Exists(filePath))
@@ -56,17 +57,17 @@ namespace DataTrack.Core.Util
             }
         }
 
-        private static void Log(MethodBase method, string message, OutputTypes type)
+        private static void Log(MethodBase method, string message, LogLevel type)
         {
             lock (logBuffer)
                 logBuffer.Add((method, message, type));
         }
 
-        public static void Info(MethodBase method, string message) => Log(method, $"Info: {message}", OutputTypes.Info);
+        public static void Info(MethodBase method, string message) => Log(method, message, LogLevel.Info);
 
-        public static void Warn(MethodBase method, string message) => Log(method, $"Warning: {message}", OutputTypes.Warning);
+        public static void Warn(MethodBase method, string message) => Log(method, message, LogLevel.Warn);
 
-        public static void Error(MethodBase method, string message) => Log(method, $"Error: {message}", OutputTypes.Error);
+        public static void Error(MethodBase method, string message) => Log(method, message, LogLevel.Error);
 
         public static void Stop() => running = false;
 
@@ -105,7 +106,7 @@ namespace DataTrack.Core.Util
 
         private static void Logging()
         {
-            List<(MethodBase method, string message, OutputTypes type)> threadLogBuffer = new List<(MethodBase method, string message, OutputTypes type)>();
+            List<(MethodBase Method, string Message, LogLevel Type)> threadLogBuffer = new List<(MethodBase method, string message, LogLevel type)>();
 
             while (running)
             {
@@ -115,9 +116,19 @@ namespace DataTrack.Core.Util
                     logBuffer.Clear();
                 }
 
-                foreach ((MethodBase method, string message, OutputTypes type) message in threadLogBuffer)
+                foreach ((MethodBase Method, string Message, LogLevel Level) log in threadLogBuffer)
                 {
-                    string logOutput = $"{DateTime.Now.ToLongTimeString()} | {message.method.ReflectedType.Name}::{message.method.Name}() | {message.message}";
+                    StringBuilder logOutputBuilder = new StringBuilder();
+
+                    logOutputBuilder.Append(DateTime.Now.ToLongTimeString());
+                    logOutputBuilder.Append(" | ");
+                    logOutputBuilder.Append(log.Level.ToString());
+                    logOutputBuilder.Append(" | ");
+                    logOutputBuilder.Append($"{log.Method.ReflectedType.Name}::{log.Method.Name}()");
+                    logOutputBuilder.Append(" | ");
+                    logOutputBuilder.Append(log.Message);
+
+                    string logOutput = logOutputBuilder.ToString();
 
                     lock (fullPath)
                     {
@@ -128,13 +139,12 @@ namespace DataTrack.Core.Util
                         }
                     }
 
-                    if (outputType == OutputTypes.All || (int)message.type <= (int)outputType)
-                        switch (message.type)
+                    if (_enableConsoleLogging)
+                        switch (log.Level)
                         {
-                            case OutputTypes.Error: WriteErrorLine(logOutput); break;
-                            case OutputTypes.Warning: WriteWarningLine(logOutput); break;
-                            case OutputTypes.Info: WriteInfoLine(logOutput); break;
-                            case OutputTypes.None:
+                            case LogLevel.Error: WriteErrorLine(logOutput); break;
+                            case LogLevel.Warn: WriteWarningLine(logOutput); break;
+                            case LogLevel.Info: WriteInfoLine(logOutput); break;
                             default:
                                 break;
                         }

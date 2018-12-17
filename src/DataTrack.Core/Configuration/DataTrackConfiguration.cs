@@ -22,11 +22,11 @@ namespace DataTrack.Core
 
         #region Methods
 
-        public static void Init() => Init(OutputTypes.None, ConfigType.Manual, null);
+        public static void Init() => Init(false, ConfigType.Manual, null);
 
-        public static void Init(OutputTypes outputType, ConfigType configType, string connection)
+        public static void Init(bool enableConsoleLogging, ConfigType configType, string connection)
         {
-            Logger.Init(outputType);
+            Logger.Init(enableConsoleLogging);
 
             switch (configType)
             {
