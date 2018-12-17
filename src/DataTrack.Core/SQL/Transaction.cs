@@ -1,7 +1,11 @@
 ﻿using DataTrack.Core.SQL.QueryObjects;
+using DataTrack.Core.Util.Extensions;
+using DataTrack.Core.Util;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Diagnostics;
+using System.Reflection;
 
 namespace DataTrack.Core.SQL
 {
@@ -12,6 +16,8 @@ namespace DataTrack.Core.SQL
         private SqlTransaction transaction;
         private SqlConnection connection;
         private List<Query<TBase>> queries;
+        private Stopwatch stopwatch;
+        private List<Object> results;
 
         #endregion
 
@@ -21,6 +27,8 @@ namespace DataTrack.Core.SQL
         {
             connection = DataTrackConfiguration.CreateConnection();
             transaction = connection.BeginTransaction();
+            stopwatch = new Stopwatch();
+            results = new List<object>();
         }
 
         public Transaction(Query<TBase> query)
@@ -41,21 +49,31 @@ namespace DataTrack.Core.SQL
 
         public List<object> Execute()
         {
-            List<object> results = new List<object>();
-
+            stopwatch.Start();
             queries.ForEach(query => results.Add(query.Execute(connection.CreateCommand(), transaction)));
+            stopwatch.Stop();
+
+            Logger.Info(MethodBase.GetCurrentMethod(), $"Executed Transaction ({stopwatch.GetElapsedMicroseconds()}\u03BCs): {queries.Count} {(queries.Count > 1 ? "queries" : "query")} executed");
 
             return results;
         }
 
         public void RollBack()
         {
+            stopwatch.Start();
             transaction.Rollback();
+            stopwatch.Stop();
+
+            Logger.Info(MethodBase.GetCurrentMethod(), $"Rolled back Transaction ({stopwatch.GetElapsedMicroseconds()}\u03BCs)");
         }
 
         public void Commit()
         {
+            stopwatch.Start();
             transaction.Commit();
+            stopwatch.Stop();
+
+            Logger.Info(MethodBase.GetCurrentMethod(), $"Committed Transaction ({stopwatch.GetElapsedMicroseconds()}\u03BCs)");
         }
 
         public void Dispose()

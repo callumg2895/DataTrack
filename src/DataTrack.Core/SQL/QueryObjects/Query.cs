@@ -138,7 +138,7 @@ namespace DataTrack.Core.SQL.QueryObjects
 
             stopwatch.Stop();
 
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Executed Insert ({stopwatch.GetElapsedMicroseconds()}\u03BCs): {affectedRows} row{(affectedRows > 1 ? "s" : "")} affected");
+            Logger.Info(MethodBase.GetCurrentMethod(), $"Executed Insert statement ({stopwatch.GetElapsedMicroseconds()}\u03BCs): {affectedRows} row{(affectedRows > 1 ? "s" : "")} affected");
             
             return affectedRows;
         }
@@ -206,7 +206,7 @@ namespace DataTrack.Core.SQL.QueryObjects
 
             stopwatch.Stop();
 
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Executed Read ({stopwatch.GetElapsedMicroseconds()}\u03BCs): {results.Count} result{(results.Count > 1 ? "s" : "")} retrieved");
+            Logger.Info(MethodBase.GetCurrentMethod(), $"Executed Read statement ({stopwatch.GetElapsedMicroseconds()}\u03BCs): {results.Count} result{(results.Count > 1 ? "s" : "")} retrieved");
 
             return results;
         }
@@ -218,7 +218,7 @@ namespace DataTrack.Core.SQL.QueryObjects
 
             stopwatch.Stop();
 
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Executed Update ({stopwatch.GetElapsedMicroseconds()}\u03BCs): {affectedRows} row{(affectedRows > 1 ? "s" : "")} affected");
+            Logger.Info(MethodBase.GetCurrentMethod(), $"Executed Update statement ({stopwatch.GetElapsedMicroseconds()}\u03BCs): {affectedRows} row{(affectedRows > 1 ? "s" : "")} affected");
 
             return affectedRows;
         }
@@ -230,7 +230,7 @@ namespace DataTrack.Core.SQL.QueryObjects
 
             stopwatch.Stop();
 
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Executed Delete ({stopwatch.GetElapsedMicroseconds()}\u03BCs): {affectedRows} row{(affectedRows > 1 ? "s" : "")} affected");
+            Logger.Info(MethodBase.GetCurrentMethod(), $"Executed Delete statement ({stopwatch.GetElapsedMicroseconds()}\u03BCs): {affectedRows} row{(affectedRows > 1 ? "s" : "")} affected");
 
             return affectedRows;
         }
