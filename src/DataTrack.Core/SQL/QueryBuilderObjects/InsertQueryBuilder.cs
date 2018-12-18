@@ -2,8 +2,10 @@
 using DataTrack.Core.Enums;
 using DataTrack.Core.SQL.QueryObjects;
 using DataTrack.Core.Util;
+using DataTrack.Core.Util.DataStructures;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -14,6 +16,8 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
     {
 
         #region Members
+
+        private Mapping<TableMappingAttribute, DataTable> DataMap;
 
         public TBase Item { get; private set; }
 
@@ -26,6 +30,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             Init(CRUDOperationTypes.Create);
 
             Item = item;
+            DataMap = new Mapping<TableMappingAttribute, DataTable>();
             CurrentParameterIndex = parameterIndex;
 
             UpdateParameters(Item);
@@ -34,6 +39,47 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
         #endregion
 
         #region Methods
+
+        private void ConstructData()
+        {
+            // For inserts, we build a list of DataTables, where each 'table' in the list corresponds to the data for a table in the Query object
+            Query.Tables.ForEach(table => BuildDataFor(table));       
+        }
+
+        private void BuildDataFor(TableMappingAttribute table)
+        {
+            // Currently all this method does is log the values contained within an object, which is mapped to the table parameter
+            // These values will be used to build a DataTable for the current table
+
+            if (Query.TypeTableMapping[table] == BaseType)
+            {
+                Logger.Info(MethodBase.GetCurrentMethod(), $"Building DataTable for: {Item.GetType().ToString()}");
+                List<object> items = table.GetPropertyValues(Item);
+                items.ForEach(item => Logger.Info(MethodBase.GetCurrentMethod(), item?.ToString() ?? "NULL"));
+            }
+            else
+            {
+                if (Query.Tables[0].GetChildPropertyValues(Item, table.TableName) != null)
+                {
+
+                    dynamic childItems = Activator.CreateInstance(typeof(List<>).MakeGenericType(Query.TypeTableMapping[table]));
+
+                    foreach( var item in Query.Tables[0].GetChildPropertyValues(Item, table.TableName))
+                    {
+                        childItems.Add(item);
+                    }
+                    
+                    foreach(var i in childItems)
+                    {
+                        Logger.Info(MethodBase.GetCurrentMethod(), $"Building DataTable for: {i.GetType().ToString()}");
+                        foreach(var j in table.GetPropertyValues(i))
+                        {
+                            Logger.Info(MethodBase.GetCurrentMethod(), j?.ToString() ?? "NULL");
+                        }
+                    }
+                }
+            }
+        }
 
         public override Query<TBase> GetQuery()
         {
@@ -88,6 +134,8 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             }
 
             string sql = sqlBuilder.ToString();
+
+            ConstructData();
 
             Logger.Info(MethodBase.GetCurrentMethod(), "Generated SQL: " + sql);
 
