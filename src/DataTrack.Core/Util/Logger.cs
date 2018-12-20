@@ -11,6 +11,36 @@ namespace DataTrack.Core.Util
 {
     public static class Logger
     {
+
+        private struct LogItem
+        {
+            public LogItem(MethodBase method, string message, LogLevel level)
+            {
+                Method = method;
+                Message = message;
+                Level = level;
+            }
+
+            public MethodBase Method;
+            public string Message;
+            public LogLevel Level;
+
+            public override string ToString()
+            {
+                StringBuilder logOutputBuilder = new StringBuilder();
+
+                logOutputBuilder.Append(DateTime.Now.ToLongTimeString());
+                logOutputBuilder.Append(" | ");
+                logOutputBuilder.Append(Level.ToString());
+                logOutputBuilder.Append(" | ");
+                logOutputBuilder.Append($"{Method.ReflectedType.Name}::{Method.Name}()");
+                logOutputBuilder.Append(" | ");
+                logOutputBuilder.Append(Message);
+
+                return logOutputBuilder.ToString();
+            }
+        }
+
         private const string fileName = @"DataTrackLog_";
         private const string fileExtension = @".txt";
         private const int maxLogLength = 10000;
@@ -24,14 +54,14 @@ namespace DataTrack.Core.Util
 
         private static Thread loggingThread;
         private volatile static bool running;
-        private static List<(MethodBase Method, string Message, LogLevel Type)> logBuffer;
+        private static List<LogItem> logBuffer;
         private static bool _enableConsoleLogging;
 
         public static void Init(bool enableConsoleLogging)
         {
             fullPath = $@"{filePath}\{fileDateString}_{fileName}{fileIndex}{fileExtension}";
             _enableConsoleLogging = enableConsoleLogging;
-            logBuffer = new List<(MethodBase method, string message, LogLevel type)>();
+            logBuffer = new List<LogItem>();
             running = true;
 
             if (!Directory.Exists(filePath))
@@ -57,10 +87,10 @@ namespace DataTrack.Core.Util
             }
         }
 
-        private static void Log(MethodBase method, string message, LogLevel type)
+        private static void Log(MethodBase method, string message, LogLevel level)
         {
             lock (logBuffer)
-                logBuffer.Add((method, message, type));
+                logBuffer.Add(new LogItem(method, message, level));
         }
 
         public static void Info(MethodBase method, string message) => Log(method, message, LogLevel.Info);
@@ -106,7 +136,7 @@ namespace DataTrack.Core.Util
 
         private static void Logging()
         {
-            List<(MethodBase Method, string Message, LogLevel Type)> threadLogBuffer = new List<(MethodBase method, string message, LogLevel type)>();
+            List<LogItem> threadLogBuffer = new List<LogItem>();
 
             while (running)
             {
@@ -116,19 +146,9 @@ namespace DataTrack.Core.Util
                     logBuffer.Clear();
                 }
 
-                foreach ((MethodBase Method, string Message, LogLevel Level) log in threadLogBuffer)
+                foreach (LogItem log in threadLogBuffer)
                 {
-                    StringBuilder logOutputBuilder = new StringBuilder();
-
-                    logOutputBuilder.Append(DateTime.Now.ToLongTimeString());
-                    logOutputBuilder.Append(" | ");
-                    logOutputBuilder.Append(log.Level.ToString());
-                    logOutputBuilder.Append(" | ");
-                    logOutputBuilder.Append($"{log.Method.ReflectedType.Name}::{log.Method.Name}()");
-                    logOutputBuilder.Append(" | ");
-                    logOutputBuilder.Append(log.Message);
-
-                    string logOutput = logOutputBuilder.ToString();
+                    string logOutput = log.ToString();
 
                     lock (fullPath)
                     {
