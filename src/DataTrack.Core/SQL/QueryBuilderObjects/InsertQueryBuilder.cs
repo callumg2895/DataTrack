@@ -43,24 +43,41 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
         private void ConstructData()
         {
             // For inserts, we build a list of DataTables, where each 'table' in the list corresponds to the data for a table in the Query object
-            Query.Tables.ForEach(table => BuildDataFor(table));       
+            Query.Tables.ForEach(table => DataMap[table] = BuildDataFor(table)); 
         }
 
-        private void BuildDataFor(TableMappingAttribute table)
+        private DataTable BuildDataFor(TableMappingAttribute table)
         {
             // Currently all this method does is log the values contained within an object, which is mapped to the table parameter
             // These values will be used to build a DataTable for the current table
 
+            DataTable data = new DataTable(table.TableName);
+
             if (Query.TypeTableMapping[table] == BaseType)
             {
                 Logger.Info(MethodBase.GetCurrentMethod(), $"Building DataTable for: {Item.GetType().ToString()}");
+
+                foreach (ColumnMappingAttribute column in Query.TypeColumnMapping[Query.TypeTableMapping[table]])
+                {
+                    data.Columns.Add(column.ColumnName);
+                }
+
                 List<object> items = table.GetPropertyValues(Item);
+                data.Rows.Add(items.Select(item => item?.ToString()));
+
+                Logger.Info(MethodBase.GetCurrentMethod(), $"Current table row count: {data.Rows.Count}");
                 items.ForEach(item => Logger.Info(MethodBase.GetCurrentMethod(), item?.ToString() ?? "NULL"));
             }
             else
             {
-                if (Query.Tables[0].GetChildPropertyValues(Item, table.TableName) != null)
+                if (Query.Tables[0].GetChildPropertyValues(Item, table.TableName) != null && Query.TypeColumnMapping.ContainsKey(Query.TypeTableMapping[table]))
                 {
+
+                    List<ColumnMappingAttribute> columns = Query.TypeColumnMapping[Query.TypeTableMapping[table]];
+                    foreach (ColumnMappingAttribute column in columns)
+                    {
+                        data.Columns.Add(column.ColumnName);
+                    }
 
                     dynamic childItems = Activator.CreateInstance(typeof(List<>).MakeGenericType(Query.TypeTableMapping[table]));
 
@@ -69,16 +86,20 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
                         childItems.Add(item);
                     }
                     
-                    foreach(var i in childItems)
+                    foreach(dynamic item in childItems)
                     {
-                        Logger.Info(MethodBase.GetCurrentMethod(), $"Building DataTable for: {i.GetType().ToString()}");
-                        foreach(var j in table.GetPropertyValues(i))
-                        {
-                            Logger.Info(MethodBase.GetCurrentMethod(), j?.ToString() ?? "NULL");
-                        }
+                        Logger.Info(MethodBase.GetCurrentMethod(), $"Building DataTable for: {item.GetType().ToString()}");
+
+                        List<object> values = table.GetPropertyValues(item);
+                        data.Rows.Add(values.Select(j => j?.ToString()));
+
+                        Logger.Info(MethodBase.GetCurrentMethod(), $"Current table row count: {data.Rows.Count}");
+                        values.ForEach(value => Logger.Info(MethodBase.GetCurrentMethod(), value?.ToString() ?? "NULL"));
                     }
                 }
             }
+
+            return data;
         }
 
         public override Query<TBase> GetQuery()
