@@ -44,6 +44,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
         {
             // For inserts, we build a list of DataTables, where each 'table' in the list corresponds to the data for a table in the Query object
             Query.Tables.ForEach(table => DataMap[table] = BuildDataFor(table));
+            Logger.Info(MethodBase.GetCurrentMethod(), $"Created {DataMap.ForwardKeys.Count} DataTable{(DataMap.ForwardKeys.Count > 1 ? "s" : "")}");
         }
 
         private DataTable BuildDataFor(TableMappingAttribute table)

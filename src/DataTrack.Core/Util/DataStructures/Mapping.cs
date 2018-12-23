@@ -8,6 +8,9 @@ namespace DataTrack.Core.Util.DataStructures
         private Dictionary<T1, T2> forward = new Dictionary<T1, T2>();
         private Dictionary<T2, T1> reverse = new Dictionary<T2, T1>();
 
+        public Dictionary<T1, T2>.KeyCollection ForwardKeys { get => forward.Keys; }
+        public Dictionary<T2, T1>.KeyCollection ReverseKeys { get => reverse.Keys; }
+
         public T2 this[T1 item]
         {
             get => forward.ContainsKey(item)
