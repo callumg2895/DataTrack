@@ -43,7 +43,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
         private void ConstructData()
         {
             // For inserts, we build a list of DataTables, where each 'table' in the list corresponds to the data for a table in the Query object
-            Query.Tables.ForEach(table => DataMap[table] = BuildDataFor(table)); 
+            Query.Tables.ForEach(table => DataMap[table] = BuildDataFor(table));
         }
 
         private DataTable BuildDataFor(TableMappingAttribute table)
@@ -70,10 +70,10 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             }
             else
             {
-                if (Query.Tables[0].GetChildPropertyValues(Item, table.TableName) != null && Query.TypeColumnMapping.ContainsKey(Query.TypeTableMapping[table]))
+                if (Query.Tables[0].GetChildPropertyValues(Item, table.TableName) != null)
                 {
 
-                    List<ColumnMappingAttribute> columns = Query.TypeColumnMapping[Query.TypeTableMapping[table]];
+                    List<ColumnMappingAttribute> columns = Dictionaries.MappingCache[Query.TypeTableMapping[table]].Columns;
                     foreach (ColumnMappingAttribute column in columns)
                     {
                         data.Columns.Add(column.ColumnName);
@@ -85,16 +85,15 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
                     {
                         childItems.Add(item);
                     }
-                    
-                    foreach(dynamic item in childItems)
-                    {
-                        Logger.Info(MethodBase.GetCurrentMethod(), $"Building DataTable for: {item.GetType().ToString()}");
 
+                    Logger.Info(MethodBase.GetCurrentMethod(), $"Building DataTable for: {Query.TypeTableMapping[table].ToString()}");
+                    foreach (dynamic item in childItems)
+                    {
                         List<object> values = table.GetPropertyValues(item);
                         data.Rows.Add(values.Select(j => j?.ToString()));
 
-                        Logger.Info(MethodBase.GetCurrentMethod(), $"Current table row count: {data.Rows.Count}");
                         values.ForEach(value => Logger.Info(MethodBase.GetCurrentMethod(), value?.ToString() ?? "NULL"));
+                        Logger.Info(MethodBase.GetCurrentMethod(), $"Current table row count: {data.Rows.Count}");
                     }
                 }
             }
