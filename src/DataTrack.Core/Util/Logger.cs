@@ -14,14 +14,14 @@ namespace DataTrack.Core.Util
 
         private struct LogItem
         {
-            public LogItem(MethodBase method, string message, LogLevel level)
+            public LogItem(MethodBase? method, string message, LogLevel level)
             {
                 Method = method;
                 Message = message;
                 Level = level;
             }
 
-            public MethodBase Method;
+            public MethodBase? Method;
             public string Message;
             public LogLevel Level;
 
@@ -33,8 +33,13 @@ namespace DataTrack.Core.Util
                 logOutputBuilder.Append(" | ");
                 logOutputBuilder.Append(Level.ToString());
                 logOutputBuilder.Append(" | ");
-                logOutputBuilder.Append($"{Method.ReflectedType.Name}::{Method.Name}()");
-                logOutputBuilder.Append(" | ");
+
+                if (Method != null)
+                {
+                    logOutputBuilder.Append($"{Method.ReflectedType.Name}::{Method.Name}()");
+                    logOutputBuilder.Append(" | ");
+                }
+
                 logOutputBuilder.Append(Message);
 
                 return logOutputBuilder.ToString();
@@ -87,17 +92,20 @@ namespace DataTrack.Core.Util
             }
         }
 
-        private static void Log(MethodBase method, string message, LogLevel level)
+        private static void Log(MethodBase? method, string message, LogLevel level)
         {
             lock (logBuffer)
                 logBuffer.Add(new LogItem(method, message, level));
         }
 
         public static void Info(MethodBase method, string message) => Log(method, message, LogLevel.Info);
+        public static void Info(string message) => Log(null, message, LogLevel.Info);
 
         public static void Warn(MethodBase method, string message) => Log(method, message, LogLevel.Warn);
+        public static void Warn(string message) => Log(null, message, LogLevel.Warn);
 
         public static void Error(MethodBase method, string message) => Log(method, message, LogLevel.Error);
+        public static void Error(string message) => Log(null, message, LogLevel.Error);
 
         public static void Stop() => running = false;
 

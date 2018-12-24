@@ -66,8 +66,8 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
                 List<object> items = table.GetPropertyValues(Item);
                 data.Rows.Add(items.Select(item => item?.ToString()));
 
-                Logger.Info(MethodBase.GetCurrentMethod(), $"Current table row count: {data.Rows.Count}");
-                items.ForEach(item => Logger.Info(MethodBase.GetCurrentMethod(), item?.ToString() ?? "NULL"));
+                Logger.Info($"Current table row count: {data.Rows.Count}");
+                items.ForEach(item => Logger.Info(item?.ToString() ?? "NULL"));
             }
             else
             {
@@ -93,8 +93,8 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
                         List<object> values = table.GetPropertyValues(item);
                         data.Rows.Add(values.Select(j => j?.ToString()));
 
-                        values.ForEach(value => Logger.Info(MethodBase.GetCurrentMethod(), value?.ToString() ?? "NULL"));
-                        Logger.Info(MethodBase.GetCurrentMethod(), $"Current table row count: {data.Rows.Count}");
+                        values.ForEach(value => Logger.Info(value?.ToString() ?? "NULL"));
+                        Logger.Info($"Current table row count: {data.Rows.Count}");
                     }
                 }
             }
