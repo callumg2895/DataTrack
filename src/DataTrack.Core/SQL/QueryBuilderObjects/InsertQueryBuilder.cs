@@ -17,8 +17,6 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
 
         #region Members
 
-        private Mapping<TableMappingAttribute, DataTable> DataMap;
-
         public TBase Item { get; private set; }
 
         #endregion
@@ -30,7 +28,6 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             Init(CRUDOperationTypes.Create);
 
             Item = item;
-            DataMap = new Mapping<TableMappingAttribute, DataTable>();
             CurrentParameterIndex = parameterIndex;
 
             UpdateParameters(Item);
@@ -43,8 +40,8 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
         private void ConstructData()
         {
             // For inserts, we build a list of DataTables, where each 'table' in the list corresponds to the data for a table in the Query object
-            Query.Tables.ForEach(table => DataMap[table] = BuildDataFor(table));
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Created {DataMap.ForwardKeys.Count} DataTable{(DataMap.ForwardKeys.Count > 1 ? "s" : "")}");
+            Query.Tables.ForEach(table => Query.DataMap[table] = BuildDataFor(table));
+            Logger.Info(MethodBase.GetCurrentMethod(), $"Created {Query.DataMap.ForwardKeys.Count} DataTable{(Query.DataMap.ForwardKeys.Count > 1 ? "s" : "")}");
         }
 
         private DataTable BuildDataFor(TableMappingAttribute table)
@@ -160,7 +157,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
 
             Logger.Info(MethodBase.GetCurrentMethod(), "Generated SQL: " + sql);
 
-            Query.QueryString = sql;
+            Query.QueryString = sql; 
 
             return Query;
         }

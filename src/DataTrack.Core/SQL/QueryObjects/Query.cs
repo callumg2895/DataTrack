@@ -27,6 +27,7 @@ namespace DataTrack.Core.SQL.QueryObjects
         public Dictionary<ColumnMappingAttribute, List<(string Handle, object Value)>> Parameters { get; set; } = new Dictionary<ColumnMappingAttribute, List<(string Handle, object Value)>>();
         public CRUDOperationTypes OperationType { get; set; }
         public string QueryString { get; set; }
+        public Mapping<TableMappingAttribute, DataTable> DataMap { get; set; } = new Mapping<TableMappingAttribute, DataTable>();
 
         #endregion
 
