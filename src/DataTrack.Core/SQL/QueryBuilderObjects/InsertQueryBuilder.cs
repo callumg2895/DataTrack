@@ -3,6 +3,7 @@ using DataTrack.Core.Enums;
 using DataTrack.Core.SQL.QueryObjects;
 using DataTrack.Core.Util;
 using DataTrack.Core.Util.DataStructures;
+using DataTrack.Core.Util.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -46,32 +47,26 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
 
         private DataTable BuildDataFor(TableMappingAttribute table)
         {
-            // Currently all this method does is log the values contained within an object, which is mapped to the table parameter
-            // These values will be used to build a DataTable for the current table
-
-            DataTable data = new DataTable(table.TableName);
+            DataTable dataTable = new DataTable(table.TableName);
 
             if (Query.TypeTableMapping[table] == BaseType)
             {
                 Logger.Info(MethodBase.GetCurrentMethod(), $"Building DataTable for: {Item.GetType().ToString()}");
                 List<ColumnMappingAttribute> columns = Query.TypeColumnMapping[Query.TypeTableMapping[table]];
 
-                foreach (ColumnMappingAttribute column in columns)
-                {
-                    data.Columns.Add(column.ColumnName);
-                }
+                dataTable.SetColumns(columns);
 
                 List<object> items = table.GetPropertyValues(Item);
-                DataRow dataRow = data.NewRow();
+                DataRow dataRow = dataTable.NewRow();
 
                 for (int i = 0; i < items.Count; i++)
                 {
                     dataRow[columns[i].ColumnName] = items[i];
                 }
 
-                data.Rows.Add(dataRow);
+                dataTable.Rows.Add(dataRow);
 
-                Logger.Info($"Current table row count: {data.Rows.Count}");
+                Logger.Info($"Current table row count: {dataTable.Rows.Count}");
                 items.ForEach(item => Logger.Info(item?.ToString() ?? "NULL"));
             }
             else
@@ -80,10 +75,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
                 {
 
                     List<ColumnMappingAttribute> columns = Dictionaries.MappingCache[Query.TypeTableMapping[table]].Columns;
-                    foreach (ColumnMappingAttribute column in columns)
-                    {
-                        data.Columns.Add(column.ColumnName);
-                    }
+                    dataTable.SetColumns(columns);
 
                     dynamic childItems = Activator.CreateInstance(typeof(List<>).MakeGenericType(Query.TypeTableMapping[table]));
 
@@ -96,22 +88,22 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
                     foreach (dynamic item in childItems)
                     {
                         List<object> values = table.GetPropertyValues(item);
-                        DataRow dataRow = data.NewRow();
+                        DataRow dataRow = dataTable.NewRow();
 
                         for (int i = 0; i < values.Count; i++)
                         {
                             dataRow[columns[i].ColumnName] = values[i];
                         }
 
-                        data.Rows.Add(dataRow);
+                        dataTable.Rows.Add(dataRow);
 
                         values.ForEach(value => Logger.Info(value?.ToString() ?? "NULL"));
-                        Logger.Info($"Current table row count: {data.Rows.Count}");
+                        Logger.Info($"Current table row count: {dataTable.Rows.Count}");
                     }
                 }
             }
 
-            return data;
+            return dataTable;
         }
 
         public override Query<TBase> GetQuery()
