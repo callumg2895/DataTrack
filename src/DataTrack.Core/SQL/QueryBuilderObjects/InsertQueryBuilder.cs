@@ -54,14 +54,22 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             if (Query.TypeTableMapping[table] == BaseType)
             {
                 Logger.Info(MethodBase.GetCurrentMethod(), $"Building DataTable for: {Item.GetType().ToString()}");
+                List<ColumnMappingAttribute> columns = Query.TypeColumnMapping[Query.TypeTableMapping[table]];
 
-                foreach (ColumnMappingAttribute column in Query.TypeColumnMapping[Query.TypeTableMapping[table]])
+                foreach (ColumnMappingAttribute column in columns)
                 {
                     data.Columns.Add(column.ColumnName);
                 }
 
                 List<object> items = table.GetPropertyValues(Item);
-                data.Rows.Add(items.Select(item => item?.ToString()));
+                DataRow dataRow = data.NewRow();
+
+                for (int i = 0; i < items.Count; i++)
+                {
+                    dataRow[columns[i].ColumnName] = items[i];
+                }
+
+                data.Rows.Add(dataRow);
 
                 Logger.Info($"Current table row count: {data.Rows.Count}");
                 items.ForEach(item => Logger.Info(item?.ToString() ?? "NULL"));
@@ -88,7 +96,14 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
                     foreach (dynamic item in childItems)
                     {
                         List<object> values = table.GetPropertyValues(item);
-                        data.Rows.Add(values.Select(j => j?.ToString()));
+                        DataRow dataRow = data.NewRow();
+
+                        for (int i = 0; i < values.Count; i++)
+                        {
+                            dataRow[columns[i].ColumnName] = values[i];
+                        }
+
+                        data.Rows.Add(dataRow);
 
                         values.ForEach(value => Logger.Info(value?.ToString() ?? "NULL"));
                         Logger.Info($"Current table row count: {data.Rows.Count}");

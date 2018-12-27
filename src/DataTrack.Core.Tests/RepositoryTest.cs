@@ -26,12 +26,11 @@ namespace DataTrack.Core.Tests
                 Books = new List<Book>() { book1, book2 }
             };
 
-            int createResult;
             Author authorReadResult;
             Book bookReadResult;
 
             //Act
-            createResult = Repository<Author>.Create(author);
+            Repository<Author>.Create(author);
             authorReadResult = Repository<Author>.GetByID(author.ID);
             bookReadResult = Repository<Book>.GetByID(book1.ID);
             Repository<Book>.Delete(book1);
@@ -39,7 +38,6 @@ namespace DataTrack.Core.Tests
             Repository<Author>.Delete(author);
 
             // Assert
-            Assert.AreEqual(createResult, 3);
             Assert.IsTrue(AuthorsAreEqual(authorReadResult, author));
         }
 
@@ -57,18 +55,16 @@ namespace DataTrack.Core.Tests
                 Books = new List<Book>() { book1, book2 }
             };
 
-            int createResult;
             List<Book> bookReadResult;
 
             //Act
-            createResult = Repository<Author>.Create(author);
+            Repository<Author>.Create(author);
             bookReadResult = Repository<Book>.GetByProperty("title", Enums.RestrictionTypes.EqualTo, "The Great Gatsby");
             Repository<Book>.Delete(book1);
             Repository<Book>.Delete(book2);
             Repository<Author>.Delete(author);
 
             // Assert
-            Assert.AreEqual(createResult, 3);
             Assert.IsTrue(BooksAreEqual(bookReadResult[0], book1));
         }
 
@@ -89,11 +85,10 @@ namespace DataTrack.Core.Tests
                 Books = new List<Book>() { book1, book2, book3, book4, book5 }
             };
 
-            int createResult;
             Author authorReadResult;
 
             //Act
-            createResult = Repository<Author>.Create(author);
+            Repository<Author>.Create(author);
             authorReadResult = Repository<Author>.GetByID(author.ID);
             Repository<Book>.Delete(book1);
             Repository<Book>.Delete(book2);
@@ -103,7 +98,6 @@ namespace DataTrack.Core.Tests
             Repository<Author>.Delete(author);
 
             // Assert
-            Assert.AreEqual(createResult, 6);
             Assert.AreEqual(authorReadResult.Books.Count, 5);
         }
 

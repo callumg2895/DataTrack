@@ -66,10 +66,41 @@ namespace DataTrack.Core.SQL.QueryObjects
         {
             using (SqlConnection connection = DataTrackConfiguration.CreateConnection())
             {
+                if (OperationType == CRUDOperationTypes.Create)
+                {
+                    return ExecuteBulkInsert(connection);
+                }
+
+
                 SqlCommand command = connection.CreateCommand();
 
                 return Execute(command, null);
             }
+        }
+
+        internal bool ExecuteBulkInsert(SqlConnection connection)
+        {
+            foreach (TableMappingAttribute table in DataMap.ForwardKeys)
+            {
+                Logger.Info($"Executing Bulk Insert for {table.TableName}");
+
+                SqlBulkCopy bulkCopy = new SqlBulkCopy
+                    (
+                    connection,
+                    SqlBulkCopyOptions.TableLock |
+                    SqlBulkCopyOptions.FireTriggers |
+                    SqlBulkCopyOptions.UseInternalTransaction,
+                    null
+                    );
+
+                // set the destination table name
+                bulkCopy.DestinationTableName = DataMap[table].TableName;
+
+                // write the data in the "dataTable"
+                bulkCopy.WriteToServer(DataMap[table]);
+            }
+
+            return true;
         }
 
         internal dynamic Execute(SqlCommand command, SqlTransaction transaction = null)

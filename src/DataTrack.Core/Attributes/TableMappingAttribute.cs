@@ -44,10 +44,8 @@ namespace DataTrack.Core.Attributes
             foreach (PropertyInfo property in type.GetProperties())
             {
                 foreach (Attribute attribute in property.GetCustomAttributes())
-                    if ((attribute as TableMappingAttribute) != null)
-                        break;
-
-                values.Add(property.GetValue(instance));
+                    if ((attribute as ColumnMappingAttribute) != null)
+                        values.Add(property.GetValue(instance));
             }
 
             return values;
