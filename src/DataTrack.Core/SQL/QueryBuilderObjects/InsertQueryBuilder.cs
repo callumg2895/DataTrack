@@ -49,22 +49,15 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
         {
             DataTable dataTable = new DataTable(table.TableName);
 
+
             if (Query.TypeTableMapping[table] == BaseType)
             {
                 Logger.Info(MethodBase.GetCurrentMethod(), $"Building DataTable for: {Item.GetType().ToString()}");
                 List<ColumnMappingAttribute> columns = Query.TypeColumnMapping[Query.TypeTableMapping[table]];
+                List<object> items = table.GetPropertyValues(Item);
 
                 dataTable.SetColumns(columns);
-
-                List<object> items = table.GetPropertyValues(Item);
-                DataRow dataRow = dataTable.NewRow();
-
-                for (int i = 0; i < items.Count; i++)
-                {
-                    dataRow[columns[i].ColumnName] = items[i];
-                }
-
-                dataTable.Rows.Add(dataRow);
+                dataTable.AddRow(columns, items);
 
                 Logger.Info($"Current table row count: {dataTable.Rows.Count}");
                 items.ForEach(item => Logger.Info(item?.ToString() ?? "NULL"));
@@ -85,17 +78,11 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
                     }
 
                     Logger.Info(MethodBase.GetCurrentMethod(), $"Building DataTable for: {Query.TypeTableMapping[table].ToString()}");
+
                     foreach (dynamic item in childItems)
                     {
                         List<object> values = table.GetPropertyValues(item);
-                        DataRow dataRow = dataTable.NewRow();
-
-                        for (int i = 0; i < values.Count; i++)
-                        {
-                            dataRow[columns[i].ColumnName] = values[i];
-                        }
-
-                        dataTable.Rows.Add(dataRow);
+                        dataTable.AddRow(columns, values);
 
                         values.ForEach(value => Logger.Info(value?.ToString() ?? "NULL"));
                         Logger.Info($"Current table row count: {dataTable.Rows.Count}");

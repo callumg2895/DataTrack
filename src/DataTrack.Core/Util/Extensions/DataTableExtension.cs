@@ -16,5 +16,17 @@ namespace DataTrack.Core.Util.Extensions
             }
         }
 
+        public static void AddRow(this DataTable dataTable, List<ColumnMappingAttribute> columns, List<object> rowData)
+        {
+            DataRow dataRow = dataTable.NewRow();
+
+            for (int i = 0; i < rowData.Count; i++)
+            {
+                dataRow[columns[i].ColumnName] = rowData[i];
+            }
+
+            dataTable.Rows.Add(dataRow);
+        }
+
     }
 }
