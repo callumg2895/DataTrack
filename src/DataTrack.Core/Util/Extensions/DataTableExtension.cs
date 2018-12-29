@@ -13,15 +13,14 @@ namespace DataTrack.Core.Util.Extensions
             foreach (ColumnMappingAttribute column in columns)
             {
                 DataColumn dataColumn = new DataColumn(column.ColumnName);
-                DataColumn[] keys = new DataColumn[1];
+                List<DataColumn> primaryKeys = new List<DataColumn>();
 
                 dataTable.Columns.Add(dataColumn);
                 
                 if (column.IsPrimaryKey())
-                {
-                    keys[0] = dataColumn;
-                    dataTable.PrimaryKey = keys;
-                }
+                    primaryKeys.Add(dataColumn);
+
+                dataTable.PrimaryKey = primaryKeys.ToArray();
             }
         }
 
