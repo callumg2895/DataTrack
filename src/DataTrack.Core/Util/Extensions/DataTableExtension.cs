@@ -12,7 +12,16 @@ namespace DataTrack.Core.Util.Extensions
         {
             foreach (ColumnMappingAttribute column in columns)
             {
-                dataTable.Columns.Add(column.ColumnName);
+                DataColumn dataColumn = new DataColumn(column.ColumnName);
+                DataColumn[] keys = new DataColumn[1];
+
+                dataTable.Columns.Add(dataColumn);
+                
+                if (column.IsPrimaryKey())
+                {
+                    keys[0] = dataColumn;
+                    dataTable.PrimaryKey = keys;
+                }
             }
         }
 
@@ -22,7 +31,8 @@ namespace DataTrack.Core.Util.Extensions
 
             for (int i = 0; i < rowData.Count; i++)
             {
-                dataRow[columns[i].ColumnName] = rowData[i];
+                ColumnMappingAttribute column = columns[i];
+                dataRow[column.ColumnName] = rowData[i];
             }
 
             dataTable.Rows.Add(dataRow);

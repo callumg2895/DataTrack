@@ -71,7 +71,6 @@ namespace DataTrack.Core.SQL.QueryObjects
                     return ExecuteBulkInsert(connection);
                 }
 
-
                 SqlCommand command = connection.CreateCommand();
 
                 return Execute(command, null);
@@ -80,16 +79,22 @@ namespace DataTrack.Core.SQL.QueryObjects
 
         internal bool ExecuteBulkInsert(SqlConnection connection)
         {
+            stopwatch.Start();
+
             foreach (TableMappingAttribute table in DataMap.ForwardKeys)
             {
                 Logger.Info($"Executing Bulk Insert for {table.TableName}");
 
-                SqlBulkCopyOptions copyOptions = SqlBulkCopyOptions.TableLock | SqlBulkCopyOptions.FireTriggers | SqlBulkCopyOptions.UseInternalTransaction;
+                SqlBulkCopyOptions copyOptions = SqlBulkCopyOptions.Default;
                 SqlBulkCopy bulkCopy = new SqlBulkCopy(connection, copyOptions, null);
 
                 bulkCopy.DestinationTableName = DataMap[table].TableName;
                 bulkCopy.WriteToServer(DataMap[table]);
             }
+
+            stopwatch.Stop();
+            Logger.Info(MethodBase.GetCurrentMethod(), $"Executed Bulk Insert ({stopwatch.GetElapsedMicroseconds()}\u03BCs)");
+
 
             return true;
         }
