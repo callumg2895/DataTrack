@@ -84,19 +84,10 @@ namespace DataTrack.Core.SQL.QueryObjects
             {
                 Logger.Info($"Executing Bulk Insert for {table.TableName}");
 
-                SqlBulkCopy bulkCopy = new SqlBulkCopy
-                    (
-                    connection,
-                    SqlBulkCopyOptions.TableLock |
-                    SqlBulkCopyOptions.FireTriggers |
-                    SqlBulkCopyOptions.UseInternalTransaction,
-                    null
-                    );
+                SqlBulkCopyOptions copyOptions = SqlBulkCopyOptions.TableLock | SqlBulkCopyOptions.FireTriggers | SqlBulkCopyOptions.UseInternalTransaction;
+                SqlBulkCopy bulkCopy = new SqlBulkCopy(connection, copyOptions, null);
 
-                // set the destination table name
                 bulkCopy.DestinationTableName = DataMap[table].TableName;
-
-                // write the data in the "dataTable"
                 bulkCopy.WriteToServer(DataMap[table]);
             }
 
