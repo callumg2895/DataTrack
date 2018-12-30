@@ -66,18 +66,13 @@ namespace DataTrack.Core.SQL.QueryObjects
         {
             using (SqlConnection connection = DataTrackConfiguration.CreateConnection())
             {
-                if (OperationType == CRUDOperationTypes.Create)
-                {
-                    return ExecuteBulkInsert(connection);
-                }
-
                 SqlCommand command = connection.CreateCommand();
 
-                return Execute(command, null);
+                return Execute(command, connection, null);
             }
         }
 
-        internal bool ExecuteBulkInsert(SqlConnection connection)
+        internal bool ExecuteBulkInsert(SqlConnection connection, SqlTransaction transaction = null)
         {
             stopwatch.Start();
 
@@ -86,7 +81,7 @@ namespace DataTrack.Core.SQL.QueryObjects
                 Logger.Info($"Executing Bulk Insert for {table.TableName}");
 
                 SqlBulkCopyOptions copyOptions = SqlBulkCopyOptions.Default;
-                SqlBulkCopy bulkCopy = new SqlBulkCopy(connection, copyOptions, null);
+                SqlBulkCopy bulkCopy = new SqlBulkCopy(connection, copyOptions, transaction);
 
                 bulkCopy.DestinationTableName = DataMap[table].TableName;
                 bulkCopy.WriteToServer(DataMap[table]);
@@ -99,7 +94,7 @@ namespace DataTrack.Core.SQL.QueryObjects
             return true;
         }
 
-        internal dynamic Execute(SqlCommand command, SqlTransaction transaction = null)
+        internal dynamic Execute(SqlCommand command, SqlConnection connection, SqlTransaction transaction = null)
         {
             stopwatch.Start();
 
@@ -110,12 +105,16 @@ namespace DataTrack.Core.SQL.QueryObjects
             command.CommandText = QueryString;
             command.AddParameters(GetParameters());
 
+            if (OperationType == CRUDOperationTypes.Create)
+            {
+                return ExecuteBulkInsert(connection, transaction);
+            }
+
             using (SqlDataReader reader = command.ExecuteReader())
             {
                 switch (OperationType)
                 {
                     case CRUDOperationTypes.Read: return GetResultsForReadQuery(reader);
-                    case CRUDOperationTypes.Create: return GetResultForInsertQuery(reader);
                     case CRUDOperationTypes.Update: return GetResultsForUpdateQuery(reader);
                     case CRUDOperationTypes.Delete: return GetResultsForDeleteQuery(reader);
                     default:

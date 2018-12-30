@@ -59,62 +59,6 @@ namespace DataTrack.Core.Tests
         }
 
         [TestMethod]
-        public void TestInsertQueryBuilder_ShouldReturnCorrectSQLForObjects()
-        {
-            // Arrange
-            string testQuery;
-            string expectedQuery;
-            Author author = new Author() { ID = 1, FirstName = "John", LastName = "Smith" };
-
-            //Act
-            StringBuilder sqlBuilder = new StringBuilder();
-            sqlBuilder.AppendLine();
-            sqlBuilder.AppendLine("insert into authors (id, first_name, last_name)");
-            sqlBuilder.AppendLine("values (@authors_id_1, @authors_first_name_1, @authors_last_name_1)");
-            sqlBuilder.AppendLine("select @@rowcount as affected_rows");
-
-            expectedQuery = sqlBuilder.ToString();
-            testQuery = new InsertQueryBuilder<Author>(author).GetQuery().QueryString;
-
-            //Assert
-            Assert.AreNotEqual(testQuery, string.Empty);
-            Assert.AreEqual(testQuery, expectedQuery);
-        }
-
-        [TestMethod]
-        public void TestInsertQueryBuilder_ShouldReturnCorrectSQLForObjectsWithChildren()
-        {
-            // Arrange
-            string testQuery;
-            string expectedQuery;
-            Author author = new Author()
-            {
-                ID = 1,
-                FirstName = "John",
-                LastName = "Smith",
-                Books = new List<Book>() { new Book() { ID = 1, AuthorId = 1, Title = "The Great Gatsby" } }
-            };
-
-            //Act
-            StringBuilder sqlBuilder = new StringBuilder();
-            sqlBuilder.AppendLine();
-            sqlBuilder.AppendLine("insert into authors (id, first_name, last_name)");
-            sqlBuilder.AppendLine("values (@authors_id_1, @authors_first_name_1, @authors_last_name_1)");
-            sqlBuilder.AppendLine("select @@rowcount as affected_rows");
-            sqlBuilder.AppendLine();
-            sqlBuilder.AppendLine("insert into books (id, author_id, title)");
-            sqlBuilder.AppendLine("values (@books_id_2, @books_author_id_2, @books_title_2)");
-            sqlBuilder.AppendLine("select @@rowcount as affected_rows");
-
-            expectedQuery = sqlBuilder.ToString();
-            testQuery = new InsertQueryBuilder<Author>(author).GetQuery().QueryString;
-
-            //Assert
-            Assert.AreNotEqual(testQuery, string.Empty);
-            Assert.AreEqual(testQuery, expectedQuery);
-        }
-
-        [TestMethod]
         public void TestDeleteQueryBuilder_ShouldReturnCorrectSQLForObjects()
         {
             // Arrange

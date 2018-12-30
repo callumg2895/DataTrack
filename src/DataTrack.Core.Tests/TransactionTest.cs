@@ -46,11 +46,9 @@ namespace DataTrack.Core.Tests
                 t2.Commit();
             }
 
-            int affectedRows = (int)results[0];
             Author result = ((List<Author>)results[1])[0];
 
             // Assert
-            Assert.AreEqual(affectedRows, 2);
             Assert.IsTrue(AuthorsAreEqual(result, author));
         }
 
@@ -86,14 +84,10 @@ namespace DataTrack.Core.Tests
                 t2.Commit();
             }
 
-            int affectedInsertRows = (int)results1[0];
             Author beforeUpdate = ((List<Author>)results1[1])[0];
-            int affectedUpdateRows = (int)results2[0];
             Author afterUpdate = ((List<Author>)results2[1])[0];
 
             // Assert
-            Assert.AreEqual(affectedInsertRows, 1);
-            Assert.AreEqual(affectedUpdateRows, 1);
             Assert.IsTrue(AuthorsAreEqual(beforeUpdate, authorBefore));
             Assert.IsTrue(AuthorsAreEqual(afterUpdate, authorAfter));
         }

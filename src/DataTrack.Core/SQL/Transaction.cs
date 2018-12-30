@@ -50,7 +50,7 @@ namespace DataTrack.Core.SQL
         public List<object> Execute()
         {
             stopwatch.Start();
-            queries.ForEach(query => results.Add(query.Execute(connection.CreateCommand(), transaction)));
+            queries.ForEach(query => results.Add(query.Execute(connection.CreateCommand(), connection, transaction)));
             stopwatch.Stop();
 
             Logger.Info(MethodBase.GetCurrentMethod(), $"Executed Transaction ({stopwatch.GetElapsedMicroseconds()}\u03BCs): {queries.Count} {(queries.Count > 1 ? "queries" : "query")} executed");
