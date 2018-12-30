@@ -16,11 +16,10 @@ namespace DataTrack.Core.Tests
         public void TestRepository_ShouldReturnCorrectObjectForReadWithRestriction()
         {
             // Arrange
-            Book book1 = new Book() { ID = 1, AuthorId = 1, Title = "The Great Gatsby" };
-            Book book2 = new Book() { ID = 2, AuthorId = 1, Title = "The Beautiful and Damned" };
+            Book book1 = new Book() { AuthorId = 1, Title = "The Great Gatsby" };
+            Book book2 = new Book() { AuthorId = 1, Title = "The Beautiful and Damned" };
             Author author = new Author()
             {
-                ID = 1,
                 FirstName = "F.Scott",
                 LastName = "Fitzgerald",
                 Books = new List<Book>() { book1, book2 }
@@ -45,11 +44,10 @@ namespace DataTrack.Core.Tests
         public void TestRepository_ShouldReturnCorrectObjectForGetByPropertyType()
         {
             // Arrange
-            Book book1 = new Book() { ID = 1, AuthorId = 1, Title = "The Great Gatsby" };
-            Book book2 = new Book() { ID = 2, AuthorId = 1, Title = "The Beautiful and Damned" };
+            Book book1 = new Book() { AuthorId = 1, Title = "The Great Gatsby" };
+            Book book2 = new Book() { AuthorId = 1, Title = "The Beautiful and Damned" };
             Author author = new Author()
             {
-                ID = 1,
                 FirstName = "F.Scott",
                 LastName = "Fitzgerald",
                 Books = new List<Book>() { book1, book2 }
@@ -72,14 +70,13 @@ namespace DataTrack.Core.Tests
         public void TestRepository_ShouldReadCorrectNumberOfChildItemsAfterInsertingObjectWithLongListOfChildren()
         {
             // Arrange
-            Book book1 = new Book() { ID = 1, AuthorId = 1, Title = "The Great Gatsby" };
-            Book book2 = new Book() { ID = 2, AuthorId = 1, Title = "The Beautiful and Damned" };
-            Book book3 = new Book() { ID = 3, AuthorId = 1, Title = "This Side of Paradise" };
-            Book book4 = new Book() { ID = 4, AuthorId = 1, Title = "Tender is the Night" };
-            Book book5 = new Book() { ID = 5, AuthorId = 1, Title = "The Last Tycoon" };
+            Book book1 = new Book() { AuthorId = 1, Title = "The Great Gatsby" };
+            Book book2 = new Book() { AuthorId = 1, Title = "The Beautiful and Damned" };
+            Book book3 = new Book() { AuthorId = 1, Title = "This Side of Paradise" };
+            Book book4 = new Book() { AuthorId = 1, Title = "Tender is the Night" };
+            Book book5 = new Book() { AuthorId = 1, Title = "The Last Tycoon" };
             Author author = new Author()
             {
-                ID = 1,
                 FirstName = "F.Scott",
                 LastName = "Fitzgerald",
                 Books = new List<Book>() { book1, book2, book3, book4, book5 }

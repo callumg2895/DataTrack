@@ -18,11 +18,10 @@ namespace DataTrack.Core.Tests
         public void TestTransaction_ShouldReturnCorrectObjectForReadWithRestriction()
         {
             // Arrange
-            Book book = new Book() { ID = 1, AuthorId = 1, Title = "The Great Gatsby" };
+            Book book = new Book() { AuthorId = 1, Title = "The Great Gatsby" };
 
             Author author = new Author()
             {
-                ID = 1,
                 FirstName = "John",
                 LastName = "Smith",
                 Books = new List<Book>() { book }
@@ -59,8 +58,8 @@ namespace DataTrack.Core.Tests
         public void TestTransaction_ShouldReturnCorrectObjectBeforeAndAfterUpdate()
         {
             // Arrange
-            Author authorBefore = new Author() { ID = 1, FirstName = "John", LastName = "Smith", Books = new List<Book>()};
-            Author authorAfter = new Author() { ID = 1, FirstName = "James", LastName = "Smith", Books = new List<Book>() };
+            Author authorBefore = new Author() { FirstName = "John", LastName = "Smith", Books = new List<Book>()};
+            Author authorAfter = new Author() { FirstName = "James", LastName = "Smith", Books = new List<Book>() };
             List<object> results1 = null;
             List<object> results2 = null;
 
@@ -69,7 +68,7 @@ namespace DataTrack.Core.Tests
             using (Transaction<Author> t1 = new Transaction<Author>(new List<Query<Author>>()
             {
                 new InsertQueryBuilder<Author>(authorBefore).GetQuery(),
-                new ReadQueryBuilder<Author>(authorBefore.ID).GetQuery(),
+                new ReadQueryBuilder<Author>().GetQuery(),
             }))
             {
                 results1 = t1.Execute();
@@ -105,7 +104,6 @@ namespace DataTrack.Core.Tests
             // Arrange
             Author author = new Author()
             {
-                ID = 1,
                 FirstName = "John",
                 LastName = "Smith",
             };

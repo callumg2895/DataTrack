@@ -239,7 +239,14 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
                     string propertyName;
 
                     if (columnAttribute.TryGetPropertyName(BaseType, out propertyName))
-                        Query.AddParameter(columnAttribute, (handle, item.GetPropertyValue(propertyName)));
+                    {
+                        object propertyValue = item.GetPropertyValue(propertyName);
+
+                        if (propertyValue == null || (columnAttribute.IsPrimaryKey() && (int)propertyValue == 0))
+                            return;
+
+                        Query.AddParameter(columnAttribute, (handle, propertyValue));
+                    }
                 });
 
             CurrentParameterIndex++;

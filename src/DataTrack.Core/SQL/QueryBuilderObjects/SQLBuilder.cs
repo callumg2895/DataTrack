@@ -44,6 +44,8 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
         {
             if (columns.Count == 0) return;
 
+            columns = columns.Where(c => !c.IsPrimaryKey()).ToList();
+
             sql.Append("insert into " + table.TableName + " (");
 
             sql.Append(columns[0].ColumnName);
@@ -101,6 +103,8 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
         public void BuildValuesStatement(List<ColumnMappingAttribute> columns, TableMappingAttribute table)
         {
             if (columns.Count == 0) return;
+
+            columns = columns.Where(c => !c.IsPrimaryKey()).ToList();
 
             // Assert that all colums for a given table have the same number of parameters
             int paramCount = columns.Select(c => parameters[c].Count).Max();

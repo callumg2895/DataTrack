@@ -26,7 +26,7 @@ namespace DataTrack.Core.Tests
                     begin
                         create table authors
                         (
-                            id int not null,
+                            id int not null identity(1,1),
                             first_name varchar(255) not null,
                             last_name varchar(255) not null
                             primary key (id)
@@ -34,9 +34,10 @@ namespace DataTrack.Core.Tests
 
                         create table books
                         (
-                            id int not null,
+                            id int not null identity(1,1),
                             author_id int not null,
                             title varchar(255) not null
+                            primary key (id)
                         )
                     end";
 

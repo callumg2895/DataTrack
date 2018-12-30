@@ -102,13 +102,13 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
 
             for (int i = 0; i < Query.Tables.Count; i++)
             {
-                int maxParameterCount = Query.Columns.Select(c => Query.Parameters[c].Count).Max();
+                int maxParameterCount = Query.Columns.Where(c => !c.IsPrimaryKey()).Select(c => Query.Parameters[c].Count).Max();
 
                 // The case when i == 0 corresponds to the table for the TBase object
                 if (i == 0)
                 {
-                    sqlBuilder.BuildInsertStatement(Query.Columns, Query.Tables[i]);
-                    sqlBuilder.BuildValuesStatement(Query.Columns, Query.Tables[i]);
+                    sqlBuilder.BuildInsertStatement(Query.Columns.Where(c => !c.IsPrimaryKey()).ToList(), Query.Tables[i]);
+                    sqlBuilder.BuildValuesStatement(Query.Columns.Where(c => !c.IsPrimaryKey()).ToList(), Query.Tables[i]);
 
                     // For insert statements return the number of rows affected
                     SelectRowCount(ref sqlBuilder);
