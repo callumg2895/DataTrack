@@ -28,7 +28,7 @@ namespace DataTrack.Core.Tests
                         (
                             id int not null identity(1,1),
                             first_name varchar(255) not null,
-                            last_name varchar(255) not null
+                            last_name varchar(255) not null,
                             primary key (id)
                         )
 
@@ -36,8 +36,9 @@ namespace DataTrack.Core.Tests
                         (
                             id int not null identity(1,1),
                             author_id int not null,
-                            title varchar(255) not null
-                            primary key (id)
+                            title varchar(255) not null,
+                            primary key (id),
+                            foreign key (author_id) references authors(id)
                         )
                     end";
 

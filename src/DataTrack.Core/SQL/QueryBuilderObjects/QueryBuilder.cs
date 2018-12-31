@@ -218,7 +218,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
 
             if (TryGetTableMappingAttribute(type, out typeTable))
                 foreach (ColumnMappingAttribute column in Query.TypeColumnMapping[type])
-                    if (column.IsForeignKey() && column.TableName == typeTable.TableName && column.ForeignKeyMapping == table)
+                    if (column.IsForeignKey() && column.TableName == typeTable.TableName && column.ForeignKeyTableMapping == table)
                     {
                         typeFKColumn = column;
                         return true;

@@ -26,12 +26,13 @@ namespace DataTrack.Core.Tests
             };
 
             Author authorReadResult;
-            Book bookReadResult;
+            Book book1ReadResult;
 
             //Act
             Repository<Author>.Create(author);
-            authorReadResult = Repository<Author>.GetByID(author.ID);
-            bookReadResult = Repository<Book>.GetByID(book1.ID);
+
+            authorReadResult = Repository<Author>.GetByID(1);
+            book1ReadResult = Repository<Book>.GetByID(1);
             Repository<Book>.Delete(book1);
             Repository<Book>.Delete(book2);
             Repository<Author>.Delete(author);

@@ -5,6 +5,7 @@ using DataTrack.Core.Util.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 
@@ -22,6 +23,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
         public Mapping<Type, List<ColumnMappingAttribute>> TypeColumnMapping { get; private set; }
 
         private Mapping<TableMappingAttribute, DataTable> DataMap { get; set; } = new Mapping<TableMappingAttribute, DataTable>();
+        private Mapping<ColumnMappingAttribute, DataColumn> ColumnMap { get; set; } = new Mapping<ColumnMappingAttribute, DataColumn>();
         private Type BaseType = typeof(TBase);
         #endregion
 
@@ -63,8 +65,8 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
                 List<ColumnMappingAttribute> columns = TypeColumnMapping[TypeTableMapping[table]];
                 List<object> items = table.GetPropertyValues(Data);
 
-                dataTable.SetColumns(columns);
-                dataTable.AddRow(columns, items);
+                SetColumns(dataTable, columns);
+                AddRow(dataTable, columns, items);
 
                 Logger.Info($"Current table row count: {dataTable.Rows.Count}");
                 items.ForEach(item => Logger.Info(item?.ToString() ?? "NULL"));
@@ -75,7 +77,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
                 {
 
                     List<ColumnMappingAttribute> columns = Dictionaries.MappingCache[TypeTableMapping[table]].Columns;
-                    dataTable.SetColumns(columns);
+                    SetColumns(dataTable, columns);
 
                     dynamic childItems = Activator.CreateInstance(typeof(List<>).MakeGenericType(TypeTableMapping[table]));
 
@@ -89,7 +91,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
                     foreach (dynamic item in childItems)
                     {
                         List<object> values = table.GetPropertyValues(item);
-                        dataTable.AddRow(columns, values);
+                        AddRow(dataTable, columns, values);
 
                         values.ForEach(value => Logger.Info(value?.ToString() ?? "NULL"));
                         Logger.Info($"Current table row count: {dataTable.Rows.Count}");
@@ -100,7 +102,49 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             return dataTable;
         }
 
+        private void SetColumns(DataTable dataTable, List<ColumnMappingAttribute> columns)
+        {
+            foreach (ColumnMappingAttribute column in columns)
+            {
+                DataColumn dataColumn = new DataColumn(column.ColumnName);
+                List<DataColumn> primaryKeys = new List<DataColumn>();
+                ForeignKeyConstraint fk;
 
+                dataTable.Columns.Add(dataColumn);
+                ColumnMap[column] = dataColumn;
+
+                if (column.IsPrimaryKey())
+                    primaryKeys.Add(dataColumn);
+
+                if (column.IsForeignKey())
+                {
+                    foreach(TableMappingAttribute table in Tables)
+                    {
+                        if (column.ForeignKeyTableMapping == table.TableName)
+                        {
+                            DataColumn parentColumn = DataMap[table].Columns.Cast<DataColumn>().Where(c => ColumnMap[c].ColumnName == column.ForeignKeyColumnMapping).First();
+                            fk = new ForeignKeyConstraint(parentColumn, dataColumn);
+                            dataTable.Constraints.Add(fk);
+                        }
+                    }
+                }
+
+                dataTable.PrimaryKey = primaryKeys.ToArray();
+            }
+        }
+
+        private void AddRow(DataTable dataTable, List<ColumnMappingAttribute> columns, List<object> rowData)
+        {
+            DataRow dataRow = dataTable.NewRow();
+
+            for (int i = 0; i < rowData.Count; i++)
+            {
+                ColumnMappingAttribute column = columns[i];
+                dataRow[column.ColumnName] = rowData[i];
+            }
+
+            dataTable.Rows.Add(dataRow);
+        }
         #endregion  
     }
 }

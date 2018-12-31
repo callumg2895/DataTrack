@@ -9,7 +9,7 @@ namespace DataTrack.Core.Tests.TestObjects
         [ColumnMapping("books", "id", (byte)KeyTypes.PrimaryKey)]
         public virtual int ID { get; set; }
 
-        [ColumnMapping("books", "author_id", (byte)KeyTypes.ForeignKey, "authors")]
+        [ColumnMapping("books", "author_id", (byte)KeyTypes.ForeignKey, "authors", "id")]
         public virtual int AuthorId { get; set; }
 
         [ColumnMapping("books", "title")]
