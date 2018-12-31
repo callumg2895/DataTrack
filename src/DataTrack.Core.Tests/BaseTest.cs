@@ -64,7 +64,18 @@ namespace DataTrack.Core.Tests
             {
                 using (SqlCommand command = connection.CreateCommand())
                 {
-                    command.CommandText = "exec sp_MSforeachtable @command1 = \"DROP TABLE ?\"";
+                    command.CommandText = @"
+                        DECLARE @dropAllConstraints NVARCHAR(MAX) = N'';
+
+                        SELECT @dropAllConstraints  += N'
+                        ALTER TABLE ' + QUOTENAME(OBJECT_SCHEMA_NAME(parent_object_id))
+                            + '.' + QUOTENAME(OBJECT_NAME(parent_object_id)) + 
+                            ' DROP CONSTRAINT ' + QUOTENAME(name) + ';'
+                        FROM sys.foreign_keys;
+                        EXEC sp_executesql @dropAllConstraints 
+
+                        exec sp_MSforeachtable @command1 = 'DROP TABLE ?'";
+      
                     command.CommandType = System.Data.CommandType.Text;
                     command.ExecuteNonQuery();
                 }
