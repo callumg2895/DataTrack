@@ -39,7 +39,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
 
         public override Query<TBase> GetQuery()
         {
-            SQLBuilder sqlBuilder = new SQLBuilder(Query.Parameters, TableAliases, ColumnAliases, Restrictions);
+            SQLBuilder sqlBuilder = new SQLBuilder(Query.Parameters, Query.TableAliases, Query.ColumnAliases, Restrictions);
 
             sqlBuilder.AppendLine();
             sqlBuilder.BuildSelectStatement(Query.Columns.Where(c => Query.TypeColumnMapping[BaseType].Contains(c)).ToList());

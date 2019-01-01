@@ -17,8 +17,6 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
         #region Members
 
         private protected Type BaseType { get => typeof(TBase); }
-        private protected Dictionary<TableMappingAttribute, string> TableAliases = new Dictionary<TableMappingAttribute, string>();
-        private protected Dictionary<ColumnMappingAttribute, string> ColumnAliases = new Dictionary<ColumnMappingAttribute, string>();
         private protected Dictionary<ColumnMappingAttribute, string> Restrictions = new Dictionary<ColumnMappingAttribute, string>();
         internal Query<TBase> Query = new Query<TBase>();
 
@@ -35,9 +33,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             Query.OperationType = opType;
 
             // Fetch the table and column names for TBase
-            MapTables();
-            MapColumns();
-            CacheMappingData();
+            Query = new MappingBuilder<TBase>(Query).GetMappedQuery();
 
             // Check for valid Table/Columns
             if (Query.Tables.Count < 0 || Query.Columns.Count < 0)
@@ -46,212 +42,6 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
                 Logger.Error(MethodBase.GetCurrentMethod(), message);
                 throw new Exception(message);
             }
-        }
-
-        private void MapTables()
-        {
-            Type type = typeof(TBase);
-            TableMappingAttribute mappingAttribute;
-
-            // Get the table mapping for TBase
-            if (!Dictionaries.TypeMappingCache.ContainsKey(type))
-            {
-                if (TryGetTableMappingAttribute(type, out mappingAttribute))
-                {
-                    Query.TypeTableMapping[type] = mappingAttribute;
-                    Query.Tables.Add(mappingAttribute);
-                    TableAliases[mappingAttribute] = type.Name;
-                    Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded table mapping for class '{type.Name}'");
-                }
-                else
-                    Logger.Error(MethodBase.GetCurrentMethod(), $"Failed to load table mapping for class '{type.Name}'");
-            }
-            else
-            {
-                mappingAttribute = Dictionaries.TypeMappingCache[type].Table;
-                Query.TypeTableMapping[type] = mappingAttribute;
-                Query.Tables.Add(mappingAttribute);
-                TableAliases[mappingAttribute] = type.Name;
-                Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded table mapping for class '{type.Name}'");
-            }
-
-            // Get the table mapping for all child objects
-            type.GetProperties().ForEach(prop => MapPropertyTables(prop));
-        }
-
-        private void MapPropertyTables(PropertyInfo property)
-        {
-            Type propertyType = property.PropertyType;
-            TableMappingAttribute mappingAttribute;
-
-            // If the property is a generic list, then it fits the profile of a child object
-            if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(List<>))
-            {
-                Type genericArgumentType = propertyType.GetGenericArguments()[0];
-
-                if (!Dictionaries.TypeMappingCache.ContainsKey(genericArgumentType))
-                {
-                    if (TryGetTableMappingAttribute(genericArgumentType, out mappingAttribute))
-                    {
-                        Query.TypeTableMapping[genericArgumentType] = mappingAttribute;
-                        Query.Tables.Add(mappingAttribute);
-                    }
-                }
-                else
-                {
-                    mappingAttribute = Dictionaries.TypeMappingCache[genericArgumentType].Table;
-                    Query.TypeTableMapping[genericArgumentType] = mappingAttribute;
-                    Query.Tables.Add(mappingAttribute);
-                }
-
-                propertyType.GetProperties().ForEach(prop => MapPropertyTables(prop));
-            }
-        }
-
-        private void MapColumns()
-        {
-            List<ColumnMappingAttribute> columnAttributes;
-
-            if (!Dictionaries.TypeMappingCache.ContainsKey(BaseType))
-            {
-                if (TryGetColumnMappingAttributes(BaseType, out columnAttributes))
-                {
-                    Query.TypeColumnMapping[BaseType] = columnAttributes;
-                    Query.Columns.AddRange(columnAttributes);
-
-                    foreach (var attribute in columnAttributes)
-                    {
-                        ColumnAliases[attribute] = $"{BaseType.Name}.{attribute.ColumnName}";
-                        Query.ColumnPropertyNames[attribute] = attribute.GetPropertyName(BaseType);
-                    }
-
-                    Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded column mapping for class '{BaseType.Name}'");
-                }
-                else
-                    Logger.Error(MethodBase.GetCurrentMethod(), $"Failed to load column mapping for class '{BaseType.Name}'");
-            }
-            else
-            {
-                columnAttributes = Dictionaries.TypeMappingCache[BaseType].Columns;
-
-                Query.TypeColumnMapping[BaseType] = columnAttributes;
-                Query.Columns.AddRange(columnAttributes);
-
-                foreach (var attribute in columnAttributes)
-                {
-                    ColumnAliases[attribute] = $"{BaseType.Name}.{attribute.ColumnName}";
-                    Query.ColumnPropertyNames[attribute] = attribute.GetPropertyName(BaseType);
-                }
-
-                Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded column mapping for class '{BaseType.Name}'");
-            }
-
-            BaseType.GetProperties().ForEach(prop => MapPropertyColumns(prop));
-        }
-
-        private void MapPropertyColumns(PropertyInfo property)
-        {
-            Type type= property.PropertyType;
-            List<ColumnMappingAttribute> columnAttributes;
-
-            // If the property is a generic list, then it fits the profile of a child object
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
-            {
-                Type genericArgumentType = type.GetGenericArguments()[0];
-
-                if (!Dictionaries.TypeMappingCache.ContainsKey(genericArgumentType))
-                {
-                    if (TryGetColumnMappingAttributes(genericArgumentType, out columnAttributes))
-                    {
-                        Query.TypeColumnMapping[genericArgumentType] = columnAttributes;
-                        Query.Columns.AddRange(columnAttributes);
-
-                        foreach (var attribute in columnAttributes)
-                        {
-                            ColumnAliases[attribute] = $"{genericArgumentType.Name}.{attribute.ColumnName}";
-                            Query.ColumnPropertyNames[attribute] = attribute.GetPropertyName(genericArgumentType);
-                        }
-
-                        Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded column mapping for class '{genericArgumentType.Name}'");
-                    }
-                    else
-                        Logger.Error(MethodBase.GetCurrentMethod(), $"Failed to load column mapping for class '{genericArgumentType.Name}'");
-                }
-                else
-                {
-                    columnAttributes = Dictionaries.TypeMappingCache[genericArgumentType].Columns;
-
-                    Query.TypeColumnMapping[genericArgumentType] = columnAttributes;
-                    Query.Columns.AddRange(columnAttributes);
-
-                    foreach (var attribute in columnAttributes)
-                    {
-                        ColumnAliases[attribute] = $"{genericArgumentType.Name}.{attribute.ColumnName}";
-                        Query.ColumnPropertyNames[attribute] = attribute.GetPropertyName(genericArgumentType);
-                    }
-
-                    Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded column mapping for class '{type.Name}'");
-                }
-
-                genericArgumentType.GetProperties().ForEach(prop => MapPropertyColumns(prop));
-            }
-        }
-
-        private void CacheMappingData()
-        {
-            foreach(Type type in Query.TypeTableMapping.ForwardKeys)
-            {
-                if (!Dictionaries.TypeMappingCache.ContainsKey(type))
-                {
-                    TableMappingAttribute table = Query.TypeTableMapping[type];
-                    List<ColumnMappingAttribute> columns = Query.TypeColumnMapping[type];
-
-                    Dictionaries.TypeMappingCache[type] = (table, columns);
-                    Dictionaries.TableMappingCache[table] = columns;
-                }
-            }
-        }
-
-        private protected bool TryGetTableMappingAttribute(Type type, out TableMappingAttribute mappingAttribute)
-        {
-            mappingAttribute = null;
-
-            // Check the dictionary first to save using reflection
-            if (Query.TypeTableMapping.ContainsKey(type))
-            {
-                mappingAttribute = Query.TypeTableMapping[type];
-                return true;
-            }
-
-            foreach (Attribute attribute in type.GetCustomAttributes())
-                mappingAttribute = attribute as TableMappingAttribute;
-
-            return mappingAttribute != null;
-        }
-
-        private protected bool TryGetColumnMappingAttributes(Type type, out List<ColumnMappingAttribute> attributes)
-        {
-            attributes = new List<ColumnMappingAttribute>();
-
-            // Check the dictionary first to save using reflection
-            if (Query.TypeColumnMapping.ContainsKey(type))
-            {
-                attributes = Query.TypeColumnMapping[type];
-                return true;
-            }
-
-            foreach (PropertyInfo property in type.GetProperties())
-                foreach (Attribute attribute in property.GetCustomAttributes())
-                {
-                    ColumnMappingAttribute mappingAttribute = attribute as ColumnMappingAttribute;
-                    if (mappingAttribute != null)
-                    {
-                        attributes.Add(mappingAttribute);
-                        break;
-                    }
-                }
-
-            return attributes.Count > 0;
         }
 
         private protected bool TryGetPrimaryKeyColumnForType(Type type, out ColumnMappingAttribute typePKColumn)
@@ -270,16 +60,15 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
 
         private protected bool TryGetForeignKeyColumnForType(Type type, string table, out ColumnMappingAttribute typeFKColumn)
         {
-            TableMappingAttribute typeTable;
+            TableMappingAttribute typeTable = Dictionaries.TypeMappingCache[type].Table;
             typeFKColumn = null;
 
-            if (TryGetTableMappingAttribute(type, out typeTable))
-                foreach (ColumnMappingAttribute column in Query.TypeColumnMapping[type])
-                    if (column.IsForeignKey() && column.TableName == typeTable.TableName && column.ForeignKeyTableMapping == table)
-                    {
-                        typeFKColumn = column;
-                        return true;
-                    }
+            foreach (ColumnMappingAttribute column in Query.TypeColumnMapping[type])
+                if (column.IsForeignKey() && column.TableName == typeTable.TableName && column.ForeignKeyTableMapping == table)
+                {
+                    typeFKColumn = column;
+                    return true;
+                }
 
             return false;
         }
@@ -347,16 +136,10 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
 
         public virtual QueryBuilder<TBase> AddRestriction<TProp>(string property, RestrictionTypes rType, TProp value)
         {
-            TableMappingAttribute tableAttribute;
-            List<ColumnMappingAttribute> columnAttributes;
+            TableMappingAttribute tableAttribute = Dictionaries.TypeMappingCache[BaseType].Table;
+            List<ColumnMappingAttribute> columnAttributes = Dictionaries.TypeMappingCache[BaseType].Columns;
             ColumnMappingAttribute columnAttribute;
             StringBuilder restrictionBuilder = new StringBuilder();
-
-            if (!TryGetTableMappingAttribute(BaseType, out tableAttribute) || !TryGetColumnMappingAttributes(BaseType, out columnAttributes))
-            {
-                Logger.Error(MethodBase.GetCurrentMethod(), $"Failed to load column mapping for class '{BaseType.Name}'");
-                return this;
-            }
 
             columnAttribute = columnAttributes.Find(x => x.ColumnName == property);
 
@@ -381,7 +164,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             {
                 case RestrictionTypes.NotIn:
                 case RestrictionTypes.In:
-                    restrictionBuilder.Append(ColumnAliases[columnAttribute] + " ");
+                    restrictionBuilder.Append(Query.ColumnAliases[columnAttribute] + " ");
                     restrictionBuilder.Append(rType.ToSqlString() + " (");
                     restrictionBuilder.Append(handle);
                     restrictionBuilder.Append(")");
@@ -397,7 +180,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
                     }
                     else
                     {
-                        restrictionBuilder.Append(ColumnAliases[columnAttribute] + " ");
+                        restrictionBuilder.Append(Query.ColumnAliases[columnAttribute] + " ");
                         restrictionBuilder.Append(rType.ToSqlString() + " ");
                         restrictionBuilder.Append(handle);
                         break;
@@ -406,7 +189,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
                 case RestrictionTypes.EqualTo:
                 case RestrictionTypes.NotEqualTo:
                 default:
-                    restrictionBuilder.Append(ColumnAliases[columnAttribute] + " ");
+                    restrictionBuilder.Append(Query.ColumnAliases[columnAttribute] + " ");
                     restrictionBuilder.Append(rType.ToSqlString() + " ");
                     restrictionBuilder.Append(handle);
                     break;

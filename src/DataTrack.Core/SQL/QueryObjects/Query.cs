@@ -21,6 +21,8 @@ namespace DataTrack.Core.SQL.QueryObjects
 
         public List<TableMappingAttribute> Tables { get; set; } = new List<TableMappingAttribute>();
         public List<ColumnMappingAttribute> Columns { get; set; } = new List<ColumnMappingAttribute>();
+        internal Dictionary<TableMappingAttribute, string> TableAliases { get; set; }  = new Dictionary<TableMappingAttribute, string>();
+        internal Dictionary<ColumnMappingAttribute, string> ColumnAliases { get; set; } = new Dictionary<ColumnMappingAttribute, string>();
         public Map<Type, TableMappingAttribute> TypeTableMapping { get; set; } = new Map<Type, TableMappingAttribute>();
         public Map<Type, List<ColumnMappingAttribute>> TypeColumnMapping { get; set; } = new Map<Type, List<ColumnMappingAttribute>>();
         public Dictionary<ColumnMappingAttribute, string> ColumnPropertyNames { get; set; } = new Dictionary<ColumnMappingAttribute, string>();

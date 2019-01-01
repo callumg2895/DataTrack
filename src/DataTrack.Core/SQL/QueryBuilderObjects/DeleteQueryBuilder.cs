@@ -54,7 +54,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
                 }
 
                 sqlBuilder.AppendLine();
-                sqlBuilder.AppendLine($"delete {TableAliases[Query.Tables[0]]} from {Query.Tables[0].TableName} {TableAliases[Query.Tables[0]]}");
+                sqlBuilder.AppendLine($"delete {Query.TableAliases[Query.Tables[0]]} from {Query.Tables[0].TableName} {Query.TableAliases[Query.Tables[0]]}");
                 sqlBuilder.Append(restrictionsBuilder.ToString());
 
                 // For insert statements return the number of rows affected
