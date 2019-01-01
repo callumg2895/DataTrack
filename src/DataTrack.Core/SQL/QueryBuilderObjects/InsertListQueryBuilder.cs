@@ -33,7 +33,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
 
         public override Query<TBase> GetQuery()
         {
-            SQLBuilder sqlBuilder = new SQLBuilder(Query.Mapping.Parameters);
+            SQLBuilder<TBase> sqlBuilder = new SQLBuilder<TBase>(Query.Mapping);
 
             sqlBuilder.AppendLine();
 

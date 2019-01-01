@@ -16,5 +16,6 @@ namespace DataTrack.Core.SQL.QueryObjects
         internal Map<Type, List<ColumnMappingAttribute>> TypeColumnMapping { get; set; } = new Map<Type, List<ColumnMappingAttribute>>();
         internal Dictionary<ColumnMappingAttribute, string> ColumnPropertyNames { get; set; } = new Dictionary<ColumnMappingAttribute, string>();
         internal Dictionary<ColumnMappingAttribute, List<(string Handle, object Value)>> Parameters { get; set; } = new Dictionary<ColumnMappingAttribute, List<(string Handle, object Value)>>();
+        internal Dictionary<ColumnMappingAttribute, string> Restrictions { get; set; } = new Dictionary<ColumnMappingAttribute, string>();
     }
 }

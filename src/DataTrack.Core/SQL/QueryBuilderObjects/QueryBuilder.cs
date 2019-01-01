@@ -17,7 +17,6 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
         #region Members
 
         private protected Type BaseType { get => typeof(TBase); }
-        private protected Dictionary<ColumnMappingAttribute, string> Restrictions = new Dictionary<ColumnMappingAttribute, string>();
         internal Query<TBase> Query = new Query<TBase>();
 
         // An integer which ensures that all parameter names are unique between queries and subqueries
@@ -130,7 +129,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             }
         }
 
-        private protected void SelectRowCount(ref SQLBuilder sqlBuilder) => sqlBuilder.AppendLine("select @@rowcount as affected_rows");
+        private protected void SelectRowCount(ref SQLBuilder<TBase> sqlBuilder) => sqlBuilder.AppendLine("select @@rowcount as affected_rows");
 
         abstract public Query<TBase> GetQuery();
 
@@ -197,7 +196,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
 
             // Store the SQL for the restriction clause against the column attribute for the 
             // property, then store the value of the parameter against its handle if no error occurs.
-            Restrictions[columnAttribute] = restrictionBuilder.ToString();
+            Query.Mapping.Restrictions[columnAttribute] = restrictionBuilder.ToString();
             Query.AddParameter(columnAttribute, (handle, value));
 
             return this;

@@ -1,39 +1,28 @@
 ﻿using DataTrack.Core.Attributes;
+using DataTrack.Core.SQL.QueryObjects;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
 namespace DataTrack.Core.SQL.QueryBuilderObjects
 {
-    public class SQLBuilder
+    public class SQLBuilder<TBase> where TBase : new()
     {
         #region Members
 
-        private Dictionary<ColumnMappingAttribute, List<(string Handle, object Value)>> parameters;
-        private Dictionary<TableMappingAttribute, string> tableAliases;
-        private Dictionary<ColumnMappingAttribute, string> columnAliases;
-        private Dictionary<ColumnMappingAttribute, string> restrictions;
-
+        private Type BaseType = typeof(TBase);
+        private Mapping<TBase> Mapping;
         private StringBuilder sql;
 
         #endregion
 
         #region Constructors
 
-        public SQLBuilder(Dictionary<ColumnMappingAttribute, List<(string Handle, object Value)>> parameters)
-            : this(parameters, null, null, null) { }
-
-        public SQLBuilder(
-            Dictionary<ColumnMappingAttribute, List<(string Handle, object Value)>> parameters,
-            Dictionary<TableMappingAttribute, string> tableAliases,
-            Dictionary<ColumnMappingAttribute, string> columnAliases,
-            Dictionary<ColumnMappingAttribute, string> restrictions)
+        public SQLBuilder(Mapping<TBase> mapping)
         {
-            this.parameters = parameters;
-            this.tableAliases = tableAliases ?? new Dictionary<TableMappingAttribute, string>();
-            this.columnAliases = columnAliases ?? new Dictionary<ColumnMappingAttribute, string>();
-            this.restrictions = restrictions ?? new Dictionary<ColumnMappingAttribute, string>();
-            this.sql = new StringBuilder();
+            Mapping = mapping;
+            sql = new StringBuilder();
         }
 
         #endregion
@@ -58,33 +47,36 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             sql.AppendLine(")");
         }
 
-        public void BuildUpdateStatement(List<ColumnMappingAttribute> columns, TableMappingAttribute table)
+        public void BuildUpdateStatement()
         {
             StringBuilder setBuilder = new StringBuilder();
             StringBuilder restrictionBuilder = new StringBuilder();
 
+            TableMappingAttribute table = Mapping.TypeTableMapping[BaseType];
+            List<ColumnMappingAttribute> columns = Mapping.TypeColumnMapping[BaseType]; 
+
             int processedRestrictions = 0;
             int totalColumns = columns.Count;
 
-            sql.AppendLine($"update {tableAliases[table]}");
+            sql.AppendLine($"update {Mapping.TableAliases[table]}");
             sql.Append("set ");
 
             for (int i = 0; i < totalColumns; i++)
             {
-                setBuilder.Append(tableAliases[table]);
+                setBuilder.Append(Mapping.TableAliases[table]);
                 setBuilder.Append(".");
                 setBuilder.Append(columns[i].ColumnName);
                 setBuilder.Append(" = ");
-                setBuilder.Append(parameters[columns[i]][0].Handle);
+                setBuilder.Append(Mapping.Parameters[columns[i]][0].Handle);
                 setBuilder.AppendLine(i == totalColumns - 1
                     ? ""
                     : ",");
 
-                if (restrictions.ContainsKey(columns[i]))
+                if (Mapping.Restrictions.ContainsKey(columns[i]))
                 {
                     if (processedRestrictions++ == 0)
                     {
-                        restrictionBuilder.AppendLine($"from {table.TableName} {tableAliases[table]}");
+                        restrictionBuilder.AppendLine($"from {table.TableName} {Mapping.TableAliases[table]}");
                         restrictionBuilder.Append("where ");
                     }
                     else
@@ -92,7 +84,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
                         restrictionBuilder.Append("and ");
                     }
 
-                    restrictionBuilder.AppendLine(restrictions[columns[i]]);
+                    restrictionBuilder.AppendLine(Mapping.Restrictions[columns[i]]);
                 }
             }
 
@@ -104,10 +96,10 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
         {
             if (columns.Count == 0) return;
 
-            columns = columns.Where(c => !c.IsPrimaryKey() && parameters.Keys.Contains(c)).ToList();
+            columns = columns.Where(c => !c.IsPrimaryKey() && Mapping.Parameters.Keys.Contains(c)).ToList();
 
             // Assert that all colums for a given table have the same number of parameters
-            int paramCount = columns.Where(c => parameters.Keys.Contains(c)).Select(c => parameters[c].Count).Max();
+            int paramCount = columns.Where(c => Mapping.Parameters.Keys.Contains(c)).Select(c => Mapping.Parameters[c].Count).Max();
 
             sql.Append("values ");
 
@@ -116,11 +108,11 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             for (int j = 0; j < paramCount; j++)
             {
                 sql.Append("(");
-                sql.Append(parameters[columns[0]][j].Handle);
+                sql.Append(Mapping.Parameters[columns[0]][j].Handle);
 
                 for (int i = 1; i < columns.Count; i++)
                 {
-                    sql.Append(", " + parameters[columns[i]][j].Handle);
+                    sql.Append(", " + Mapping.Parameters[columns[i]][j].Handle);
                 }
 
                 sql.Append(")");
@@ -137,12 +129,12 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             if (columns.Count == 0) return;
 
             sql.Append("select ");
-            sql.Append(columnAliases[columns[0]]);
+            sql.Append(Mapping.ColumnAliases[columns[0]]);
 
             for (int i = 1; i < columns.Count; i++)
             {
                 sql.Append(", ");
-                sql.Append(columnAliases[columns[i]]);
+                sql.Append(Mapping.ColumnAliases[columns[i]]);
             }
 
             sql.AppendLine();
@@ -157,13 +149,13 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             sql.Append("from ")
                .Append(table.TableName)
                .Append(" as ")
-               .AppendLine(tableAliases[table]);
+               .AppendLine(Mapping.TableAliases[table]);
 
             bool first = true;
 
             for (int i = 1; i < columns.Count; i++)
             {
-                if (restrictions.ContainsKey(columns[i]))
+                if (Mapping.Restrictions.ContainsKey(columns[i]))
                 {
                     if (first)
                     {
@@ -172,7 +164,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
                     }
                     else sql.Append("and ");
 
-                    sql.AppendLine(restrictions[columns[i]]);
+                    sql.AppendLine(Mapping.Restrictions[columns[i]]);
                     first = false;
                 }
             }

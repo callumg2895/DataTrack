@@ -41,15 +41,15 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
         {
             if (Query.Mapping.Parameters.Count >= 1)
             {
-                SQLBuilder sqlBuilder = new SQLBuilder(Query.Mapping.Parameters);
+                SQLBuilder<TBase> sqlBuilder = new SQLBuilder<TBase>(Query.Mapping);
                 StringBuilder restrictionsBuilder = new StringBuilder();
 
                 for (int i = 0; i < Query.Mapping.Columns.Count; i++)
                 {
-                    if (Restrictions.ContainsKey(Query.Mapping.Columns[i]))
+                    if (Query.Mapping.Restrictions.ContainsKey(Query.Mapping.Columns[i]))
                     {
                         restrictionsBuilder.Append(restrictionsBuilder.Length == 0 ? "where " : "and ");
-                        restrictionsBuilder.AppendLine(Restrictions[Query.Mapping.Columns[i]]);
+                        restrictionsBuilder.AppendLine(Query.Mapping.Restrictions[Query.Mapping.Columns[i]]);
                     }
                 }
 
