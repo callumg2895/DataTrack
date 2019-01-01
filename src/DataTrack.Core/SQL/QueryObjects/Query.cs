@@ -21,13 +21,13 @@ namespace DataTrack.Core.SQL.QueryObjects
 
         public List<TableMappingAttribute> Tables { get; set; } = new List<TableMappingAttribute>();
         public List<ColumnMappingAttribute> Columns { get; set; } = new List<ColumnMappingAttribute>();
-        public Mapping<Type, TableMappingAttribute> TypeTableMapping { get; set; } = new Mapping<Type, TableMappingAttribute>();
-        public Mapping<Type, List<ColumnMappingAttribute>> TypeColumnMapping { get; set; } = new Mapping<Type, List<ColumnMappingAttribute>>();
+        public Map<Type, TableMappingAttribute> TypeTableMapping { get; set; } = new Map<Type, TableMappingAttribute>();
+        public Map<Type, List<ColumnMappingAttribute>> TypeColumnMapping { get; set; } = new Map<Type, List<ColumnMappingAttribute>>();
         public Dictionary<ColumnMappingAttribute, string> ColumnPropertyNames { get; set; } = new Dictionary<ColumnMappingAttribute, string>();
         public Dictionary<ColumnMappingAttribute, List<(string Handle, object Value)>> Parameters { get; set; } = new Dictionary<ColumnMappingAttribute, List<(string Handle, object Value)>>();
         public CRUDOperationTypes OperationType { get; set; }
         public string QueryString { get; set; }
-        public Mapping<TableMappingAttribute, DataTable> DataMap { get; set; } = new Mapping<TableMappingAttribute, DataTable>();
+        public Map<TableMappingAttribute, DataTable> DataMap { get; set; } = new Map<TableMappingAttribute, DataTable>();
 
         #endregion
 

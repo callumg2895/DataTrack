@@ -19,17 +19,17 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
         public TBase Data { get; private set; }
         public List<TableMappingAttribute> Tables { get; private set; }
         public List<ColumnMappingAttribute> Columns { get; private set; }
-        public Mapping<Type, TableMappingAttribute> TypeTableMapping { get; private set; }
-        public Mapping<Type, List<ColumnMappingAttribute>> TypeColumnMapping { get; private set; }
+        public Map<Type, TableMappingAttribute> TypeTableMapping { get; private set; }
+        public Map<Type, List<ColumnMappingAttribute>> TypeColumnMapping { get; private set; }
 
-        private Mapping<TableMappingAttribute, DataTable> DataMap { get; set; } = new Mapping<TableMappingAttribute, DataTable>();
-        private Mapping<ColumnMappingAttribute, DataColumn> ColumnMap { get; set; } = new Mapping<ColumnMappingAttribute, DataColumn>();
+        private Map<TableMappingAttribute, DataTable> DataMap { get; set; } = new Map<TableMappingAttribute, DataTable>();
+        private Map<ColumnMappingAttribute, DataColumn> ColumnMap { get; set; } = new Map<ColumnMappingAttribute, DataColumn>();
         private Type BaseType = typeof(TBase);
         #endregion
 
         #region Constructors
 
-        public BulkDataBuilder(TBase data, List<TableMappingAttribute> tables, List<ColumnMappingAttribute> columns, Mapping<Type, TableMappingAttribute> typeTableMapping, Mapping<Type, List<ColumnMappingAttribute>> typeColumnMapping)
+        public BulkDataBuilder(TBase data, List<TableMappingAttribute> tables, List<ColumnMappingAttribute> columns, Map<Type, TableMappingAttribute> typeTableMapping, Map<Type, List<ColumnMappingAttribute>> typeColumnMapping)
         {
             Data = data;
             Tables = tables;
@@ -42,7 +42,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
 
         #region Methods
 
-        public Mapping<TableMappingAttribute, DataTable> YieldDataMap()
+        public Map<TableMappingAttribute, DataTable> YieldDataMap()
         {
             ConstructData();
             return DataMap;

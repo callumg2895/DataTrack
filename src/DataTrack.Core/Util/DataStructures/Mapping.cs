@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace DataTrack.Core.Util.DataStructures
 {
-    public class Mapping<T1, T2>
+    public class Map<T1, T2>
     {
         private Dictionary<T1, T2> forward = new Dictionary<T1, T2>();
         private Dictionary<T2, T1> reverse = new Dictionary<T2, T1>();
