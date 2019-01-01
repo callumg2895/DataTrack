@@ -30,8 +30,6 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
 
             Item = item;
             CurrentParameterIndex = parameterIndex;
-
-            UpdateParameters(Item);
         }
 
         #endregion
