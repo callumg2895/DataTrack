@@ -39,65 +39,8 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
         #region Methods
 
         public override Query<TBase> GetQuery()
-        {
-            SQLBuilder sqlBuilder = new SQLBuilder(Query.Parameters);
-            StringBuilder childSqlBuilder = new StringBuilder();
-
-            sqlBuilder.AppendLine();
-
-            for (int i = 0; i < Query.Tables.Count; i++)
-            {
-                int maxParameterCount = Query.Columns.Where(c => !c.IsPrimaryKey()).Select(c => Query.Parameters[c].Count).Max();
-
-                // The case when i == 0 corresponds to the table for the TBase object
-                if (i == 0)
-                {
-                    sqlBuilder.BuildInsertStatement(Query.Columns.Where(c => !c.IsPrimaryKey()).ToList(), Query.Tables[i]);
-                    sqlBuilder.BuildValuesStatement(Query.Columns.Where(c => !c.IsPrimaryKey()).ToList(), Query.Tables[i]);
-
-                    // For insert statements return the number of rows affected
-                    SelectRowCount(ref sqlBuilder);
-                }
-                else
-                {
-                    dynamic childItems = Query.Tables[0].GetChildPropertyValues(Item, Query.Tables[i].TableName) ?? new List<object>();
-
-                    if (childItems.Count > 0)
-                    {
-                        dynamic queryBuilder = Activator.CreateInstance(typeof(InsertListQueryBuilder<>).MakeGenericType(Query.TypeTableMapping[Query.Tables[i]]), childItems, CurrentParameterIndex);
-
-                        foreach (ColumnMappingAttribute column in queryBuilder.Query.Columns)
-                        {
-                            if (queryBuilder.Query.Parameters.ContainsKey(column))
-                            {
-                                if (Query.Parameters.ContainsKey(column))
-                                    Query.Parameters[column].AddRange(queryBuilder.Query.Parameters[column]);
-                                else
-                                {
-                                    Query.Parameters[column] = new List<(string Handle, object Value)>();
-                                    Query.Parameters[column].AddRange(queryBuilder.Query.Parameters[column]);
-                                }
-                            }
-
-                            if (queryBuilder.Query.ColumnPropertyNames.ContainsKey(column))
-                                Query.ColumnPropertyNames.TryAdd(column, queryBuilder.Query.ColumnPropertyNames[column]);
-
-                            Query.Columns.Add(column);
-                        }
-
-                        sqlBuilder.Append(queryBuilder.GetQuery().QueryString);
-                    }
-                }
-            }
-
-            string sql = sqlBuilder.ToString();
-
+        {        
             Query.DataMap = new BulkDataBuilder<TBase>(Item, Query.Tables, Query.Columns, Query.TypeTableMapping, Query.TypeColumnMapping).YieldDataMap();
-
-            Logger.Info(MethodBase.GetCurrentMethod(), "Generated SQL: " + sql);
-
-            Query.QueryString = sql; 
-
             return Query;
         }
 

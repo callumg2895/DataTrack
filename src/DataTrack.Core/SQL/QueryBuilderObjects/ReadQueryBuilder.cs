@@ -3,6 +3,7 @@ using DataTrack.Core.Enums;
 using DataTrack.Core.SQL.QueryObjects;
 using DataTrack.Core.Util;
 using System;
+using System.Linq;
 using System.Reflection;
 
 namespace DataTrack.Core.SQL.QueryBuilderObjects
@@ -29,7 +30,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             this.CurrentParameterIndex = parameterIndex;
 
             if (ID.HasValue)
-                AddRestriction<int>("ID", RestrictionTypes.EqualTo, ID.Value);
+                AddRestriction<int>("id", RestrictionTypes.EqualTo, ID.Value);
         }
 
         #endregion
@@ -41,12 +42,12 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             SQLBuilder sqlBuilder = new SQLBuilder(Query.Parameters, TableAliases, ColumnAliases, Restrictions);
 
             sqlBuilder.AppendLine();
-            sqlBuilder.BuildSelectStatement(Query.Columns);
+            sqlBuilder.BuildSelectStatement(Query.Columns.Where(c => Query.TypeColumnMapping[BaseType].Contains(c)).ToList());
 
             for (int i = 0; i < Query.Tables.Count; i++)
             {
                 if (i == 0)
-                    sqlBuilder.BuildFromStatement(Query.Columns, Query.Tables[0]);
+                    sqlBuilder.BuildFromStatement(Query.Columns.Where(c => Query.TypeColumnMapping[BaseType].Contains(c)).ToList(), Query.Tables[0]);
                 else
                 {
                     dynamic queryBuilder = Activator.CreateInstance(typeof(ReadQueryBuilder<>).MakeGenericType(Query.TypeTableMapping[Query.Tables[i]]));

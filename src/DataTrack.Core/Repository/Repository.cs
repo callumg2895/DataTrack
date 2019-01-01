@@ -16,7 +16,7 @@ namespace DataTrack.Core.Repository
 
         #region Read
 
-        public static TBase GetByID(int id) => new ReadQueryBuilder<TBase>(id).GetQuery().Execute()[0];
+        public static TBase GetByID(int id) => new ReadQueryBuilder<TBase>().AddRestriction("id", RestrictionTypes.EqualTo, id).GetQuery().Execute()[0];
 
         public static List<TBase> GetByProperty(string propName, RestrictionTypes restriction, object propValue)
         {
