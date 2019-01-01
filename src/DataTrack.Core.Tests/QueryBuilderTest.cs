@@ -14,6 +14,24 @@ namespace DataTrack.Core.Tests
     {
 
         [TestMethod]
+        public void TestQueryBuilders_CachesMappingData()
+        {
+            // Arrange
+            Book book = new Book() { Title = string.Empty };
+            Author author = new Author() { FirstName = string.Empty, LastName = string.Empty, Books = new List<Book>() { book } };
+
+            //Act
+            ReadQueryBuilder<Author> read = new ReadQueryBuilder<Author>();
+            InsertQueryBuilder<Author> insert = new InsertQueryBuilder<Author>(author);
+            UpdateQueryBuilder<Author> update = new UpdateQueryBuilder<Author>(author);
+            DeleteQueryBuilder<Author> delete = new DeleteQueryBuilder<Author>(author);
+
+            //Assert
+            Assert.IsTrue(Dictionaries.MappingCache.ContainsKey(typeof(Author)));
+            Assert.IsTrue(Dictionaries.MappingCache.ContainsKey(typeof(Book)));
+        }
+
+        [TestMethod]
         public void TestReadQueryBuilder_ShouldReturnCorrectSQLForObjects()
         {
             // Arrange
