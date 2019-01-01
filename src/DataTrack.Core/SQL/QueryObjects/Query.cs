@@ -172,10 +172,12 @@ namespace DataTrack.Core.SQL.QueryObjects
             List<ColumnMappingAttribute> mainColumns = Mapping.TypeColumnMapping[baseType];
 
             int columnCount = 0;
+            int originalColumnCount = 0;
 
             while (reader.Read())
             {
                 TBase obj = new TBase();
+                columnCount = originalColumnCount;
 
                 foreach (ColumnMappingAttribute column in mainColumns)
                 {
@@ -205,7 +207,7 @@ namespace DataTrack.Core.SQL.QueryObjects
                 reader.NextResult();
                 Type childType = Mapping.TypeTableMapping[Mapping.Tables[tableCount]];
                 dynamic childCollection = Activator.CreateInstance(typeof(List<>).MakeGenericType(childType));
-                int originalColumnCount = columnCount;
+                originalColumnCount = columnCount;
 
                 while (reader.Read())
                 {
