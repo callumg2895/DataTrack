@@ -16,6 +16,9 @@ namespace DataTrack.Core.Util
             { typeof(string), SqlDbType.VarChar }
         };
 
-        public static Dictionary<Type, (TableMappingAttribute Table, List<ColumnMappingAttribute> Columns)> MappingCache = new Dictionary<Type, (TableMappingAttribute Table, List<ColumnMappingAttribute> Columns)>();
+        public static Dictionary<Type, (TableMappingAttribute Table, List<ColumnMappingAttribute> Columns)> TypeMappingCache = new Dictionary<Type, (TableMappingAttribute Table, List<ColumnMappingAttribute> Columns)>();
+
+        public static Dictionary<TableMappingAttribute, List<ColumnMappingAttribute>> TableMappingCache = new Dictionary<TableMappingAttribute, List<ColumnMappingAttribute>>();
+
     }
 }

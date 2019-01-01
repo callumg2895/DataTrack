@@ -54,7 +54,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             TableMappingAttribute mappingAttribute;
 
             // Get the table mapping for TBase
-            if (!Dictionaries.MappingCache.ContainsKey(type))
+            if (!Dictionaries.TypeMappingCache.ContainsKey(type))
             {
                 if (TryGetTableMappingAttribute(type, out mappingAttribute))
                 {
@@ -68,7 +68,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             }
             else
             {
-                mappingAttribute = Dictionaries.MappingCache[type].Table;
+                mappingAttribute = Dictionaries.TypeMappingCache[type].Table;
                 Query.TypeTableMapping[type] = mappingAttribute;
                 Query.Tables.Add(mappingAttribute);
                 TableAliases[mappingAttribute] = type.Name;
@@ -89,7 +89,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             {
                 Type genericArgumentType = propertyType.GetGenericArguments()[0];
 
-                if (!Dictionaries.MappingCache.ContainsKey(genericArgumentType))
+                if (!Dictionaries.TypeMappingCache.ContainsKey(genericArgumentType))
                 {
                     if (TryGetTableMappingAttribute(genericArgumentType, out mappingAttribute))
                     {
@@ -99,7 +99,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
                 }
                 else
                 {
-                    mappingAttribute = Dictionaries.MappingCache[genericArgumentType].Table;
+                    mappingAttribute = Dictionaries.TypeMappingCache[genericArgumentType].Table;
                     Query.TypeTableMapping[genericArgumentType] = mappingAttribute;
                     Query.Tables.Add(mappingAttribute);
                 }
@@ -112,7 +112,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
         {
             List<ColumnMappingAttribute> columnAttributes;
 
-            if (!Dictionaries.MappingCache.ContainsKey(BaseType))
+            if (!Dictionaries.TypeMappingCache.ContainsKey(BaseType))
             {
                 if (TryGetColumnMappingAttributes(BaseType, out columnAttributes))
                 {
@@ -132,7 +132,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             }
             else
             {
-                columnAttributes = Dictionaries.MappingCache[BaseType].Columns;
+                columnAttributes = Dictionaries.TypeMappingCache[BaseType].Columns;
 
                 Query.TypeColumnMapping[BaseType] = columnAttributes;
                 Query.Columns.AddRange(columnAttributes);
@@ -159,7 +159,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             {
                 Type genericArgumentType = type.GetGenericArguments()[0];
 
-                if (!Dictionaries.MappingCache.ContainsKey(genericArgumentType))
+                if (!Dictionaries.TypeMappingCache.ContainsKey(genericArgumentType))
                 {
                     if (TryGetColumnMappingAttributes(genericArgumentType, out columnAttributes))
                     {
@@ -179,7 +179,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
                 }
                 else
                 {
-                    columnAttributes = Dictionaries.MappingCache[genericArgumentType].Columns;
+                    columnAttributes = Dictionaries.TypeMappingCache[genericArgumentType].Columns;
 
                     Query.TypeColumnMapping[genericArgumentType] = columnAttributes;
                     Query.Columns.AddRange(columnAttributes);
@@ -201,9 +201,13 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
         {
             foreach(Type type in Query.TypeTableMapping.ForwardKeys)
             {
-                if (!Dictionaries.MappingCache.ContainsKey(type))
+                if (!Dictionaries.TypeMappingCache.ContainsKey(type))
                 {
-                    Dictionaries.MappingCache[type] = (Query.TypeTableMapping[type], Query.TypeColumnMapping[type]);
+                    TableMappingAttribute table = Query.TypeTableMapping[type];
+                    List<ColumnMappingAttribute> columns = Query.TypeColumnMapping[type];
+
+                    Dictionaries.TypeMappingCache[type] = (table, columns);
+                    Dictionaries.TableMappingCache[table] = columns;
                 }
             }
         }

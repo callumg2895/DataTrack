@@ -27,8 +27,8 @@ namespace DataTrack.Core.Tests
             DeleteQueryBuilder<Author> delete = new DeleteQueryBuilder<Author>(author);
 
             //Assert
-            Assert.IsTrue(Dictionaries.MappingCache.ContainsKey(typeof(Author)));
-            Assert.IsTrue(Dictionaries.MappingCache.ContainsKey(typeof(Book)));
+            Assert.IsTrue(Dictionaries.TypeMappingCache.ContainsKey(typeof(Author)));
+            Assert.IsTrue(Dictionaries.TypeMappingCache.ContainsKey(typeof(Book)));
         }
 
         [TestMethod]
