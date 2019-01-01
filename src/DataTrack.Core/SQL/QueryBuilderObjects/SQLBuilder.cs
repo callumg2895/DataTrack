@@ -131,6 +131,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             {
                 List<ColumnMappingAttribute> columns = Dictionaries.TableMappingCache[table];
 
+                sql.AppendLine();
                 sql.Append("select ");
                 sql.Append(Mapping.ColumnAliases[columns[0]]);
 
@@ -167,6 +168,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
                         
                 }
 
+                sql.AppendLine();
                 sql.AppendLine($"select * from {table.StagingTableName}");
             }
         }
