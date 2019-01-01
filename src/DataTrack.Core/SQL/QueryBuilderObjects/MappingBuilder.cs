@@ -14,27 +14,19 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
         #region Members
 
         private readonly Type BaseType = typeof(TBase);
-        private Query<TBase> Query;
+        private Mapping<TBase> Mapping = new Mapping<TBase>();
 
-        #endregion
-
-        #region Constrcutors
-
-        public MappingBuilder(Query<TBase> query)
-        {
-            Query = query;
-        }
         #endregion
 
         #region Methods
 
-        public Query<TBase> GetMappedQuery()
+        public Mapping<TBase> GetMapping()
         {
             MapTables();
             MapColumns();
             CacheMappingData();
 
-            return Query;
+            return Mapping;
         }
 
         private void MapTables()
@@ -47,9 +39,9 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             {
                 if (TryGetTableMappingAttribute(type, out mappingAttribute))
                 {
-                    Query.TypeTableMapping[type] = mappingAttribute;
-                    Query.Tables.Add(mappingAttribute);
-                    Query.TableAliases[mappingAttribute] = type.Name;
+                    Mapping.TypeTableMapping[type] = mappingAttribute;
+                    Mapping.Tables.Add(mappingAttribute);
+                    Mapping.TableAliases[mappingAttribute] = type.Name;
                     Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded table mapping for class '{type.Name}'");
                 }
                 else
@@ -58,9 +50,9 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             else
             {
                 mappingAttribute = Dictionaries.TypeMappingCache[type].Table;
-                Query.TypeTableMapping[type] = mappingAttribute;
-                Query.Tables.Add(mappingAttribute);
-                Query.TableAliases[mappingAttribute] = type.Name;
+                Mapping.TypeTableMapping[type] = mappingAttribute;
+                Mapping.Tables.Add(mappingAttribute);
+                Mapping.TableAliases[mappingAttribute] = type.Name;
                 Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded table mapping for class '{type.Name}' from cache");
             }
 
@@ -82,15 +74,15 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
                 {
                     if (TryGetTableMappingAttribute(genericArgumentType, out mappingAttribute))
                     {
-                        Query.TypeTableMapping[genericArgumentType] = mappingAttribute;
-                        Query.Tables.Add(mappingAttribute);
+                        Mapping.TypeTableMapping[genericArgumentType] = mappingAttribute;
+                        Mapping.Tables.Add(mappingAttribute);
                     }
                 }
                 else
                 {
                     mappingAttribute = Dictionaries.TypeMappingCache[genericArgumentType].Table;
-                    Query.TypeTableMapping[genericArgumentType] = mappingAttribute;
-                    Query.Tables.Add(mappingAttribute);
+                    Mapping.TypeTableMapping[genericArgumentType] = mappingAttribute;
+                    Mapping.Tables.Add(mappingAttribute);
                 }
 
                 propertyType.GetProperties().ForEach(prop => MapPropertyTables(prop));
@@ -105,13 +97,13 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             {
                 if (TryGetColumnMappingAttributes(BaseType, out columnAttributes))
                 {
-                    Query.TypeColumnMapping[BaseType] = columnAttributes;
-                    Query.Columns.AddRange(columnAttributes);
+                    Mapping.TypeColumnMapping[BaseType] = columnAttributes;
+                    Mapping.Columns.AddRange(columnAttributes);
 
                     foreach (var attribute in columnAttributes)
                     {
-                        Query.ColumnAliases[attribute] = $"{BaseType.Name}.{attribute.ColumnName}";
-                        Query.ColumnPropertyNames[attribute] = attribute.GetPropertyName(BaseType);
+                        Mapping.ColumnAliases[attribute] = $"{BaseType.Name}.{attribute.ColumnName}";
+                        Mapping.ColumnPropertyNames[attribute] = attribute.GetPropertyName(BaseType);
                     }
 
                     Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded column mapping for class '{BaseType.Name}'");
@@ -123,13 +115,13 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             {
                 columnAttributes = Dictionaries.TypeMappingCache[BaseType].Columns;
 
-                Query.TypeColumnMapping[BaseType] = columnAttributes;
-                Query.Columns.AddRange(columnAttributes);
+                Mapping.TypeColumnMapping[BaseType] = columnAttributes;
+                Mapping.Columns.AddRange(columnAttributes);
 
                 foreach (var attribute in columnAttributes)
                 {
-                    Query.ColumnAliases[attribute] = $"{BaseType.Name}.{attribute.ColumnName}";
-                    Query.ColumnPropertyNames[attribute] = attribute.GetPropertyName(BaseType);
+                    Mapping.ColumnAliases[attribute] = $"{BaseType.Name}.{attribute.ColumnName}";
+                    Mapping.ColumnPropertyNames[attribute] = attribute.GetPropertyName(BaseType);
                 }
 
                 Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded column mapping for class '{BaseType.Name}' from cache");
@@ -152,13 +144,13 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
                 {
                     if (TryGetColumnMappingAttributes(genericArgumentType, out columnAttributes))
                     {
-                        Query.TypeColumnMapping[genericArgumentType] = columnAttributes;
-                        Query.Columns.AddRange(columnAttributes);
+                        Mapping.TypeColumnMapping[genericArgumentType] = columnAttributes;
+                        Mapping.Columns.AddRange(columnAttributes);
 
                         foreach (var attribute in columnAttributes)
                         {
-                            Query.ColumnAliases[attribute] = $"{genericArgumentType.Name}.{attribute.ColumnName}";
-                            Query.ColumnPropertyNames[attribute] = attribute.GetPropertyName(genericArgumentType);
+                            Mapping.ColumnAliases[attribute] = $"{genericArgumentType.Name}.{attribute.ColumnName}";
+                            Mapping.ColumnPropertyNames[attribute] = attribute.GetPropertyName(genericArgumentType);
                         }
 
                         Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded column mapping for class '{genericArgumentType.Name}'");
@@ -170,13 +162,13 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
                 {
                     columnAttributes = Dictionaries.TypeMappingCache[genericArgumentType].Columns;
 
-                    Query.TypeColumnMapping[genericArgumentType] = columnAttributes;
-                    Query.Columns.AddRange(columnAttributes);
+                    Mapping.TypeColumnMapping[genericArgumentType] = columnAttributes;
+                    Mapping.Columns.AddRange(columnAttributes);
 
                     foreach (var attribute in columnAttributes)
                     {
-                        Query.ColumnAliases[attribute] = $"{genericArgumentType.Name}.{attribute.ColumnName}";
-                        Query.ColumnPropertyNames[attribute] = attribute.GetPropertyName(genericArgumentType);
+                        Mapping.ColumnAliases[attribute] = $"{genericArgumentType.Name}.{attribute.ColumnName}";
+                        Mapping.ColumnPropertyNames[attribute] = attribute.GetPropertyName(genericArgumentType);
                     }
 
                     Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded column mapping for class '{type.Name}'");
@@ -188,12 +180,12 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
 
         private void CacheMappingData()
         {
-            foreach (Type type in Query.TypeTableMapping.ForwardKeys)
+            foreach (Type type in Mapping.TypeTableMapping.ForwardKeys)
             {
                 if (!Dictionaries.TypeMappingCache.ContainsKey(type))
                 {
-                    TableMappingAttribute table = Query.TypeTableMapping[type];
-                    List<ColumnMappingAttribute> columns = Query.TypeColumnMapping[type];
+                    TableMappingAttribute table = Mapping.TypeTableMapping[type];
+                    List<ColumnMappingAttribute> columns = Mapping.TypeColumnMapping[type];
 
                     Dictionaries.TypeMappingCache[type] = (table, columns);
                     Dictionaries.TableMappingCache[table] = columns;
@@ -206,9 +198,9 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             mappingAttribute = null;
 
             // Check the dictionary first to save using reflection
-            if (Query.TypeTableMapping.ContainsKey(type))
+            if (Mapping.TypeTableMapping.ContainsKey(type))
             {
-                mappingAttribute = Query.TypeTableMapping[type];
+                mappingAttribute = Mapping.TypeTableMapping[type];
                 return true;
             }
 
@@ -223,9 +215,9 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             attributes = new List<ColumnMappingAttribute>();
 
             // Check the dictionary first to save using reflection
-            if (Query.TypeColumnMapping.ContainsKey(type))
+            if (Mapping.TypeColumnMapping.ContainsKey(type))
             {
-                attributes = Query.TypeColumnMapping[type];
+                attributes = Mapping.TypeColumnMapping[type];
                 return true;
             }
 

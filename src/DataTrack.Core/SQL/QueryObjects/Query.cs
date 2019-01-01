@@ -19,14 +19,7 @@ namespace DataTrack.Core.SQL.QueryObjects
         private Type baseType;
         private Stopwatch stopwatch;
 
-        public List<TableMappingAttribute> Tables { get; set; } = new List<TableMappingAttribute>();
-        public List<ColumnMappingAttribute> Columns { get; set; } = new List<ColumnMappingAttribute>();
-        internal Dictionary<TableMappingAttribute, string> TableAliases { get; set; }  = new Dictionary<TableMappingAttribute, string>();
-        internal Dictionary<ColumnMappingAttribute, string> ColumnAliases { get; set; } = new Dictionary<ColumnMappingAttribute, string>();
-        public Map<Type, TableMappingAttribute> TypeTableMapping { get; set; } = new Map<Type, TableMappingAttribute>();
-        public Map<Type, List<ColumnMappingAttribute>> TypeColumnMapping { get; set; } = new Map<Type, List<ColumnMappingAttribute>>();
-        public Dictionary<ColumnMappingAttribute, string> ColumnPropertyNames { get; set; } = new Dictionary<ColumnMappingAttribute, string>();
-        public Dictionary<ColumnMappingAttribute, List<(string Handle, object Value)>> Parameters { get; set; } = new Dictionary<ColumnMappingAttribute, List<(string Handle, object Value)>>();
+        internal Mapping<TBase> Mapping { get; set; }
         public CRUDOperationTypes OperationType { get; set; }
         public string QueryString { get; set; }
         public Map<TableMappingAttribute, DataTable> DataMap { get; set; } = new Map<TableMappingAttribute, DataTable>();
@@ -49,19 +42,19 @@ namespace DataTrack.Core.SQL.QueryObjects
         {
             List<(string Handle, object Value)> parameters = new List<(string Handle, object Value)>();
 
-            foreach (ColumnMappingAttribute column in Columns)
-                if (Parameters.ContainsKey(column))
-                    parameters.AddRange(Parameters[column]);
+            foreach (ColumnMappingAttribute column in Mapping.Columns)
+                if (Mapping.Parameters.ContainsKey(column))
+                    parameters.AddRange(Mapping.Parameters[column]);
 
             return parameters;
         }
 
         public void AddParameter(ColumnMappingAttribute column, (string Handle, object Value) parameter)
         {
-            if (Parameters.ContainsKey(column))
-                Parameters[column].Add(parameter);
+            if (Mapping.Parameters.ContainsKey(column))
+                Mapping.Parameters[column].Add(parameter);
             else
-                Parameters[column] = new List<(string Handle, object Value)>() { parameter };
+                Mapping.Parameters[column] = new List<(string Handle, object Value)>() { parameter };
         }
 
         public dynamic Execute()
@@ -132,7 +125,7 @@ namespace DataTrack.Core.SQL.QueryObjects
             int affectedRows = 0;
 
             // Create operations always check the number of rows affected after the query has executed
-            for (int tableCount = 0; tableCount < Tables.Count; tableCount++)
+            for (int tableCount = 0; tableCount < Mapping.Tables.Count; tableCount++)
             {
                 if (tableCount == 0)
                 {
@@ -144,15 +137,15 @@ namespace DataTrack.Core.SQL.QueryObjects
                 else
                 {
 
-                    TableMappingAttribute table = Tables[tableCount];
+                    TableMappingAttribute table = Mapping.Tables[tableCount];
                     int childObjects = 0;
 
                     // TODO: needs improving
                     // The idea here is that the number of parameters associated with each column of a table is equal to the number of total child objects
-                    foreach (var key in Parameters.Keys)
+                    foreach (var key in Mapping.Parameters.Keys)
                     {
                         if (key.TableName == table.TableName)
-                            childObjects = Parameters[key].Count;
+                            childObjects = Mapping.Parameters[key].Count;
                     }
 
                     for (int i = 0; i < childObjects; i++)
@@ -176,7 +169,7 @@ namespace DataTrack.Core.SQL.QueryObjects
         {
             List<TBase> results = new List<TBase>();
 
-            List<ColumnMappingAttribute> mainColumns = TypeColumnMapping[baseType];
+            List<ColumnMappingAttribute> mainColumns = Mapping.TypeColumnMapping[baseType];
 
             int columnCount = 0;
 
@@ -186,9 +179,9 @@ namespace DataTrack.Core.SQL.QueryObjects
 
                 foreach (ColumnMappingAttribute column in mainColumns)
                 {
-                    if (ColumnPropertyNames.ContainsKey(column))
+                    if (Mapping.ColumnPropertyNames.ContainsKey(column))
                     {
-                        PropertyInfo property = baseType.GetProperty(ColumnPropertyNames[column]);
+                        PropertyInfo property = baseType.GetProperty(Mapping.ColumnPropertyNames[column]);
 
                         if (reader[column.ColumnName] != DBNull.Value)
                             property.SetValue(obj, Convert.ChangeType(reader[column.ColumnName], property.PropertyType));
@@ -207,10 +200,10 @@ namespace DataTrack.Core.SQL.QueryObjects
                 results.Add(obj);
             }
 
-            for (int tableCount = 1; tableCount < Tables.Count; tableCount++)
+            for (int tableCount = 1; tableCount < Mapping.Tables.Count; tableCount++)
             {
                 reader.NextResult();
-                Type childType = TypeTableMapping[Tables[tableCount]];
+                Type childType = Mapping.TypeTableMapping[Mapping.Tables[tableCount]];
                 dynamic childCollection = Activator.CreateInstance(typeof(List<>).MakeGenericType(childType));
                 int originalColumnCount = columnCount;
 
@@ -220,7 +213,7 @@ namespace DataTrack.Core.SQL.QueryObjects
                     columnCount = originalColumnCount;
 
                     childType.GetProperties()
-                             .ForEach(prop => prop.SetValue(childItem, Convert.ChangeType(reader[Columns[columnCount++].ColumnName], prop.PropertyType)));
+                             .ForEach(prop => prop.SetValue(childItem, Convert.ChangeType(reader[Mapping.Columns[columnCount++].ColumnName], prop.PropertyType)));
 
                     MethodInfo addItem = childCollection.GetType().GetMethod("Add");
                     addItem.Invoke(childCollection, new object[] { childItem });
@@ -228,7 +221,7 @@ namespace DataTrack.Core.SQL.QueryObjects
 
                 foreach (TBase obj in results)
                 {
-                    PropertyInfo childProperty = Tables[0].GetChildProperty(baseType, Tables[tableCount].TableName);
+                    PropertyInfo childProperty = Mapping.Tables[0].GetChildProperty(baseType, Mapping.Tables[tableCount].TableName);
                     childProperty.SetValue(obj, childCollection);
                 }
             }

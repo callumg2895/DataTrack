@@ -33,16 +33,16 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
 
         public override Query<TBase> GetQuery()
         {
-            SQLBuilder sqlBuilder = new SQLBuilder(Query.Parameters);
+            SQLBuilder sqlBuilder = new SQLBuilder(Query.Mapping.Parameters);
 
             sqlBuilder.AppendLine();
 
-            for (int i = 0; i < Query.Tables.Count; i++)
+            for (int i = 0; i < Query.Mapping.Tables.Count; i++)
             {
                 if (i == 0)
                 {
-                    sqlBuilder.BuildInsertStatement(Query.Columns, Query.Tables[i]);
-                    sqlBuilder.BuildValuesStatement(Query.Columns, Query.Tables[i]);
+                    sqlBuilder.BuildInsertStatement(Query.Mapping.Columns, Query.Mapping.Tables[i]);
+                    sqlBuilder.BuildValuesStatement(Query.Mapping.Columns, Query.Mapping.Tables[i]);
                 }
             }
 

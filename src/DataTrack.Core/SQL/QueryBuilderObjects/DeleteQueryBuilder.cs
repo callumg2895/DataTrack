@@ -39,22 +39,22 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
 
         public override Query<TBase> GetQuery()
         {
-            if (Query.Parameters.Count >= 1)
+            if (Query.Mapping.Parameters.Count >= 1)
             {
-                SQLBuilder sqlBuilder = new SQLBuilder(Query.Parameters);
+                SQLBuilder sqlBuilder = new SQLBuilder(Query.Mapping.Parameters);
                 StringBuilder restrictionsBuilder = new StringBuilder();
 
-                for (int i = 0; i < Query.Columns.Count; i++)
+                for (int i = 0; i < Query.Mapping.Columns.Count; i++)
                 {
-                    if (Restrictions.ContainsKey(Query.Columns[i]))
+                    if (Restrictions.ContainsKey(Query.Mapping.Columns[i]))
                     {
                         restrictionsBuilder.Append(restrictionsBuilder.Length == 0 ? "where " : "and ");
-                        restrictionsBuilder.AppendLine(Restrictions[Query.Columns[i]]);
+                        restrictionsBuilder.AppendLine(Restrictions[Query.Mapping.Columns[i]]);
                     }
                 }
 
                 sqlBuilder.AppendLine();
-                sqlBuilder.AppendLine($"delete {Query.TableAliases[Query.Tables[0]]} from {Query.Tables[0].TableName} {Query.TableAliases[Query.Tables[0]]}");
+                sqlBuilder.AppendLine($"delete {Query.Mapping.TableAliases[Query.Mapping.Tables[0]]} from {Query.Mapping.Tables[0].TableName} {Query.Mapping.TableAliases[Query.Mapping.Tables[0]]}");
                 sqlBuilder.Append(restrictionsBuilder.ToString());
 
                 // For insert statements return the number of rows affected

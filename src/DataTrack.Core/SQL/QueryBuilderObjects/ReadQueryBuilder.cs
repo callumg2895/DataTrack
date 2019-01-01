@@ -39,34 +39,34 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
 
         public override Query<TBase> GetQuery()
         {
-            SQLBuilder sqlBuilder = new SQLBuilder(Query.Parameters, Query.TableAliases, Query.ColumnAliases, Restrictions);
+            SQLBuilder sqlBuilder = new SQLBuilder(Query.Mapping.Parameters, Query.Mapping.TableAliases, Query.Mapping.ColumnAliases, Restrictions);
 
             sqlBuilder.AppendLine();
-            sqlBuilder.BuildSelectStatement(Query.Columns.Where(c => Query.TypeColumnMapping[BaseType].Contains(c)).ToList());
+            sqlBuilder.BuildSelectStatement(Query.Mapping.Columns.Where(c => Query.Mapping.TypeColumnMapping[BaseType].Contains(c)).ToList());
 
-            for (int i = 0; i < Query.Tables.Count; i++)
+            for (int i = 0; i < Query.Mapping.Tables.Count; i++)
             {
                 if (i == 0)
-                    sqlBuilder.BuildFromStatement(Query.Columns.Where(c => Query.TypeColumnMapping[BaseType].Contains(c)).ToList(), Query.Tables[0]);
+                    sqlBuilder.BuildFromStatement(Query.Mapping.Columns.Where(c => Query.Mapping.TypeColumnMapping[BaseType].Contains(c)).ToList(), Query.Mapping.Tables[0]);
                 else
                 {
-                    dynamic queryBuilder = Activator.CreateInstance(typeof(ReadQueryBuilder<>).MakeGenericType(Query.TypeTableMapping[Query.Tables[i]]));
+                    dynamic queryBuilder = Activator.CreateInstance(typeof(ReadQueryBuilder<>).MakeGenericType(Query.Mapping.TypeTableMapping[Query.Mapping.Tables[i]]));
 
                     if (ID.HasValue)
                     {
                         // Make sure that only those child items with a foreign key matching the primary key of TBase are retrieved
                         MethodInfo addForeignKeyRestriction = queryBuilder.GetType().GetMethod("AddForeignKeyRestriction", BindingFlags.Instance | BindingFlags.NonPublic);
-                        addForeignKeyRestriction.Invoke(queryBuilder, new object[] { ID, Query.Tables[0].TableName });
+                        addForeignKeyRestriction.Invoke(queryBuilder, new object[] { ID, Query.Mapping.Tables[0].TableName });
 
                         foreach (ColumnMappingAttribute column in queryBuilder.Query.Columns)
                         {
                             if (queryBuilder.Query.Parameters.ContainsKey(column))
-                                Query.Parameters.TryAdd(column, queryBuilder.Query.Parameters[column]);
+                                Query.Mapping.Parameters.TryAdd(column, queryBuilder.Query.Parameters[column]);
 
                             if (queryBuilder.Query.ColumnPropertyNames.ContainsKey(column))
-                                Query.ColumnPropertyNames.TryAdd(column, queryBuilder.Query.ColumnPropertyNames[column]);
+                                Query.Mapping.ColumnPropertyNames.TryAdd(column, queryBuilder.Query.ColumnPropertyNames[column]);
 
-                            Query.Columns.Add(column);
+                            Query.Mapping.Columns.Add(column);
                         }
                     }
 

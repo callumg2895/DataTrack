@@ -33,10 +33,10 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             Query.OperationType = opType;
 
             // Fetch the table and column names for TBase
-            Query = new MappingBuilder<TBase>(Query).GetMappedQuery();
+            Query.Mapping = new MappingBuilder<TBase>().GetMapping();
 
             // Check for valid Table/Columns
-            if (Query.Tables.Count < 0 || Query.Columns.Count < 0)
+            if (Query.Mapping.Tables.Count < 0 || Query.Mapping.Columns.Count < 0)
             {
                 string message = $"Mapping data for class '{BaseType.Name}' was incomplete/empty";
                 Logger.Error(MethodBase.GetCurrentMethod(), message);
@@ -48,7 +48,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
         {
             typePKColumn = null;
 
-            foreach (ColumnMappingAttribute column in Query.TypeColumnMapping[type])
+            foreach (ColumnMappingAttribute column in Query.Mapping.TypeColumnMapping[type])
                 if (column.IsPrimaryKey())
                 {
                     typePKColumn = column;
@@ -63,7 +63,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             TableMappingAttribute typeTable = Dictionaries.TypeMappingCache[type].Table;
             typeFKColumn = null;
 
-            foreach (ColumnMappingAttribute column in Query.TypeColumnMapping[type])
+            foreach (ColumnMappingAttribute column in Query.Mapping.TypeColumnMapping[type])
                 if (column.IsForeignKey() && column.TableName == typeTable.TableName && column.ForeignKeyTableMapping == table)
                 {
                     typeFKColumn = column;
@@ -75,7 +75,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
 
         private protected void UpdateParameters(TBase item)
         {
-            Query.Columns.ForEach(
+            Query.Mapping.Columns.ForEach(
                 columnAttribute =>
                 {
                     // For each column in the Query, find the value of the property which is decorated by that column attribute
@@ -149,9 +149,9 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
                 return this;
             }
 
-            if (!Query.TypeColumnMapping[BaseType].Contains(columnAttribute))
+            if (!Query.Mapping.TypeColumnMapping[BaseType].Contains(columnAttribute))
             {
-                Logger.Error(MethodBase.GetCurrentMethod(), $"'{property}' is not a property of '{Query.TypeTableMapping[BaseType].TableName}'");
+                Logger.Error(MethodBase.GetCurrentMethod(), $"'{property}' is not a property of '{Query.Mapping.TypeTableMapping[BaseType].TableName}'");
                 return this;
             }
 
@@ -164,7 +164,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             {
                 case RestrictionTypes.NotIn:
                 case RestrictionTypes.In:
-                    restrictionBuilder.Append(Query.ColumnAliases[columnAttribute] + " ");
+                    restrictionBuilder.Append(Query.Mapping.ColumnAliases[columnAttribute] + " ");
                     restrictionBuilder.Append(rType.ToSqlString() + " (");
                     restrictionBuilder.Append(handle);
                     restrictionBuilder.Append(")");
@@ -180,7 +180,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
                     }
                     else
                     {
-                        restrictionBuilder.Append(Query.ColumnAliases[columnAttribute] + " ");
+                        restrictionBuilder.Append(Query.Mapping.ColumnAliases[columnAttribute] + " ");
                         restrictionBuilder.Append(rType.ToSqlString() + " ");
                         restrictionBuilder.Append(handle);
                         break;
@@ -189,7 +189,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
                 case RestrictionTypes.EqualTo:
                 case RestrictionTypes.NotEqualTo:
                 default:
-                    restrictionBuilder.Append(Query.ColumnAliases[columnAttribute] + " ");
+                    restrictionBuilder.Append(Query.Mapping.ColumnAliases[columnAttribute] + " ");
                     restrictionBuilder.Append(rType.ToSqlString() + " ");
                     restrictionBuilder.Append(handle);
                     break;

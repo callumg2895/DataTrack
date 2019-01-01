@@ -19,10 +19,10 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
 
         public override Query<TBase> GetQuery()
         {
-            SQLBuilder sqlBuilder = new SQLBuilder(Query.Parameters, Query.TableAliases, Query.ColumnAliases, Restrictions);
+            SQLBuilder sqlBuilder = new SQLBuilder(Query.Mapping.Parameters, Query.Mapping.TableAliases, Query.Mapping.ColumnAliases, Restrictions);
 
             sqlBuilder.AppendLine();
-            sqlBuilder.BuildUpdateStatement(Query.Columns, Query.Tables[0]);
+            sqlBuilder.BuildUpdateStatement(Query.Mapping.Columns, Query.Mapping.Tables[0]);
 
             // For update statements return the number of rows affected
             SelectRowCount(ref sqlBuilder);
