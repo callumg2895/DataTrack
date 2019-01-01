@@ -1,5 +1,6 @@
 ﻿using DataTrack.Core.Attributes;
 using DataTrack.Core.SQL.QueryObjects;
+using DataTrack.Core.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -124,49 +125,49 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             sql.AppendLine();
         }
 
-        public void BuildSelectStatement(List<ColumnMappingAttribute> columns)
+        public void BuildSelectStatement()
         {
-            if (columns.Count == 0) return;
-
-            sql.Append("select ");
-            sql.Append(Mapping.ColumnAliases[columns[0]]);
-
-            for (int i = 1; i < columns.Count; i++)
+            foreach (TableMappingAttribute table in Mapping.Tables)
             {
-                sql.Append(", ");
-                sql.Append(Mapping.ColumnAliases[columns[i]]);
-            }
+                List<ColumnMappingAttribute> columns = Dictionaries.TableMappingCache[table];
 
-            sql.AppendLine();
-        }
+                sql.Append("select ");
+                sql.Append(Mapping.ColumnAliases[columns[0]]);
 
-        public void BuildFromStatement(List<ColumnMappingAttribute> columns, TableMappingAttribute table)
-        {
-            if (string.IsNullOrEmpty(table.TableName) || columns.Count == 0) return;
-
-
-
-            sql.Append("from ")
-               .Append(table.TableName)
-               .Append(" as ")
-               .AppendLine(Mapping.TableAliases[table]);
-
-            bool first = true;
-
-            for (int i = 1; i < columns.Count; i++)
-            {
-                if (Mapping.Restrictions.ContainsKey(columns[i]))
+                for (int i = 1; i < columns.Count; i++)
                 {
-                    if (first)
-                    {
-                        sql.Append("where ");
-                        first = false;
-                    }
-                    else sql.Append("and ");
-
-                    sql.AppendLine(Mapping.Restrictions[columns[i]]);
-                    first = false;
+                    sql.Append(", ");
+                    sql.Append(Mapping.ColumnAliases[columns[i]]);
                 }
+
+                sql.AppendLine();
+
+                sql.Append("into ")
+                   .Append(table.StagingTableName);
+
+                sql.Append(" from ")
+                   .Append(table.TableName)
+                   .Append(" as ")
+                   .AppendLine(Mapping.TableAliases[table]);
+
+                if (Mapping.TypeTableMapping[table] != BaseType && columns.Where(c => c.IsForeignKey()).Count() > 0)
+                {
+
+                    List<ColumnMappingAttribute> foreignKeyColumns = columns.Where(c => c.IsForeignKey()).ToList();
+
+                    foreach (ColumnMappingAttribute column in foreignKeyColumns)
+                    {
+                        TableMappingAttribute foreignTable = Mapping.Tables.Where(t => t.TableName == column.ForeignKeyTableMapping).First();
+                        ColumnMappingAttribute foreignColumn = Dictionaries.TableMappingCache[foreignTable].Where(c => c.IsPrimaryKey()).First();
+
+                        sql.Append("where ")
+                           .AppendLine($"{Mapping.ColumnAliases[column]} in (select {foreignColumn.ColumnName} from {foreignTable.StagingTableName})");
+
+                    }
+                        
+                }
+
+                sql.AppendLine($"select * from {table.StagingTableName}");
             }
         }
 

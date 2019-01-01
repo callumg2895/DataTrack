@@ -76,6 +76,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
                     {
                         Mapping.TypeTableMapping[genericArgumentType] = mappingAttribute;
                         Mapping.Tables.Add(mappingAttribute);
+                        Mapping.TableAliases[mappingAttribute] = genericArgumentType.Name;
                     }
                 }
                 else
@@ -83,6 +84,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
                     mappingAttribute = Dictionaries.TypeMappingCache[genericArgumentType].Table;
                     Mapping.TypeTableMapping[genericArgumentType] = mappingAttribute;
                     Mapping.Tables.Add(mappingAttribute);
+                    Mapping.TableAliases[mappingAttribute] = genericArgumentType.Name;
                 }
 
                 propertyType.GetProperties().ForEach(prop => MapPropertyTables(prop));

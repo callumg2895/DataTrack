@@ -42,37 +42,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             SQLBuilder<TBase> sqlBuilder = new SQLBuilder<TBase>(Query.Mapping);
 
             sqlBuilder.AppendLine();
-            sqlBuilder.BuildSelectStatement(Query.Mapping.Columns.Where(c => Query.Mapping.TypeColumnMapping[BaseType].Contains(c)).ToList());
-
-            for (int i = 0; i < Query.Mapping.Tables.Count; i++)
-            {
-                if (i == 0)
-                    sqlBuilder.BuildFromStatement(Query.Mapping.Columns.Where(c => Query.Mapping.TypeColumnMapping[BaseType].Contains(c)).ToList(), Query.Mapping.Tables[0]);
-                else
-                {
-                    dynamic queryBuilder = Activator.CreateInstance(typeof(ReadQueryBuilder<>).MakeGenericType(Query.Mapping.TypeTableMapping[Query.Mapping.Tables[i]]));
-
-                    if (ID.HasValue)
-                    {
-                        // Make sure that only those child items with a foreign key matching the primary key of TBase are retrieved
-                        MethodInfo addForeignKeyRestriction = queryBuilder.GetType().GetMethod("AddForeignKeyRestriction", BindingFlags.Instance | BindingFlags.NonPublic);
-                        addForeignKeyRestriction.Invoke(queryBuilder, new object[] { ID, Query.Mapping.Tables[0].TableName });
-
-                        foreach (ColumnMappingAttribute column in queryBuilder.Query.Columns)
-                        {
-                            if (queryBuilder.Query.Parameters.ContainsKey(column))
-                                Query.Mapping.Parameters.TryAdd(column, queryBuilder.Query.Parameters[column]);
-
-                            if (queryBuilder.Query.ColumnPropertyNames.ContainsKey(column))
-                                Query.Mapping.ColumnPropertyNames.TryAdd(column, queryBuilder.Query.ColumnPropertyNames[column]);
-
-                            Query.Mapping.Columns.Add(column);
-                        }
-                    }
-
-                    sqlBuilder.Append(queryBuilder.GetQuery().QueryString);
-                }
-            }
+            sqlBuilder.BuildSelectStatement();
 
             string sql = sqlBuilder.ToString();
 
