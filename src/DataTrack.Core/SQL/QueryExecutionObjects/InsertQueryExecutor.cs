@@ -13,18 +13,15 @@ using System.Text;
 
 namespace DataTrack.Core.SQL.QueryExecutionObjects
 {
-    public class InsertQueryExecutor<TBase> where TBase : new()
+    public class InsertQueryExecutor<TBase> : QueryExecutor<TBase> where TBase : new()
     {
-        private Query<TBase> Query;
-        private Stopwatch stopwatch;
-
         internal InsertQueryExecutor(Query<TBase> query)
         {
             Query = query;
             stopwatch = new Stopwatch();
         }
 
-        internal bool ExecuteBulkInsert(SqlConnection connection, SqlTransaction transaction = null)
+        internal bool Execute(SqlConnection connection, SqlTransaction transaction = null)
         {
             stopwatch.Start();
 

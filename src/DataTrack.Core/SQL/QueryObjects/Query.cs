@@ -70,8 +70,6 @@ namespace DataTrack.Core.SQL.QueryObjects
 
         internal dynamic Execute(SqlCommand command, SqlConnection connection, SqlTransaction transaction = null)
         {
-            stopwatch.Start();
-
             if (transaction != null)
                 command.Transaction = transaction;
 
@@ -81,92 +79,26 @@ namespace DataTrack.Core.SQL.QueryObjects
 
             if (OperationType == CRUDOperationTypes.Create)
             {
-                return new InsertQueryExecutor<TBase>(this).ExecuteBulkInsert(connection, transaction);
+                return new InsertQueryExecutor<TBase>(this).Execute(connection, transaction);
             }
 
             using (SqlDataReader reader = command.ExecuteReader())
             {
                 switch (OperationType)
                 {
-                    case CRUDOperationTypes.Read: return GetResultsForReadQuery(reader);
-                    case CRUDOperationTypes.Update: return GetResultsForUpdateQuery(reader);
-                    case CRUDOperationTypes.Delete: return GetResultsForDeleteQuery(reader);
+                    case CRUDOperationTypes.Read: return new ReadQueryExecutor<TBase>(this).Execute(reader);
+                    case CRUDOperationTypes.Update:
+                        stopwatch.Start();
+                        return GetResultsForUpdateQuery(reader);
+                    case CRUDOperationTypes.Delete:
+                        stopwatch.Start();
+                        return GetResultsForDeleteQuery(reader);
                     default:
                         stopwatch.Stop();
                         Logger.Error(MethodBase.GetCurrentMethod(), "No valid operation to perform.");
                         return null;
                 }
             }
-        }
-
-        private List<TBase> GetResultsForReadQuery(SqlDataReader reader)
-        {
-            List<TBase> results = new List<TBase>();
-
-            List<ColumnMappingAttribute> mainColumns = Mapping.TypeColumnMapping[baseType];
-
-            int columnCount = 0;
-            int originalColumnCount = 0;
-
-            while (reader.Read())
-            {
-                TBase obj = new TBase();
-                columnCount = originalColumnCount;
-
-                foreach (ColumnMappingAttribute column in mainColumns)
-                {
-                    if (Mapping.ColumnPropertyNames.ContainsKey(column))
-                    {
-                        PropertyInfo property = baseType.GetProperty(Mapping.ColumnPropertyNames[column]);
-
-                        if (reader[column.ColumnName] != DBNull.Value)
-                            property.SetValue(obj, Convert.ChangeType(reader[column.ColumnName], property.PropertyType));
-                        else
-                            property.SetValue(obj, null);
-                    }
-                    else
-                    {
-                        Logger.Error(MethodBase.GetCurrentMethod(), $"Could not find property in class {typeof(TBase)} mapped to column {column.ColumnName}");
-                        break;
-                    }
-
-                    columnCount++;
-                }
-
-                results.Add(obj);
-            }
-
-            for (int tableCount = 1; tableCount < Mapping.Tables.Count; tableCount++)
-            {
-                reader.NextResult();
-                Type childType = Mapping.TypeTableMapping[Mapping.Tables[tableCount]];
-                dynamic childCollection = Activator.CreateInstance(typeof(List<>).MakeGenericType(childType));
-                originalColumnCount = columnCount;
-
-                while (reader.Read())
-                {
-                    var childItem = Activator.CreateInstance(childType);
-                    columnCount = originalColumnCount;
-
-                    childType.GetProperties()
-                             .ForEach(prop => prop.SetValue(childItem, Convert.ChangeType(reader[Mapping.Columns[columnCount++].ColumnName], prop.PropertyType)));
-
-                    MethodInfo addItem = childCollection.GetType().GetMethod("Add");
-                    addItem.Invoke(childCollection, new object[] { childItem });
-                }
-
-                foreach (TBase obj in results)
-                {
-                    PropertyInfo childProperty = Mapping.Tables[0].GetChildProperty(baseType, Mapping.Tables[tableCount].TableName);
-                    childProperty.SetValue(obj, childCollection);
-                }
-            }
-
-            stopwatch.Stop();
-
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Executed Read statement ({stopwatch.GetElapsedMicroseconds()}\u03BCs): {results.Count} result{(results.Count > 1 ? "s" : "")} retrieved");
-
-            return results;
         }
 
         private int GetResultsForUpdateQuery(SqlDataReader reader)
