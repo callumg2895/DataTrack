@@ -1,5 +1,6 @@
 ﻿using DataTrack.Core.Attributes;
 using DataTrack.Core.Enums;
+using DataTrack.Core.SQL.QueryExecutionObjects;
 using DataTrack.Core.Util;
 using DataTrack.Core.Util.DataStructures;
 using DataTrack.Core.Util.Extensions;
@@ -67,28 +68,6 @@ namespace DataTrack.Core.SQL.QueryObjects
             }
         }
 
-        internal bool ExecuteBulkInsert(SqlConnection connection, SqlTransaction transaction = null)
-        {
-            stopwatch.Start();
-
-            foreach (TableMappingAttribute table in DataMap.ForwardKeys)
-            {
-                Logger.Info($"Executing Bulk Insert for {table.TableName}");
-
-                SqlBulkCopyOptions copyOptions = SqlBulkCopyOptions.Default;
-                SqlBulkCopy bulkCopy = new SqlBulkCopy(connection, copyOptions, transaction);
-
-                bulkCopy.DestinationTableName = DataMap[table].TableName;
-                bulkCopy.WriteToServer(DataMap[table]);
-            }
-
-            stopwatch.Stop();
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Executed Bulk Insert ({stopwatch.GetElapsedMicroseconds()}\u03BCs)");
-
-
-            return true;
-        }
-
         internal dynamic Execute(SqlCommand command, SqlConnection connection, SqlTransaction transaction = null)
         {
             stopwatch.Start();
@@ -102,7 +81,7 @@ namespace DataTrack.Core.SQL.QueryObjects
 
             if (OperationType == CRUDOperationTypes.Create)
             {
-                return ExecuteBulkInsert(connection, transaction);
+                return new InsertQueryExecutor<TBase>(this).ExecuteBulkInsert(connection, transaction);
             }
 
             using (SqlDataReader reader = command.ExecuteReader())
@@ -118,51 +97,6 @@ namespace DataTrack.Core.SQL.QueryObjects
                         return null;
                 }
             }
-        }
-
-        private int GetResultForInsertQuery(SqlDataReader reader)
-        {
-            int affectedRows = 0;
-
-            // Create operations always check the number of rows affected after the query has executed
-            for (int tableCount = 0; tableCount < Mapping.Tables.Count; tableCount++)
-            {
-                if (tableCount == 0)
-                {
-                    if (reader.Read())
-                        affectedRows += (int)reader["affected_rows"];
-
-                    reader.NextResult();
-                }
-                else
-                {
-
-                    TableMappingAttribute table = Mapping.Tables[tableCount];
-                    int childObjects = 0;
-
-                    // TODO: needs improving
-                    // The idea here is that the number of parameters associated with each column of a table is equal to the number of total child objects
-                    foreach (var key in Mapping.Parameters.Keys)
-                    {
-                        if (key.TableName == table.TableName)
-                            childObjects = Mapping.Parameters[key].Count;
-                    }
-
-                    for (int i = 0; i < childObjects; i++)
-                    {
-                        if (reader.Read())
-                            affectedRows += (int)reader["affected_rows"];
-
-                        reader.NextResult();
-                    }
-                }
-            }
-
-            stopwatch.Stop();
-
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Executed Insert statement ({stopwatch.GetElapsedMicroseconds()}\u03BCs): {affectedRows} row{(affectedRows > 1 ? "s" : "")} affected");
-            
-            return affectedRows;
         }
 
         private List<TBase> GetResultsForReadQuery(SqlDataReader reader)
