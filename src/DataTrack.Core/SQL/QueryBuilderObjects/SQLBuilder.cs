@@ -54,7 +54,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             StringBuilder restrictionBuilder = new StringBuilder();
 
             TableMappingAttribute table = Mapping.TypeTableMapping[BaseType];
-            List<ColumnMappingAttribute> columns = Mapping.TypeColumnMapping[BaseType]; 
+            List<ColumnMappingAttribute> columns = Mapping.TypeColumnMapping[BaseType].Where(c => !c.IsPrimaryKey()).ToList(); 
 
             int processedRestrictions = 0;
             int totalColumns = columns.Count;
@@ -72,12 +72,17 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
                 setBuilder.AppendLine(i == totalColumns - 1
                     ? ""
                     : ",");
+            }
 
-                if (Mapping.Restrictions.ContainsKey(columns[i]))
+            restrictionBuilder.AppendLine($"from {table.TableName} {Mapping.TableAliases[table]}");
+
+            foreach (ColumnMappingAttribute column in columns)
+            {
+                if (Mapping.Restrictions.ContainsKey(column))
                 {
                     if (processedRestrictions++ == 0)
                     {
-                        restrictionBuilder.AppendLine($"from {table.TableName} {Mapping.TableAliases[table]}");
+
                         restrictionBuilder.Append("where ");
                     }
                     else
@@ -85,9 +90,10 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
                         restrictionBuilder.Append("and ");
                     }
 
-                    restrictionBuilder.AppendLine(Mapping.Restrictions[columns[i]]);
+                    restrictionBuilder.AppendLine(Mapping.Restrictions[column]);
                 }
             }
+
 
             sql.Append(setBuilder.ToString());
             sql.Append(restrictionBuilder.ToString());
@@ -130,6 +136,7 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
             foreach (TableMappingAttribute table in Mapping.Tables)
             {
                 List<ColumnMappingAttribute> columns = Dictionaries.TableMappingCache[table];
+                int RestrictionCount = 0;
 
                 sql.AppendLine();
                 sql.Append("select ");
@@ -149,11 +156,10 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
                 sql.Append(" from ")
                    .Append(table.TableName)
                    .Append(" as ")
-                   .AppendLine(Mapping.TableAliases[table]);
+                   .AppendLine(Mapping.TableAliases[table]);        
 
                 if (Mapping.TypeTableMapping[table] != BaseType && columns.Where(c => c.IsForeignKey()).Count() > 0)
                 {
-
                     List<ColumnMappingAttribute> foreignKeyColumns = columns.Where(c => c.IsForeignKey()).ToList();
 
                     foreach (ColumnMappingAttribute column in foreignKeyColumns)
@@ -161,16 +167,29 @@ namespace DataTrack.Core.SQL.QueryBuilderObjects
                         TableMappingAttribute foreignTable = Mapping.Tables.Where(t => t.TableName == column.ForeignKeyTableMapping).First();
                         ColumnMappingAttribute foreignColumn = Dictionaries.TableMappingCache[foreignTable].Where(c => c.IsPrimaryKey()).First();
 
-                        sql.Append("where ")
+                        sql.Append($"{GetRestrictionKeyWord(RestrictionCount++)} ")
                            .AppendLine($"{Mapping.ColumnAliases[column]} in (select {foreignColumn.ColumnName} from {foreignTable.StagingTableName})");
 
+                    }             
+                }
+
+                foreach (ColumnMappingAttribute column in columns)
+                {
+                    if (Mapping.Restrictions.ContainsKey(column))
+                    {
+                        sql.Append($"{GetRestrictionKeyWord(RestrictionCount++)} ")
+                           .AppendLine(Mapping.Restrictions[column]);
                     }
-                        
                 }
 
                 sql.AppendLine();
                 sql.AppendLine($"select * from {table.StagingTableName}");
             }
+        }
+
+        private string GetRestrictionKeyWord(int restrictionCount)
+        {
+            return restrictionCount > 0 ? "and" : "where";
         }
 
         public void Append(string text) => sql.Append(text);

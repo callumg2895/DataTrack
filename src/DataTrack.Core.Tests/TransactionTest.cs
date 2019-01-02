@@ -18,7 +18,7 @@ namespace DataTrack.Core.Tests
         public void TestTransaction_ShouldReturnCorrectObjectForReadWithRestriction()
         {
             // Arrange
-            Book book = new Book() { AuthorId = 1, Title = "The Great Gatsby" };
+            Book book = new Book() {Title = "The Great Gatsby" };
 
             Author author = new Author()
             {
@@ -32,18 +32,23 @@ namespace DataTrack.Core.Tests
             //Act
             using (Transaction<Author> t1 = new Transaction<Author>(new List<Query<Author>>(){
                 new InsertQueryBuilder<Author>(author).GetQuery(),
-                new ReadQueryBuilder<Author>(author.ID).GetQuery(),
-                new DeleteQueryBuilder<Author>(author).GetQuery(),
+                new ReadQueryBuilder<Author>().AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName).GetQuery(),
             }))
             {
                 results = t1.Execute();
                 t1.Commit();
             }
 
-            using (Transaction<Book> t2 = new Transaction<Book>(new DeleteQueryBuilder<Book>(book).GetQuery()))
+            List<Author> authorResults = (List<Author>)results[1];
+
+            foreach (Author authorResult in authorResults)
             {
-                t2.Execute();
-                t2.Commit();
+                foreach (Book bookResult in authorResult.Books)
+                {
+                    new DeleteQueryBuilder<Book>(bookResult).GetQuery().Execute();
+                }
+
+                new DeleteQueryBuilder<Author>(authorResult).GetQuery().Execute();
             }
 
             Author result = ((List<Author>)results[1])[0];
@@ -57,7 +62,7 @@ namespace DataTrack.Core.Tests
         {
             // Arrange
             Author authorBefore = new Author() { FirstName = "John", LastName = "Smith", Books = new List<Book>()};
-            Author authorAfter = new Author() { FirstName = "James", LastName = "Smith", Books = new List<Book>() };
+            Author authorAfter = new Author() { FirstName = "James", LastName = "Smith", Books = new List<Book>()};
             List<object> results1 = null;
             List<object> results2 = null;
 
@@ -66,7 +71,9 @@ namespace DataTrack.Core.Tests
             using (Transaction<Author> t1 = new Transaction<Author>(new List<Query<Author>>()
             {
                 new InsertQueryBuilder<Author>(authorBefore).GetQuery(),
-                new ReadQueryBuilder<Author>().GetQuery(),
+                new ReadQueryBuilder<Author>()
+                    .AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, authorBefore.FirstName)
+                    .GetQuery(),
             }))
             {
                 results1 = t1.Execute();
@@ -76,8 +83,9 @@ namespace DataTrack.Core.Tests
             using (Transaction<Author> t2 = new Transaction<Author>(new List<Query<Author>>()
             {
                 new UpdateQueryBuilder<Author>(authorAfter).GetQuery(),
-                new ReadQueryBuilder<Author>(authorAfter.ID).GetQuery(),
-                new DeleteQueryBuilder<Author>(authorAfter).GetQuery(),
+                new ReadQueryBuilder<Author>()
+                    .AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, authorAfter.FirstName)
+                    .GetQuery(),
             }))
             {
                 results2 = t2.Execute();
@@ -86,6 +94,9 @@ namespace DataTrack.Core.Tests
 
             Author beforeUpdate = ((List<Author>)results1[1])[0];
             Author afterUpdate = ((List<Author>)results2[1])[0];
+        
+            new DeleteQueryBuilder<Author>(beforeUpdate).GetQuery().Execute();
+            new DeleteQueryBuilder<Author>(afterUpdate).GetQuery().Execute();
 
             // Assert
             Assert.IsTrue(AuthorsAreEqual(beforeUpdate, authorBefore));
@@ -102,8 +113,8 @@ namespace DataTrack.Core.Tests
                 LastName = "Smith",
             };
 
-            int resultsAfterRollBack;
-            int resultsAfterDelete;
+            List<Author> resultsAfterRollBack;
+            List<Author> resultsAfterDelete;
 
             // Act
 
@@ -115,15 +126,18 @@ namespace DataTrack.Core.Tests
                 t.RollBack();
             }
 
-            resultsAfterRollBack = new ReadQueryBuilder<Author>(author.ID).GetQuery().Execute().Count;
+            resultsAfterRollBack = new ReadQueryBuilder<Author>().AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName).GetQuery().Execute();
 
-            new DeleteQueryBuilder<Author>(author).GetQuery().Execute();
+            foreach(Author result in resultsAfterRollBack)
+            {
+                new DeleteQueryBuilder<Author>(result).GetQuery().Execute();
+            }
 
-            resultsAfterDelete = new ReadQueryBuilder<Author>(author.ID).GetQuery().Execute().Count;
+            resultsAfterDelete = new ReadQueryBuilder<Author>().AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName).GetQuery().Execute();
 
             //Assert
-            Assert.AreEqual(resultsAfterRollBack, 1);
-            Assert.AreEqual(resultsAfterDelete, 0);
+            Assert.AreEqual(resultsAfterRollBack.Count, 1);
+            Assert.AreEqual(resultsAfterDelete.Count, 0);
 
 
         }

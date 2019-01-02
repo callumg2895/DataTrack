@@ -31,11 +31,9 @@ namespace DataTrack.Core.Tests
             //Act
             Repository<Author>.Create(author);
 
-            authorReadResult = Repository<Author>.GetByID(1);
-            book1ReadResult = Repository<Book>.GetByID(1);
-            Repository<Book>.Delete(book1);
-            Repository<Book>.Delete(book2);
-            Repository<Author>.Delete(author);
+            authorReadResult = Repository<Author>.GetByProperty("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName)[0];
+            book1ReadResult = Repository<Book>.GetByProperty("title", Enums.RestrictionTypes.EqualTo, book1.Title)[0];
+            Repository<Author>.Delete(authorReadResult);
 
             // Assert
             Assert.IsTrue(AuthorsAreEqual(authorReadResult, author));
@@ -45,8 +43,8 @@ namespace DataTrack.Core.Tests
         public void TestRepository_ShouldReturnCorrectObjectForGetByPropertyType()
         {
             // Arrange
-            Book book1 = new Book() { AuthorId = 1, Title = "The Great Gatsby" };
-            Book book2 = new Book() { AuthorId = 1, Title = "The Beautiful and Damned" };
+            Book book1 = new Book() { Title = "The Great Gatsby" };
+            Book book2 = new Book() { Title = "The Beautiful and Damned" };
             Author author = new Author()
             {
                 FirstName = "F.Scott",
@@ -55,13 +53,17 @@ namespace DataTrack.Core.Tests
             };
 
             List<Book> bookReadResult;
+            List<Author> authorReadResult;
 
             //Act
             Repository<Author>.Create(author);
+            authorReadResult = Repository<Author>.GetByProperty("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName);
             bookReadResult = Repository<Book>.GetByProperty("title", Enums.RestrictionTypes.EqualTo, "The Great Gatsby");
-            Repository<Book>.Delete(book1);
-            Repository<Book>.Delete(book2);
-            Repository<Author>.Delete(author);
+
+            foreach( Author authorResult in authorReadResult)
+            {
+                Repository<Author>.Delete(authorResult);
+            }
 
             // Assert
             Assert.IsTrue(BooksAreEqual(bookReadResult[0], book1));
@@ -71,11 +73,11 @@ namespace DataTrack.Core.Tests
         public void TestRepository_ShouldReadCorrectNumberOfChildItemsAfterInsertingObjectWithLongListOfChildren()
         {
             // Arrange
-            Book book1 = new Book() { AuthorId = 1, Title = "The Great Gatsby" };
-            Book book2 = new Book() { AuthorId = 1, Title = "The Beautiful and Damned" };
-            Book book3 = new Book() { AuthorId = 1, Title = "This Side of Paradise" };
-            Book book4 = new Book() { AuthorId = 1, Title = "Tender is the Night" };
-            Book book5 = new Book() { AuthorId = 1, Title = "The Last Tycoon" };
+            Book book1 = new Book() { Title = "The Great Gatsby" };
+            Book book2 = new Book() { Title = "The Beautiful and Damned" };
+            Book book3 = new Book() { Title = "This Side of Paradise" };
+            Book book4 = new Book() { Title = "Tender is the Night" };
+            Book book5 = new Book() { Title = "The Last Tycoon" };
             Author author = new Author()
             {
                 FirstName = "F.Scott",
@@ -87,12 +89,12 @@ namespace DataTrack.Core.Tests
 
             //Act
             Repository<Author>.Create(author);
-            authorReadResult = Repository<Author>.GetByID(author.ID);
-            Repository<Book>.Delete(book1);
-            Repository<Book>.Delete(book2);
-            Repository<Book>.Delete(book3);
-            Repository<Book>.Delete(book4);
-            Repository<Book>.Delete(book5);
+            authorReadResult = Repository<Author>.GetByProperty("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName)[0];
+            //Repository<Book>.Delete(book1);
+            //Repository<Book>.Delete(book2);
+            //Repository<Book>.Delete(book3);
+            //Repository<Book>.Delete(book4);
+            //Repository<Book>.Delete(book5);
             Repository<Author>.Delete(author);
 
             // Assert

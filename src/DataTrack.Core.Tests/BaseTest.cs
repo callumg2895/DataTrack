@@ -38,7 +38,7 @@ namespace DataTrack.Core.Tests
                             author_id int not null,
                             title varchar(255) not null,
                             primary key (id),
-                            foreign key (author_id) references authors(id)
+                            foreign key (author_id) references authors(id) on delete cascade
                         )
                     end";
 
@@ -107,7 +107,6 @@ namespace DataTrack.Core.Tests
         {
             bool equal = true;
 
-            equal &= book1.AuthorId == book2.AuthorId;
             equal &= book1.Title == book2.Title;
 
             return equal;
