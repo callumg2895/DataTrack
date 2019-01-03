@@ -79,14 +79,14 @@ namespace DataTrack.Core.SQL.QueryObjects
 
             if (OperationType == CRUDOperationTypes.Create)
             {
-                return new InsertQueryExecutor<TBase>(this).Execute(connection, transaction);
+                return new InsertQueryExecutor<TBase>(this, connection, transaction).Execute();
             }
 
             using (SqlDataReader reader = command.ExecuteReader())
             {
                 switch (OperationType)
                 {
-                    case CRUDOperationTypes.Read: return new ReadQueryExecutor<TBase>(this).Execute(reader);
+                    case CRUDOperationTypes.Read: return new ReadQueryExecutor<TBase>(this, connection, transaction).Execute(reader);
                     case CRUDOperationTypes.Update:
                         stopwatch.Start();
                         return GetResultsForUpdateQuery(reader);
