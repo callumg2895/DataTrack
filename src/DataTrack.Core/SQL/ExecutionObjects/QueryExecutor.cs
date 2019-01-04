@@ -1,11 +1,11 @@
-﻿using DataTrack.Core.SQL.QueryObjects;
+﻿using DataTrack.Core.SQL.DataStructures;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Text;
 
-namespace DataTrack.Core.SQL.QueryExecutionObjects
+namespace DataTrack.Core.SQL.ExecutionObjects
 {
     public abstract class QueryExecutor<TBase> where TBase : new()
     {

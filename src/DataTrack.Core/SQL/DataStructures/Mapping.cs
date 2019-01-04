@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace DataTrack.Core.SQL.QueryObjects
+namespace DataTrack.Core.SQL.DataStructures
 {
     public class Mapping<TBase> where TBase : new()
     {

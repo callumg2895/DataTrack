@@ -1,9 +1,9 @@
 ﻿using DataTrack.Core.Enums;
-using DataTrack.Core.SQL.QueryObjects;
+using DataTrack.Core.SQL.DataStructures;
 using DataTrack.Core.Util;
 using System.Reflection;
 
-namespace DataTrack.Core.SQL.QueryBuilderObjects
+namespace DataTrack.Core.SQL.BuilderObjects
 {
     public class UpdateQueryBuilder<TBase> : QueryBuilder<TBase> where TBase : new()
     {

@@ -1,12 +1,12 @@
 ﻿using DataTrack.Core.Attributes;
 using DataTrack.Core.Enums;
-using DataTrack.Core.SQL.QueryObjects;
+using DataTrack.Core.SQL.DataStructures;
 using DataTrack.Core.Util;
 using System;
 using System.Linq;
 using System.Reflection;
 
-namespace DataTrack.Core.SQL.QueryBuilderObjects
+namespace DataTrack.Core.SQL.BuilderObjects
 {
     public class ReadQueryBuilder<TBase> : QueryBuilder<TBase> where TBase : new()
     {

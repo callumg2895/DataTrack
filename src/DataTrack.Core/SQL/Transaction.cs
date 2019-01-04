@@ -1,4 +1,4 @@
-﻿using DataTrack.Core.SQL.QueryObjects;
+﻿using DataTrack.Core.SQL.DataStructures;
 using DataTrack.Core.Util.Extensions;
 using DataTrack.Core.Util;
 using System;

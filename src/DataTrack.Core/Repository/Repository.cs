@@ -1,5 +1,5 @@
 ﻿using DataTrack.Core.Enums;
-using DataTrack.Core.SQL.QueryBuilderObjects;
+using DataTrack.Core.SQL.BuilderObjects;
 using System;
 using System.Collections.Generic;
 using System.Reflection;

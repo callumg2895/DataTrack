@@ -1,6 +1,6 @@
 ﻿using DataTrack.Core.Enums;
-using DataTrack.Core.SQL.QueryBuilderObjects;
-using DataTrack.Core.SQL.QueryObjects;
+using DataTrack.Core.SQL.BuilderObjects;
+using DataTrack.Core.SQL.DataStructures;
 
 namespace DataTrack.Core.Interface
 {

@@ -9,7 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace DataTrack.Core.SQL.QueryBuilderObjects
+namespace DataTrack.Core.SQL.BuilderObjects
 {
     public class BulkDataBuilder<TBase>
     {

@@ -1,5 +1,5 @@
 ﻿using DataTrack.Core.Attributes;
-using DataTrack.Core.SQL.QueryObjects;
+using DataTrack.Core.SQL.DataStructures;
 using DataTrack.Core.Util;
 using DataTrack.Core.Util.Extensions;
 using System;
@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 
-namespace DataTrack.Core.SQL.QueryBuilderObjects
+namespace DataTrack.Core.SQL.BuilderObjects
 {
     internal class MappingBuilder<TBase> where TBase : new()
     {

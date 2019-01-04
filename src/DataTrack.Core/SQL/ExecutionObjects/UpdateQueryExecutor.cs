@@ -1,4 +1,4 @@
-﻿using DataTrack.Core.SQL.QueryObjects;
+﻿using DataTrack.Core.SQL.DataStructures;
 using DataTrack.Core.Util;
 using DataTrack.Core.Util.Extensions;
 using System;
@@ -8,7 +8,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 
-namespace DataTrack.Core.SQL.QueryExecutionObjects
+namespace DataTrack.Core.SQL.ExecutionObjects
 {
     public class UpdateQueryExecutor<TBase> : QueryExecutor<TBase> where TBase : new()
     {

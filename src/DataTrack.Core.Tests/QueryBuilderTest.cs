@@ -1,4 +1,4 @@
-﻿using DataTrack.Core.SQL.QueryBuilderObjects;
+﻿using DataTrack.Core.SQL.BuilderObjects;
 using DataTrack.Core.Tests.TestObjects;
 using DataTrack.Core.Util;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
