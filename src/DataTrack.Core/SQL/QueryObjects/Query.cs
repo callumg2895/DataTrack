@@ -87,42 +87,14 @@ namespace DataTrack.Core.SQL.QueryObjects
                 switch (OperationType)
                 {
                     case CRUDOperationTypes.Read: return new ReadQueryExecutor<TBase>(this, connection, transaction).Execute(reader);
-                    case CRUDOperationTypes.Update:
-                        stopwatch.Start();
-                        return GetResultsForUpdateQuery(reader);
-                    case CRUDOperationTypes.Delete:
-                        stopwatch.Start();
-                        return GetResultsForDeleteQuery(reader);
+                    case CRUDOperationTypes.Update: return new UpdateQueryExecutor<TBase>(this, connection, transaction).Execute(reader);
+                    case CRUDOperationTypes.Delete: return new DeleteQueryExecutor<TBase>(this, connection, transaction).Execute(reader);
                     default:
                         stopwatch.Stop();
                         Logger.Error(MethodBase.GetCurrentMethod(), "No valid operation to perform.");
                         return null;
                 }
             }
-        }
-
-        private int GetResultsForUpdateQuery(SqlDataReader reader)
-        { 
-            // Update operations always check the number of rows affected after the query has executed
-            int affectedRows = reader.Read() ? (int)reader["affected_rows"] : 0;
-
-            stopwatch.Stop();
-
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Executed Update statement ({stopwatch.GetElapsedMicroseconds()}\u03BCs): {affectedRows} row{(affectedRows > 1 ? "s" : "")} affected");
-
-            return affectedRows;
-        }
-
-        private int GetResultsForDeleteQuery(SqlDataReader reader)
-        {
-            // Update operations always check the number of rows affected after the query has executed
-            int affectedRows = reader.Read() ? (int)reader["affected_rows"] : 0;
-
-            stopwatch.Stop();
-
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Executed Delete statement ({stopwatch.GetElapsedMicroseconds()}\u03BCs): {affectedRows} row{(affectedRows > 1 ? "s" : "")} affected");
-
-            return affectedRows;
         }
 
         #endregion
