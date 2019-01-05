@@ -4,6 +4,7 @@ using DataTrack.Core.Util;
 using DataTrack.Core.Util.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 
@@ -22,29 +23,30 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
         public Mapping<TBase> GetMapping()
         {
-            MapTables();
-            MapColumns();
+            MapTablesByType(BaseType);
+            BaseType.GetProperties().ForEach(prop => MapTablesByProperty(prop));
+
+            MapColumnsByType(BaseType);
+            BaseType.GetProperties().ForEach(prop => MapColumnsByProperty(prop));
+
             CacheMappingData();
 
             return Mapping;
         }
 
-        private void MapTables()
+        private void MapTablesByType(Type type)
         {
-            if (!Dictionaries.TypeMappingCache.ContainsKey(BaseType))
+            if (!Dictionaries.TypeMappingCache.ContainsKey(type))
             {
-                LoadTableMapping(BaseType);
+                LoadTableMapping(type);
             }
             else
             {
-                LoadTableMappingFromCache(BaseType);
+                LoadTableMappingFromCache(type);
             }
-
-            // Get the table mapping for all child objects
-            BaseType.GetProperties().ForEach(prop => MapPropertyTables(prop));
         }
 
-        private void MapPropertyTables(PropertyInfo property)
+        private void MapTablesByProperty(PropertyInfo property)
         {
             Type propertyType = property.PropertyType;
 
@@ -53,16 +55,9 @@ namespace DataTrack.Core.SQL.BuilderObjects
             {
                 Type genericArgumentType = propertyType.GetGenericArguments()[0];
 
-                if (!Dictionaries.TypeMappingCache.ContainsKey(genericArgumentType))
-                {
-                    LoadTableMapping(genericArgumentType);
-                }
-                else
-                {
-                    LoadTableMappingFromCache(genericArgumentType);
-                }
+                MapTablesByType(genericArgumentType);
 
-                propertyType.GetProperties().ForEach(prop => MapPropertyTables(prop));
+                propertyType.GetProperties().ForEach(prop => MapTablesByProperty(prop));
             }
         }
 
@@ -95,21 +90,19 @@ namespace DataTrack.Core.SQL.BuilderObjects
             Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded table mapping for class '{type.Name}' from cache");
         }
 
-        private void MapColumns()
+        private void MapColumnsByType(Type type)
         {
-            if (!Dictionaries.TypeMappingCache.ContainsKey(BaseType))
+            if (!Dictionaries.TypeMappingCache.ContainsKey(type))
             {
-                LoadColumnMapping(BaseType);
+                LoadColumnMapping(type);
             }
             else
             {
-                LoadColumnMappingFromCache(BaseType);
+                LoadColumnMappingFromCache(type);
             }
-
-            BaseType.GetProperties().ForEach(prop => MapPropertyColumns(prop));
         }
 
-        private void MapPropertyColumns(PropertyInfo property)
+        private void MapColumnsByProperty(PropertyInfo property)
         {
             Type type = property.PropertyType;
 
@@ -118,16 +111,9 @@ namespace DataTrack.Core.SQL.BuilderObjects
             {
                 Type genericArgumentType = type.GetGenericArguments()[0];
 
-                if (!Dictionaries.TypeMappingCache.ContainsKey(genericArgumentType))
-                {
-                    LoadColumnMapping(genericArgumentType);
-                }
-                else
-                {
-                    LoadColumnMappingFromCache(genericArgumentType);
-                }
+                MapColumnsByType(genericArgumentType);
 
-                genericArgumentType.GetProperties().ForEach(prop => MapPropertyColumns(prop));
+                genericArgumentType.GetProperties().ForEach(prop => MapColumnsByProperty(prop));
             }
         }
 
