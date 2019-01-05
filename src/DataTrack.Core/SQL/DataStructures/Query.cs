@@ -23,7 +23,6 @@ namespace DataTrack.Core.SQL.DataStructures
         internal Mapping<TBase> Mapping { get; set; }
         public CRUDOperationTypes OperationType { get; set; }
         public string QueryString { get; set; }
-        public Map<TableMappingAttribute, DataTable> DataMap { get; set; } = new Map<TableMappingAttribute, DataTable>();
 
         #endregion
 

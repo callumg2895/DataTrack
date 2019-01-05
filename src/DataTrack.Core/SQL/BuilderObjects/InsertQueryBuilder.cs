@@ -38,7 +38,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
         public override Query<TBase> GetQuery()
         {        
-            Query.DataMap = new BulkDataBuilder<TBase>(Item, Query.Mapping.Tables, Query.Mapping.Columns, Query.Mapping.TypeTableMapping, Query.Mapping.TypeColumnMapping).YieldDataMap();
+            Query.Mapping.DataTableMapping = new BulkDataBuilder<TBase>(Item, Query.Mapping.Tables, Query.Mapping.Columns, Query.Mapping.TypeTableMapping, Query.Mapping.TypeColumnMapping).YieldDataMap();
             return Query;
         }
 

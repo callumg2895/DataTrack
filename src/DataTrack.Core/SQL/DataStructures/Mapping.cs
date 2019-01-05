@@ -2,6 +2,7 @@
 using DataTrack.Core.Util.DataStructures;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Text;
 
 namespace DataTrack.Core.SQL.DataStructures
@@ -17,5 +18,6 @@ namespace DataTrack.Core.SQL.DataStructures
         internal Dictionary<ColumnMappingAttribute, string> ColumnPropertyNames { get; set; } = new Dictionary<ColumnMappingAttribute, string>();
         internal Dictionary<ColumnMappingAttribute, List<(string Handle, object Value)>> Parameters { get; set; } = new Dictionary<ColumnMappingAttribute, List<(string Handle, object Value)>>();
         internal Dictionary<ColumnMappingAttribute, string> Restrictions { get; set; } = new Dictionary<ColumnMappingAttribute, string>();
+        public Map<TableMappingAttribute, DataTable> DataTableMapping { get; set; } = new Map<TableMappingAttribute, DataTable>();
     }
 }

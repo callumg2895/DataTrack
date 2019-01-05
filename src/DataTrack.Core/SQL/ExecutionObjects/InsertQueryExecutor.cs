@@ -27,7 +27,7 @@ namespace DataTrack.Core.SQL.ExecutionObjects
         {
             stopwatch.Start();
 
-            foreach (TableMappingAttribute table in Query.DataMap.ForwardKeys)
+            foreach (TableMappingAttribute table in Query.Mapping.DataTableMapping.ForwardKeys)
             {
                 WriteToServer(table);
             }
@@ -45,8 +45,8 @@ namespace DataTrack.Core.SQL.ExecutionObjects
             SqlBulkCopyOptions copyOptions = SqlBulkCopyOptions.Default;
             SqlBulkCopy bulkCopy = new SqlBulkCopy(_connection, copyOptions, _transaction);
 
-            bulkCopy.DestinationTableName = Query.DataMap[table].TableName;
-            bulkCopy.WriteToServer(Query.DataMap[table]);
+            bulkCopy.DestinationTableName = Query.Mapping.DataTableMapping[table].TableName;
+            bulkCopy.WriteToServer(Query.Mapping.DataTableMapping[table]);
         }
 
     }
