@@ -32,7 +32,6 @@ namespace DataTrack.Core.SQL.BuilderObjects
         private void MapTables()
         {
             Type type = typeof(TBase);
-            TableMappingAttribute mappingAttribute;
 
             // Get the table mapping for TBase
             if (!Dictionaries.TypeMappingCache.ContainsKey(type))
@@ -51,7 +50,6 @@ namespace DataTrack.Core.SQL.BuilderObjects
         private void MapPropertyTables(PropertyInfo property)
         {
             Type propertyType = property.PropertyType;
-            TableMappingAttribute mappingAttribute;
 
             // If the property is a generic list, then it fits the profile of a child object
             if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(List<>))
@@ -102,40 +100,13 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
         private void MapColumns()
         {
-            List<ColumnMappingAttribute> columnAttributes;
-
             if (!Dictionaries.TypeMappingCache.ContainsKey(BaseType))
             {
-                if (TryGetColumnMappingAttributes(BaseType, out columnAttributes))
-                {
-                    Mapping.TypeColumnMapping[BaseType] = columnAttributes;
-                    Mapping.Columns.AddRange(columnAttributes);
-
-                    foreach (var attribute in columnAttributes)
-                    {
-                        Mapping.ColumnAliases[attribute] = $"{BaseType.Name}.{attribute.ColumnName}";
-                        Mapping.ColumnPropertyNames[attribute] = attribute.GetPropertyName(BaseType);
-                    }
-
-                    Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded column mapping for class '{BaseType.Name}'");
-                }
-                else
-                    Logger.Error(MethodBase.GetCurrentMethod(), $"Failed to load column mapping for class '{BaseType.Name}'");
+                LoadColumnMapping(BaseType);
             }
             else
             {
-                columnAttributes = Dictionaries.TypeMappingCache[BaseType].Columns;
-
-                Mapping.TypeColumnMapping[BaseType] = columnAttributes;
-                Mapping.Columns.AddRange(columnAttributes);
-
-                foreach (var attribute in columnAttributes)
-                {
-                    Mapping.ColumnAliases[attribute] = $"{BaseType.Name}.{attribute.ColumnName}";
-                    Mapping.ColumnPropertyNames[attribute] = attribute.GetPropertyName(BaseType);
-                }
-
-                Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded column mapping for class '{BaseType.Name}' from cache");
+                LoadColumnMappingFromCache(BaseType);
             }
 
             BaseType.GetProperties().ForEach(prop => MapPropertyColumns(prop));
@@ -144,7 +115,6 @@ namespace DataTrack.Core.SQL.BuilderObjects
         private void MapPropertyColumns(PropertyInfo property)
         {
             Type type = property.PropertyType;
-            List<ColumnMappingAttribute> columnAttributes;
 
             // If the property is a generic list, then it fits the profile of a child object
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
@@ -153,40 +123,54 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
                 if (!Dictionaries.TypeMappingCache.ContainsKey(genericArgumentType))
                 {
-                    if (TryGetColumnMappingAttributes(genericArgumentType, out columnAttributes))
-                    {
-                        Mapping.TypeColumnMapping[genericArgumentType] = columnAttributes;
-                        Mapping.Columns.AddRange(columnAttributes);
-
-                        foreach (var attribute in columnAttributes)
-                        {
-                            Mapping.ColumnAliases[attribute] = $"{genericArgumentType.Name}.{attribute.ColumnName}";
-                            Mapping.ColumnPropertyNames[attribute] = attribute.GetPropertyName(genericArgumentType);
-                        }
-
-                        Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded column mapping for class '{genericArgumentType.Name}'");
-                    }
-                    else
-                        Logger.Error(MethodBase.GetCurrentMethod(), $"Failed to load column mapping for class '{genericArgumentType.Name}'");
+                    LoadColumnMapping(genericArgumentType);
                 }
                 else
                 {
-                    columnAttributes = Dictionaries.TypeMappingCache[genericArgumentType].Columns;
-
-                    Mapping.TypeColumnMapping[genericArgumentType] = columnAttributes;
-                    Mapping.Columns.AddRange(columnAttributes);
-
-                    foreach (var attribute in columnAttributes)
-                    {
-                        Mapping.ColumnAliases[attribute] = $"{genericArgumentType.Name}.{attribute.ColumnName}";
-                        Mapping.ColumnPropertyNames[attribute] = attribute.GetPropertyName(genericArgumentType);
-                    }
-
-                    Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded column mapping for class '{type.Name}'");
+                    LoadColumnMappingFromCache(genericArgumentType);
                 }
 
                 genericArgumentType.GetProperties().ForEach(prop => MapPropertyColumns(prop));
             }
+        }
+
+        private void LoadColumnMapping(Type type)
+        {
+            List<ColumnMappingAttribute> columns;
+
+            if (TryGetColumnMappingAttributes(type, out columns))
+            {
+                Mapping.TypeColumnMapping[type] = columns;
+                Mapping.Columns.AddRange(columns);
+
+                foreach (ColumnMappingAttribute column in columns)
+                {
+                    Mapping.ColumnAliases[column] = $"{type.Name}.{column.ColumnName}";
+                    Mapping.ColumnPropertyNames[column] = column.GetPropertyName(type);
+                }
+
+                Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded column mapping for class '{type.Name}'");
+            }
+            else
+            {
+                Logger.Error(MethodBase.GetCurrentMethod(), $"Failed to load column mapping for class '{type.Name}'");
+            }
+        }
+
+        private void LoadColumnMappingFromCache(Type type)
+        {
+            List<ColumnMappingAttribute> columns = Dictionaries.TypeMappingCache[type].Columns;
+
+            Mapping.TypeColumnMapping[type] = columns;
+            Mapping.Columns.AddRange(columns);
+
+            foreach (ColumnMappingAttribute column in columns)
+            {
+                Mapping.ColumnAliases[column] = $"{type.Name}.{column.ColumnName}";
+                Mapping.ColumnPropertyNames[column] = column.GetPropertyName(type);
+            }
+
+            Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded column mapping for class '{type.Name}' from cache");
         }
 
         private void CacheMappingData()
