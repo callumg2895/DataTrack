@@ -31,20 +31,17 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
         private void MapTables()
         {
-            Type type = typeof(TBase);
-
-            // Get the table mapping for TBase
-            if (!Dictionaries.TypeMappingCache.ContainsKey(type))
+            if (!Dictionaries.TypeMappingCache.ContainsKey(BaseType))
             {
-                LoadTableMapping(type);
+                LoadTableMapping(BaseType);
             }
             else
             {
-                LoadTableMappingFromCache(type);
+                LoadTableMappingFromCache(BaseType);
             }
 
             // Get the table mapping for all child objects
-            type.GetProperties().ForEach(prop => MapPropertyTables(prop));
+            BaseType.GetProperties().ForEach(prop => MapPropertyTables(prop));
         }
 
         private void MapPropertyTables(PropertyInfo property)
