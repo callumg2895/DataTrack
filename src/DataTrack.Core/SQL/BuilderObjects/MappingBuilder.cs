@@ -37,23 +37,11 @@ namespace DataTrack.Core.SQL.BuilderObjects
             // Get the table mapping for TBase
             if (!Dictionaries.TypeMappingCache.ContainsKey(type))
             {
-                if (TryGetTableMappingAttribute(type, out mappingAttribute))
-                {
-                    Mapping.TypeTableMapping[type] = mappingAttribute;
-                    Mapping.Tables.Add(mappingAttribute);
-                    Mapping.TableAliases[mappingAttribute] = type.Name;
-                    Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded table mapping for class '{type.Name}'");
-                }
-                else
-                    Logger.Error(MethodBase.GetCurrentMethod(), $"Failed to load table mapping for class '{type.Name}'");
+                LoadTableMapping(type);
             }
             else
             {
-                mappingAttribute = Dictionaries.TypeMappingCache[type].Table;
-                Mapping.TypeTableMapping[type] = mappingAttribute;
-                Mapping.Tables.Add(mappingAttribute);
-                Mapping.TableAliases[mappingAttribute] = type.Name;
-                Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded table mapping for class '{type.Name}' from cache");
+                LoadTableMappingFromCache(type);
             }
 
             // Get the table mapping for all child objects
@@ -72,23 +60,44 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
                 if (!Dictionaries.TypeMappingCache.ContainsKey(genericArgumentType))
                 {
-                    if (TryGetTableMappingAttribute(genericArgumentType, out mappingAttribute))
-                    {
-                        Mapping.TypeTableMapping[genericArgumentType] = mappingAttribute;
-                        Mapping.Tables.Add(mappingAttribute);
-                        Mapping.TableAliases[mappingAttribute] = genericArgumentType.Name;
-                    }
+                    LoadTableMapping(genericArgumentType);
                 }
                 else
                 {
-                    mappingAttribute = Dictionaries.TypeMappingCache[genericArgumentType].Table;
-                    Mapping.TypeTableMapping[genericArgumentType] = mappingAttribute;
-                    Mapping.Tables.Add(mappingAttribute);
-                    Mapping.TableAliases[mappingAttribute] = genericArgumentType.Name;
+                    LoadTableMappingFromCache(genericArgumentType);
                 }
 
                 propertyType.GetProperties().ForEach(prop => MapPropertyTables(prop));
             }
+        }
+
+        private void LoadTableMapping(Type type)
+        {
+            TableMappingAttribute table;
+
+            if (TryGetTableMappingAttribute(type, out table))
+            {
+                Mapping.TypeTableMapping[type] = table;
+                Mapping.Tables.Add(table);
+                Mapping.TableAliases[table] = type.Name;
+
+                Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded table mapping for class '{type.Name}'");
+            }
+            else
+            {
+                Logger.Error(MethodBase.GetCurrentMethod(), $"Failed to load table mapping for class '{type.Name}'");
+            }
+        }
+
+        private void LoadTableMappingFromCache(Type type)
+        {
+            TableMappingAttribute table = Dictionaries.TypeMappingCache[type].Table;
+
+            Mapping.TypeTableMapping[type] = table;
+            Mapping.Tables.Add(table);
+            Mapping.TableAliases[table] = type.Name;
+
+            Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded table mapping for class '{type.Name}' from cache");
         }
 
         private void MapColumns()
