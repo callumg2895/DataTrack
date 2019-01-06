@@ -148,44 +148,57 @@ namespace DataTrack.Core.Util
 
             while (running)
             {
-                lock (logBuffer)
-                {
-                    threadLogBuffer.AddRange(logBuffer);
-                    logBuffer.Clear();
-                }
+                threadLogBuffer = GetLogBufferForThread();
 
                 foreach (LogItem log in threadLogBuffer)
                 {
-                    string logOutput = log.ToString();
-
-                    lock (fullPath)
-                    {
-                        using (StreamWriter writer = new StreamWriter(fullPath, true))
-                        {
-                            writer.WriteLine(logOutput);
-                            currentLength++;
-                        }
-                    }
-
-                    if (_enableConsoleLogging)
-                        switch (log.Level)
-                        {
-                            case LogLevel.Error: WriteErrorLine(logOutput); break;
-                            case LogLevel.Warn: WriteWarningLine(logOutput); break;
-                            case LogLevel.Info: WriteInfoLine(logOutput); break;
-                            default:
-                                break;
-                        }
-
-                    if (currentLength == maxLogLength || DateTime.Now.Date > fileDate)
-                    {
-                        fileDate = DateTime.Now.Date;
-                        Create();
-                    }
-
+                    Output(log);
                 }
 
                 threadLogBuffer.Clear();
+            }
+        }
+
+        private static List<LogItem> GetLogBufferForThread()
+        {
+            List<LogItem> threadLogBuffer = new List<LogItem>();
+
+            lock (logBuffer)
+            {
+                threadLogBuffer.AddRange(logBuffer);
+                logBuffer.Clear();
+            }
+
+            return threadLogBuffer;
+        }
+
+        private static void Output(LogItem log)
+        {
+            string logOutput = log.ToString();
+
+            lock (fullPath)
+            {
+                using (StreamWriter writer = new StreamWriter(fullPath, true))
+                {
+                    writer.WriteLine(logOutput);
+                    currentLength++;
+                }
+            }
+
+            if (_enableConsoleLogging)
+                switch (log.Level)
+                {
+                    case LogLevel.Error: WriteErrorLine(logOutput); break;
+                    case LogLevel.Warn: WriteWarningLine(logOutput); break;
+                    case LogLevel.Info: WriteInfoLine(logOutput); break;
+                    default:
+                        break;
+                }
+
+            if (currentLength == maxLogLength || DateTime.Now.Date > fileDate)
+            {
+                fileDate = DateTime.Now.Date;
+                Create();
             }
         }
     }
