@@ -15,11 +15,11 @@ namespace DataTrack.Core.Util.DataStructures
         {
             get => forward.ContainsKey(item)
                 ? forward[item]
-                : throw new ArgumentOutOfRangeException($"Mapping does not contain key '{item.ToString()}'");
+                : throw new ArgumentOutOfRangeException($"Mapping does not contain key '{item?.ToString()}'");
             set
             {
                 if (reverse.ContainsKey(value))
-                    throw new ArgumentOutOfRangeException($"Mapping already contains key '{value.ToString()}'");
+                    throw new ArgumentOutOfRangeException($"Mapping already contains key '{value?.ToString()}'");
                 else
                 {
                     forward[item] = value;
@@ -32,12 +32,12 @@ namespace DataTrack.Core.Util.DataStructures
         {
             get => reverse.ContainsKey(item)
                 ? reverse[item]
-                : throw new ArgumentOutOfRangeException($"Mapping does not contain key '{item.ToString()}'");
+                : throw new ArgumentOutOfRangeException($"Mapping does not contain key '{item?.ToString()}'");
 
             set
             {
                 if (forward.ContainsKey(value))
-                    throw new ArgumentOutOfRangeException($"Mapping already contains key '{value.ToString()}'");
+                    throw new ArgumentOutOfRangeException($"Mapping already contains key '{value?.ToString()}'");
                 else
                 {
                     reverse[item] = value;

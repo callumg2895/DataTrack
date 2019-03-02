@@ -202,7 +202,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
             foreach (PropertyInfo property in type.GetProperties())
                 foreach (Attribute attribute in property.GetCustomAttributes())
                 {
-                    ColumnMappingAttribute mappingAttribute = attribute as ColumnMappingAttribute;
+                    ColumnMappingAttribute? mappingAttribute = attribute as ColumnMappingAttribute;
                     if (mappingAttribute != null)
                     {
                         attributes.Add(mappingAttribute);

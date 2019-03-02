@@ -91,7 +91,7 @@ namespace DataTrack.Core.SQL.DataStructures
                     default:
                         stopwatch.Stop();
                         Logger.Error(MethodBase.GetCurrentMethod(), "No valid operation to perform.");
-                        return null;
+                        throw new ArgumentException("No valid operation to perform.", nameof(OperationType));
                 }
             }
         }

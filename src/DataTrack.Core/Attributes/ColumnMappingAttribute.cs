@@ -55,7 +55,9 @@ namespace DataTrack.Core.Attributes
                     if ((attribute as ColumnMappingAttribute)?.ColumnName == this.ColumnName)
                         return property.Name;
 
-            return null;
+            // Fatal
+            Logger.Error(MethodBase.GetCurrentMethod(), $"FATAL - no property of type {type.Name} is mapped to column '{this.ColumnName}'");
+            throw new ArgumentException($"FATAL - no property of type {type.Name} is mapped to column '{this.ColumnName}'", nameof(type));
         }
 
         public bool IsForeignKey() => (KeyType & (byte)KeyTypes.ForeignKey) == (byte)KeyTypes.ForeignKey;

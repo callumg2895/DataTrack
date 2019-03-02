@@ -172,7 +172,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
                 case RestrictionTypes.LessThan:
                 case RestrictionTypes.MoreThan:
 
-                    if (Dictionaries.SQLDataTypes[value.GetType()] == SqlDbType.VarChar)
+                    if (Dictionaries.SQLDataTypes[value?.GetType()] == SqlDbType.VarChar)
                     {
                         Logger.Error(MethodBase.GetCurrentMethod(), $"Cannot apply '{rType.ToSqlString()}' operator to values of type VarChar");
                         return this;

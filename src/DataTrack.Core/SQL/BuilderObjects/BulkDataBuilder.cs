@@ -61,7 +61,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
             if (TypeTableMapping[table] == BaseType)
             {
-                Logger.Info(MethodBase.GetCurrentMethod(), $"Building DataTable for: {Data.GetType().ToString()}");
+                Logger.Info(MethodBase.GetCurrentMethod(), $"Building DataTable for: {Data?.GetType().ToString()}");
                 List<ColumnMappingAttribute> columns = Dictionaries.TableMappingCache[table];
                 List<object> items = table.GetPropertyValues(Data);
 

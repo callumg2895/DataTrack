@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DataTrack.Core.Util;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -23,7 +24,9 @@ namespace DataTrack.Core.Attributes
                     if ((attribute as TableMappingAttribute)?.TableName == tableName)
                         return property;
 
-            return null;
+            // Fatal
+            Logger.Error(MethodBase.GetCurrentMethod(), $"FATAL - no child property of type {type.Name} is mapped to table '{tableName}'");
+            throw new ArgumentException($"FATAL - no child property of type {type.Name} is mapped to table '{tableName}'", nameof(type));
         }
 
         public dynamic GetChildPropertyValues(object instance, string tableName)
@@ -35,7 +38,9 @@ namespace DataTrack.Core.Attributes
                     if ((attribute as TableMappingAttribute)?.TableName == tableName)
                         return property.GetValue(instance);
 
-            return null;
+            // Fatal
+            Logger.Error(MethodBase.GetCurrentMethod(), $"FATAL - no child property of type {type.Name} is mapped to table '{tableName}'");
+            throw new ArgumentException($"FATAL - no child property of type {type.Name} is mapped to table '{tableName}'", nameof(type));
         }
 
         public List<object> GetPropertyValues(object instance)
