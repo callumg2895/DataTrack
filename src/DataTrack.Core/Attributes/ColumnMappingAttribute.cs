@@ -1,4 +1,5 @@
 ﻿using DataTrack.Core.Enums;
+using DataTrack.Core.Exceptions;
 using DataTrack.Core.Util;
 using System;
 using System.Reflection;
@@ -55,9 +56,7 @@ namespace DataTrack.Core.Attributes
                     if ((attribute as ColumnMappingAttribute)?.ColumnName == this.ColumnName)
                         return property.Name;
 
-            // Fatal
-            Logger.Error(MethodBase.GetCurrentMethod(), $"FATAL - no property of type {type.Name} is mapped to column '{this.ColumnName}'");
-            throw new ArgumentException($"FATAL - no property of type {type.Name} is mapped to column '{this.ColumnName}'", nameof(type));
+            throw new ColumnMappingException(type, this.ColumnName);
         }
 
         public bool IsForeignKey() => (KeyType & (byte)KeyTypes.ForeignKey) == (byte)KeyTypes.ForeignKey;
