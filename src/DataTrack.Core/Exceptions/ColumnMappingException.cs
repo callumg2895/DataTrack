@@ -8,7 +8,7 @@ namespace DataTrack.Core.Exceptions
         public ColumnMappingException(Type type, string columnName)
             : base($"No property of type {type.Name} is mapped to column '{columnName}'")
         {
-            Logger.Error(this.TargetSite, Message);
+            Logger.ErrorFatal(this.TargetSite, Message);
         }
     }
 }

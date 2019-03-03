@@ -14,14 +14,14 @@ namespace DataTrack.Core.Util
 
         private struct LogItem
         {
-            public LogItem(MethodBase method, string message, LogLevel level)
+            public LogItem(MethodBase? method, string message, LogLevel level)
             {
                 Method = method;
                 Message = message;
                 Level = level;
             }
 
-            public MethodBase Method;
+            public MethodBase? Method;
             public string Message;
             public LogLevel Level;
 
@@ -39,6 +39,9 @@ namespace DataTrack.Core.Util
                     logOutputBuilder.Append($"{Method.ReflectedType.Name}::{Method.Name}()");
                     logOutputBuilder.Append(" | ");
                 }
+
+                if (Level == LogLevel.ErrorFatal)
+                    Message = $"FATAL {Message}";
 
                 logOutputBuilder.Append(Message);
 
@@ -92,7 +95,7 @@ namespace DataTrack.Core.Util
             }
         }
 
-        private static void Log(MethodBase method, string message, LogLevel level)
+        private static void Log(MethodBase? method, string message, LogLevel level)
         {
             lock (logBuffer)
                 logBuffer.Add(new LogItem(method, message, level));
@@ -106,6 +109,9 @@ namespace DataTrack.Core.Util
 
         public static void Error(MethodBase method, string message) => Log(method, message, LogLevel.Error);
         public static void Error(string message) => Log(null, message, LogLevel.Error);
+
+        public static void ErrorFatal(MethodBase method, string message) => Log(method, message, LogLevel.ErrorFatal);
+        public static void ErrorFatal(string message) => Log(null, message, LogLevel.ErrorFatal);
 
         public static void Stop() => running = false;
 
