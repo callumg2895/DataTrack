@@ -13,12 +13,14 @@ namespace DataTrack.Core.SQL.ExecutionObjects
     public class UpdateQueryExecutor<TBase> : QueryExecutor<TBase> where TBase : new()
     {
 
-        internal UpdateQueryExecutor(Query<TBase> query, SqlConnection connection, SqlTransaction transaction = null)
+        internal UpdateQueryExecutor(Query<TBase> query, SqlConnection connection, SqlTransaction? transaction = null)
         {
             Query = query;
             stopwatch = new Stopwatch();
             _connection = connection;
-            _transaction = transaction;
+
+            if (transaction != null)
+                _transaction = transaction;
         }
 
         internal int Execute(SqlDataReader reader)

@@ -63,17 +63,21 @@ namespace DataTrack.Core.SQL.BuilderObjects
             {
                 Logger.Info(MethodBase.GetCurrentMethod(), $"Building DataTable for: {Data?.GetType().ToString()}");
                 List<ColumnMappingAttribute> columns = Dictionaries.TableMappingCache[table];
-                List<object> items = table.GetPropertyValues(Data);
 
-                SetColumns(dataTable, columns);
-                AddRow(dataTable, columns, items);
+                if (Data != null)
+                {
+                    List<object> items = table.GetPropertyValues(Data);
 
-                Logger.Info($"Current table row count: {dataTable.Rows.Count}");
-                items.ForEach(item => Logger.Info(item?.ToString() ?? "NULL"));
+                    SetColumns(dataTable, columns);
+                    AddRow(dataTable, columns, items);
+
+                    Logger.Info($"Current table row count: {dataTable.Rows.Count}");
+                    items.ForEach(item => Logger.Info(item?.ToString() ?? "NULL"));
+                }
             }
             else
             {
-                if (Tables[0].GetChildPropertyValues(Data, table.TableName) != null)
+                if (Data != null && Tables[0].GetChildPropertyValues(Data, table.TableName) != null)
                 {
 
                     List<ColumnMappingAttribute> columns = Dictionaries.TableMappingCache[table];

@@ -12,12 +12,14 @@ namespace DataTrack.Core.SQL.ExecutionObjects
 {
     public class DeleteQueryExecutor<TBase> : QueryExecutor<TBase> where TBase : new()
     {
-        internal DeleteQueryExecutor(Query<TBase> query, SqlConnection connection, SqlTransaction transaction = null)
+        internal DeleteQueryExecutor(Query<TBase> query, SqlConnection connection, SqlTransaction? transaction = null)
         {
             Query = query;
             stopwatch = new Stopwatch();
             _connection = connection;
-            _transaction = transaction;
+
+            if (transaction != null)
+                _transaction = transaction;
         }
 
         internal int Execute(SqlDataReader reader)

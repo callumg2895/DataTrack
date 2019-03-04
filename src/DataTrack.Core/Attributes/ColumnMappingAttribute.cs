@@ -12,13 +12,13 @@ namespace DataTrack.Core.Attributes
         public string TableName { get; private set; }
         public string ColumnName { get; private set; }
         public byte KeyType { get; private set; }
-        public string ForeignKeyTableMapping { get; private set; }
-        public string ForeignKeyColumnMapping { get; private set; }
+        public string? ForeignKeyTableMapping { get; private set; }
+        public string? ForeignKeyColumnMapping { get; private set; }
 
         public ColumnMappingAttribute(string tableName, string columnName)
             : this(tableName, columnName, 0) { }
 
-        public ColumnMappingAttribute(string tableName, string columnName, byte keyType, string foreignKeyTableMapping = null, string foreignKeyColumnMapping = null)
+        public ColumnMappingAttribute(string tableName, string columnName, byte keyType, string? foreignKeyTableMapping = null, string? foreignKeyColumnMapping = null)
         {
             TableName = tableName;
             ColumnName = columnName;
@@ -30,7 +30,7 @@ namespace DataTrack.Core.Attributes
                 Logger.Warn(MethodBase.GetCurrentMethod(), $"Column '{columnName}' is a foreign key but is not mapped to a table");
         }
 
-        public bool TryGetPropertyName(Type type, out string propertyName)
+        public bool TryGetPropertyName(Type type, out string? propertyName)
         {
             PropertyInfo[] properties = type.GetProperties();
             propertyName = null;

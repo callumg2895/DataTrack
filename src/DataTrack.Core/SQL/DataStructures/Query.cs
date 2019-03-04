@@ -30,6 +30,9 @@ namespace DataTrack.Core.SQL.DataStructures
 
         public Query()
         {
+            Mapping = new Mapping<TBase>();
+            QueryString = string.Empty;
+
             baseType = typeof(TBase);
             stopwatch = new Stopwatch();
         }
@@ -67,7 +70,7 @@ namespace DataTrack.Core.SQL.DataStructures
             }
         }
 
-        internal dynamic Execute(SqlCommand command, SqlConnection connection, SqlTransaction transaction = null)
+        internal dynamic Execute(SqlCommand command, SqlConnection connection, SqlTransaction? transaction = null)
         {
             if (transaction != null)
                 command.Transaction = transaction;

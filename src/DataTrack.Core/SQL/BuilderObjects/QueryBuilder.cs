@@ -81,7 +81,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
                     // Then update the dictionary of parameters with this value.
 
                     string handle = $"@{columnAttribute.TableName}_{columnAttribute.ColumnName}_{CurrentParameterIndex}";
-                    string propertyName;
+                    string? propertyName;
 
                     if (columnAttribute.TryGetPropertyName(BaseType, out propertyName))
                     {
@@ -108,7 +108,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
         {
             // Find the name and value of the primary key property in the 'item' object
             ColumnMappingAttribute primaryKeyColumnAttribute;
-            string primaryKeyColumnPropertyname;
+            string? primaryKeyColumnPropertyname;
 
             if (TryGetPrimaryKeyColumnForType(BaseType, out primaryKeyColumnAttribute) && primaryKeyColumnAttribute.TryGetPropertyName(BaseType, out primaryKeyColumnPropertyname))
             {
@@ -121,7 +121,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
         {
             // Find the name and value of the primary key property in the 'item' object
             ColumnMappingAttribute foreignKeyColumnAttribute;
-            string primaryKeyColumnPropertyname;
+            string? primaryKeyColumnPropertyname;
 
             if (TryGetForeignKeyColumnForType(BaseType, table, out foreignKeyColumnAttribute) && foreignKeyColumnAttribute.TryGetPropertyName(BaseType, out primaryKeyColumnPropertyname))
             {

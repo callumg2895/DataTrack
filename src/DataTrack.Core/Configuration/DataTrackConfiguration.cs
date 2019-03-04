@@ -24,13 +24,17 @@ namespace DataTrack.Core
 
         public static void Init() => Init(false, ConfigType.Manual, null);
 
-        public static void Init(bool enableConsoleLogging, ConfigType configType, string connection)
+        public static void Init(bool enableConsoleLogging, ConfigType configType, string? connection)
         {
             Logger.Init(enableConsoleLogging);
 
             switch (configType)
             {
                 case ConfigType.FilePath:
+                    if (connection == null)
+                    {
+                        throw new ArgumentNullException("'FilePath' ConfigType specified but the specified filepath was null", nameof(connection));
+                    }
                     ConnectionString = GetConnectionString(connection);
                     Logger.Info(MethodBase.GetCurrentMethod(), $"Set database connection string '{ConnectionString}'");
                     break;

@@ -28,7 +28,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
         {
             // Find the name and value of the primary key property in the 'item' object
             ColumnMappingAttribute primaryKeyColumnAttribute;
-            string primaryKeyColumnPropertyname;
+            string? primaryKeyColumnPropertyname;
 
             if (TryGetPrimaryKeyColumnForType(typeof(TBase), out primaryKeyColumnAttribute) && primaryKeyColumnAttribute.TryGetPropertyName(BaseType, out primaryKeyColumnPropertyname))
             {
