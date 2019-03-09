@@ -66,6 +66,9 @@ namespace DataTrack.Core.Logging
         public static void Info(MethodBase method, string message) => Log(method, message, LogLevel.Info);
         public static void Info(string message) => Log(null, message, LogLevel.Info);
 
+        public static void Debug(MethodBase method, string message) => Log(method, message, LogLevel.Debug);
+        public static void Debug(string message) => Log(null, message, LogLevel.Debug);
+
         public static void Warn(MethodBase method, string message) => Log(method, message, LogLevel.Warn);
         public static void Warn(string message) => Log(null, message, LogLevel.Warn);
 
