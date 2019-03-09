@@ -36,13 +36,13 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
         private void MapTablesByType(Type type)
         {
-            if (!Dictionaries.TypeMappingCache.ContainsKey(type))
+            if (Dictionaries.TypeMappingCache.ContainsKey(type))
             {
-                LoadTableMapping(type);
+                LoadTableMappingFromCache(type);
             }
             else
             {
-                LoadTableMappingFromCache(type);
+                LoadTableMapping(type);
             }
         }
 
