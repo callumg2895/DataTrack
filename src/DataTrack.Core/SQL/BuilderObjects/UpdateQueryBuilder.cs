@@ -1,6 +1,6 @@
 ﻿using DataTrack.Core.Enums;
 using DataTrack.Core.SQL.DataStructures;
-using DataTrack.Core.Util;
+using DataTrack.Core.Logging;
 using System.Reflection;
 
 namespace DataTrack.Core.SQL.BuilderObjects

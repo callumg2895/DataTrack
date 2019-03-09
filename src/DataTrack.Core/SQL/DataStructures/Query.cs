@@ -3,6 +3,7 @@ using DataTrack.Core.Enums;
 using DataTrack.Core.SQL.ExecutionObjects;
 using DataTrack.Core.Util;
 using DataTrack.Core.Util.DataStructures;
+using DataTrack.Core.Logging;
 using DataTrack.Core.Util.Extensions;
 using System;
 using System.Collections.Generic;

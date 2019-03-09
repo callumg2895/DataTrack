@@ -3,6 +3,7 @@ using DataTrack.Core.Util;
 using DataTrack.Core.Util.Extensions;
 using System;
 using System.Collections.Generic;
+using DataTrack.Core.Logging;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Reflection;

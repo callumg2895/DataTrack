@@ -1,6 +1,7 @@
 ﻿using DataTrack.Core.Attributes;
 using DataTrack.Core.Enums;
 using DataTrack.Core.SQL.DataStructures;
+using DataTrack.Core.Logging;
 using DataTrack.Core.Util;
 using System;
 using System.Linq;

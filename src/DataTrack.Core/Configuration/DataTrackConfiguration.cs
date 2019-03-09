@@ -7,6 +7,7 @@ using System.Data.SqlClient;
 using System.Reflection;
 using System.Threading;
 using System.Xml;
+using DataTrack.Core.Logging;
 
 namespace DataTrack.Core
 {
