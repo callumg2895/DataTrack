@@ -1,8 +1,10 @@
 ﻿using DataTrack.Core.Attributes;
 using DataTrack.Core.SQL.DataStructures;
 using DataTrack.Core.Util;
+using DataTrack.Core.Util.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 
@@ -29,6 +31,32 @@ namespace DataTrack.Core.SQL.BuilderObjects
         #endregion
 
         #region Methods
+
+        public void CreateStagingTable(List<ColumnMappingAttribute> columns, TableMappingAttribute table)
+        {
+            sql.AppendLine($"create table {table.StagingTableName}");
+            sql.AppendLine("(");
+
+            for (int i = 0; i < columns.Count; i++)
+            {
+                ColumnMappingAttribute column = columns[i];
+                SqlDbType sqlDbType = column.GetSqlDbType(BaseType);
+
+                if (column.IsPrimaryKey())
+                {
+                    sql.AppendLine($"{column.ColumnName} {sqlDbType.ToSqlString()} not null identity(1,1),");
+                    sql.Append($"primary key ({column.ColumnName})");
+                }
+                else
+                {
+                    sql.Append($"{column.ColumnName} {sqlDbType.ToSqlString()} not null");
+                }
+
+                sql.AppendLine(i == columns.Count - 1 ? "" : ",");
+            }
+
+            sql.AppendLine(")");
+        }
 
         public void BuildInsertStatement(List<ColumnMappingAttribute> columns, TableMappingAttribute table)
         {

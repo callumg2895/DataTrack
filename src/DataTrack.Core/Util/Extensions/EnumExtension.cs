@@ -1,6 +1,7 @@
 ﻿using DataTrack.Core.Enums;
 using System.Reflection;
 using DataTrack.Core.Logging;
+using System.Data;
 
 namespace DataTrack.Core.Util.Extensions
 {
@@ -20,6 +21,17 @@ namespace DataTrack.Core.Util.Extensions
                 default:
                     Logger.Error(MethodBase.GetCurrentMethod(), $"Invalid restriction '{type}'");
                     return "";
+            }
+        }
+
+        public static string ToSqlString(this SqlDbType type)
+        {
+            switch (type)
+            {
+                case SqlDbType.VarChar:
+                    return "varchar(255)";
+                default:
+                    return type.ToString().ToLower();
             }
         }
 
