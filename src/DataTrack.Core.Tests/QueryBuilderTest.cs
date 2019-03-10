@@ -42,7 +42,9 @@ namespace DataTrack.Core.Tests
             StringBuilder sqlBuilder = new StringBuilder();
             sqlBuilder.AppendLine();
             sqlBuilder.AppendLine("select Book.id, Book.author_id, Book.title");
-            sqlBuilder.AppendLine("from books as Book");
+            sqlBuilder.AppendLine("into #books_staging from books as Book");
+            sqlBuilder.AppendLine();
+            sqlBuilder.AppendLine("select * from #books_staging");
 
             expectedQuery = sqlBuilder.ToString();
             testQuery = new ReadQueryBuilder<Book>().GetQuery().QueryString;

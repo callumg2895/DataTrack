@@ -42,7 +42,6 @@ namespace DataTrack.Core.SQL.BuilderObjects
         {
             SQLBuilder<TBase> sqlBuilder = new SQLBuilder<TBase>(Query.Mapping);
 
-            sqlBuilder.AppendLine();
             sqlBuilder.BuildSelectStatement();
 
             string sql = sqlBuilder.ToString();
