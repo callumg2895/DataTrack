@@ -4,6 +4,7 @@ using DataTrack.Core.Util;
 using System;
 using System.Reflection;
 using DataTrack.Core.Logging;
+using System.Data;
 
 namespace DataTrack.Core.Attributes
 {
@@ -57,6 +58,18 @@ namespace DataTrack.Core.Attributes
                     if ((attribute as ColumnMappingAttribute)?.ColumnName == this.ColumnName)
                         return property.Name;
 
+            throw new ColumnMappingException(type, this.ColumnName);
+        }
+
+        public SqlDbType GetSqlDbType(Type type)
+        {
+            foreach (PropertyInfo property in type.GetProperties())
+                foreach (Attribute attribute in property.GetCustomAttributes())
+                    if ((attribute as ColumnMappingAttribute)?.ColumnName == this.ColumnName)
+                        return Dictionaries.SQLDataTypes[property.PropertyType];
+
+            // Technically the wrong exception to throw. The problem here is that the 'type' supplied
+            // does not contain a property with ColumnMappingAttribute with a matching column name.
             throw new ColumnMappingException(type, this.ColumnName);
         }
 
