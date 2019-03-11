@@ -25,7 +25,7 @@ namespace DataTrack.Core.Logging
 
             logOutputBuilder.Append(DateTime.Now.ToLongTimeString());
             logOutputBuilder.Append(" | ");
-            logOutputBuilder.Append(Level.ToString());
+            logOutputBuilder.Append(GetLogLevelString());
             logOutputBuilder.Append(" | ");
 
             if (Method != null)
@@ -40,6 +40,20 @@ namespace DataTrack.Core.Logging
             logOutputBuilder.Append(Message);
 
             return logOutputBuilder.ToString();
+        }
+
+        private string GetLogLevelString()
+        {
+            switch (Level)
+            {
+                case LogLevel.Info: return "INF";
+                case LogLevel.Debug: return "DBG";
+                case LogLevel.Warn: return "WRN";
+                case LogLevel.Error:
+                case LogLevel.ErrorFatal: return "ERR";
+                default:
+                    return string.Empty;
+            }
         }
     }
 }
