@@ -55,7 +55,48 @@ namespace DataTrack.Core.SQL.BuilderObjects
                 sql.AppendLine(i == columns.Count - 1 ? "" : ",");
             }
 
-            sql.AppendLine(")");
+            sql.AppendLine(")")
+               .AppendLine();
+        }
+
+        public void BuildInsertFromStagingToMainWithOutputIds(List<ColumnMappingAttribute> columns, TableMappingAttribute table)
+        {
+            if (columns.Count == 0) return;
+
+            string primaryKeyColumnName = string.Empty;
+
+            sql.AppendLine("create table #insertedIds (id int);")
+               .AppendLine()
+               .Append("insert into " + table.TableName + " (");
+
+            for (int i = 0; i < columns.Count; i++)
+            {
+                if (!columns[i].IsPrimaryKey())
+                    sql.Append(columns[i].ColumnName + (i == columns.Count - 1 ? "" : ", "));
+                else
+                    primaryKeyColumnName = columns[i].ColumnName;
+            }
+
+            sql.AppendLine(")")
+               .AppendLine()
+               .AppendLine($"output inserted.{primaryKeyColumnName} into #insertedIds(id)")
+               .AppendLine()
+               .Append("select ");
+
+            for (int i = 0; i < columns.Count; i++)
+            {
+                if (!columns[i].IsPrimaryKey())
+                    sql.Append(columns[i].ColumnName + (i == columns.Count - 1 ? "" : ", "));
+            }
+
+            sql.AppendLine()
+               .AppendLine($"from {table.StagingTableName}")
+               .AppendLine()
+               .AppendLine("select * from #insertedIds")
+               .AppendLine()
+               .AppendLine("drop table #insertedIds")
+               .AppendLine($"drop table {table.StagingTableName}")
+               .AppendLine();
         }
 
         public void BuildInsertStatement(List<ColumnMappingAttribute> columns, TableMappingAttribute table)

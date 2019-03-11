@@ -11,6 +11,7 @@ using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Reflection;
 using System.Text;
+using DataTrack.Core.SQL.BuilderObjects;
 
 namespace DataTrack.Core.SQL.ExecutionObjects
 {
@@ -43,13 +44,55 @@ namespace DataTrack.Core.SQL.ExecutionObjects
 
         private void WriteToServer(TableMappingAttribute table)
         {
-            Logger.Info($"Executing Bulk Insert for {table.TableName}");
+            SQLBuilder<TBase> createStagingTable = new SQLBuilder<TBase>(Query.Mapping);
+            SQLBuilder<TBase> insertFromStagingTable = new SQLBuilder<TBase>(Query.Mapping);
+            List<int> ids = new List<int>();
+
+            createStagingTable.CreateStagingTable(Dictionaries.TableMappingCache[table], table);
+            insertFromStagingTable.BuildInsertFromStagingToMainWithOutputIds(Dictionaries.TableMappingCache[table], table);
+
+            using (SqlCommand cmd = _connection.CreateCommand())
+            {
+                cmd.CommandText = createStagingTable.ToString();
+                cmd.CommandType = CommandType.Text;
+                cmd.Transaction = _transaction;
+
+                Logger.Debug($"Creating staging table {table.StagingTableName}");
+                Logger.Debug($"Executing SQL: {createStagingTable.ToString()}");
+
+                cmd.ExecuteNonQuery();
+            }
+
+            Logger.Debug($"Executing Bulk Insert for {table.TableName}");
 
             SqlBulkCopyOptions copyOptions = SqlBulkCopyOptions.Default;
             SqlBulkCopy bulkCopy = new SqlBulkCopy(_connection, copyOptions, _transaction);
 
-            bulkCopy.DestinationTableName = Query.Mapping.DataTableMapping[table].TableName;
+            bulkCopy.DestinationTableName = table.StagingTableName;
             bulkCopy.WriteToServer(Query.Mapping.DataTableMapping[table]);
+
+            using (SqlCommand cmd = _connection.CreateCommand())
+            {
+                cmd.CommandText = insertFromStagingTable.ToString();
+                cmd.CommandType = CommandType.Text;
+                cmd.Transaction = _transaction;
+
+                Logger.Debug($"Reading primary keys inserted into {table.TableName}");
+                Logger.Debug($"Executing SQL: {insertFromStagingTable.ToString()}");
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        ids.Add((int)reader["id"]);
+                    }
+                }
+            }
+
+            foreach (int item in ids)
+            {
+                Logger.Debug($"Inserted {table.TableName} item with primary key {item}");
+            }
         }
 
     }
