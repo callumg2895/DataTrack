@@ -34,13 +34,15 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
         public void CreateStagingTable(List<ColumnMappingAttribute> columns, TableMappingAttribute table)
         {
+            Type type = Mapping.TypeTableMapping[table];
+
             sql.AppendLine($"create table {table.StagingTableName}");
             sql.AppendLine("(");
 
             for (int i = 0; i < columns.Count; i++)
             {
                 ColumnMappingAttribute column = columns[i];
-                SqlDbType sqlDbType = column.GetSqlDbType(BaseType);
+                SqlDbType sqlDbType = column.GetSqlDbType(type);
 
                 if (column.IsPrimaryKey())
                 {

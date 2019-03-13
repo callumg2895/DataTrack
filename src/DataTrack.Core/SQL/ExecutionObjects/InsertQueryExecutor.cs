@@ -89,6 +89,11 @@ namespace DataTrack.Core.SQL.ExecutionObjects
                 }
             }
 
+            if (ids.Count == 0)
+            {
+                Logger.Debug($"No {table.TableName} were inserted");
+            }
+
             foreach (int item in ids)
             {
                 Logger.Debug($"Inserted {table.TableName} item with primary key {item}");
