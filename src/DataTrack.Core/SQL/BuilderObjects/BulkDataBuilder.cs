@@ -9,10 +9,11 @@ using System.Data;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using DataTrack.Core.SQL.DataStructures;
 
 namespace DataTrack.Core.SQL.BuilderObjects
 {
-    public class BulkDataBuilder<TBase>
+    public class BulkDataBuilder<TBase> where TBase : new()
     {
 
         #region Members
@@ -30,13 +31,13 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
         #region Constructors
 
-        public BulkDataBuilder(TBase data, List<TableMappingAttribute> tables, List<ColumnMappingAttribute> columns, Map<Type, TableMappingAttribute> typeTableMapping, Map<Type, List<ColumnMappingAttribute>> typeColumnMapping)
+        public BulkDataBuilder(TBase data, Mapping<TBase> mapping)
         {
             Data = data;
-            Tables = tables;
-            Columns = columns;
-            TypeTableMapping = typeTableMapping;
-            TypeColumnMapping = typeColumnMapping;
+            Tables = mapping.Tables;
+            Columns = mapping.Columns;
+            TypeTableMapping = mapping.TypeTableMapping;
+            TypeColumnMapping = mapping.TypeColumnMapping;
         }
 
         #endregion Constructors
