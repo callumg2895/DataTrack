@@ -23,16 +23,20 @@ namespace DataTrack.Core.Logging
         private static int currentLength = 0;
 
         private static Thread loggingThread;
-        private volatile static bool running;
+        private volatile static bool shouldExecute;
         private static List<LogItem> logBuffer;
         private static bool _enableConsoleLogging;
+
+        private static object fullPathLock = new object();
+        private static object logBufferLock = new object();
+        private static object shouldExecuteLock = new object();
 
         public static void Init(bool enableConsoleLogging)
         {
             fullPath = $@"{filePath}\{fileDateString}_{fileName}{fileIndex}{fileExtension}";
             _enableConsoleLogging = enableConsoleLogging;
             logBuffer = new List<LogItem>();
-            running = true;
+            shouldExecute = true;
 
             if (!Directory.Exists(filePath))
                 Directory.CreateDirectory(filePath);
@@ -78,11 +82,11 @@ namespace DataTrack.Core.Logging
         public static void ErrorFatal(MethodBase method, string message) => Log(method, message, LogLevel.ErrorFatal);
         public static void ErrorFatal(string message) => Log(null, message, LogLevel.ErrorFatal);
 
-        public static void Stop() => running = false;
+        public static void Stop() => EndExecution();
 
         private static void Clear()
         {
-            lock (fullPath)
+            lock (fullPathLock)
             {
                 string[] files = Directory.GetFiles(filePath, $"{fileDateString}_{fileName}*");
                 files.ForEach(file => File.Delete(file));
@@ -117,7 +121,7 @@ namespace DataTrack.Core.Logging
         {
             List<LogItem> threadLogBuffer = new List<LogItem>();
 
-            while (running)
+            while (ShouldExecute())
             {
                 threadLogBuffer = GetLogBufferForThread();
 
@@ -134,7 +138,7 @@ namespace DataTrack.Core.Logging
         {
             List<LogItem> threadLogBuffer = new List<LogItem>();
 
-            lock (logBuffer)
+            lock (logBufferLock)
             {
                 threadLogBuffer.AddRange(logBuffer);
                 logBuffer.Clear();
@@ -147,7 +151,7 @@ namespace DataTrack.Core.Logging
         {
             string logOutput = log.ToString();
 
-            lock (fullPath)
+            lock (fullPathLock)
             {
                 using (StreamWriter writer = new StreamWriter(fullPath, true))
                 {
@@ -170,6 +174,22 @@ namespace DataTrack.Core.Logging
             {
                 fileDate = DateTime.Now.Date;
                 Create();
+            }
+        }
+
+        private static bool ShouldExecute()
+        {
+            lock (shouldExecuteLock)
+            {
+                return shouldExecute;
+            }
+        }
+
+        private static void EndExecution()
+        {
+            lock (shouldExecuteLock)
+            {
+                shouldExecute = false;
             }
         }
     }
