@@ -33,7 +33,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
             Query.OperationType = opType;
 
             // Fetch the table and column names for TBase
-            Query.Mapping = new MappingBuilder<TBase>().GetMapping();
+            Query.Mapping = new Mapping<TBase>();
 
             // Check for valid Table/Columns
             if (Query.Mapping.Tables.Count < 0 || Query.Mapping.Columns.Count < 0)
