@@ -34,8 +34,12 @@ namespace DataTrack.Core.SQL.BuilderObjects
         public BulkDataBuilder(TBase data, Mapping<TBase> mapping)
         {
             Data = data;
-            Tables = mapping.Tables;
-            Columns = mapping.Columns;
+            Tables = mapping.Tables.Select(t => t.Table).ToList();
+            Columns = new List<ColumnMappingAttribute>();
+            foreach ( var columns in mapping.Tables.Select(t => t.Columns))
+            {
+                Columns.AddRange(columns);
+            }
             TypeTableMapping = mapping.TypeTableMapping;
             TypeColumnMapping = mapping.TypeColumnMapping;
         }

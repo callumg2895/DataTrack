@@ -15,9 +15,7 @@ namespace DataTrack.Core.SQL.DataStructures
     {
 
         public Type BaseType { get; set; } = typeof(TBase);
-
-        public List<TableMappingAttribute> Tables { get; set; } = new List<TableMappingAttribute>();
-        public List<ColumnMappingAttribute> Columns { get; set; } = new List<ColumnMappingAttribute>();
+        public List<TableWrapper> Tables { get; set; } = new List<TableWrapper>();
         internal Dictionary<TableMappingAttribute, string> TableAliases { get; set; } = new Dictionary<TableMappingAttribute, string>();
         internal Dictionary<ColumnMappingAttribute, string> ColumnAliases { get; set; } = new Dictionary<ColumnMappingAttribute, string>();
         internal Map<Type, TableMappingAttribute> TypeTableMapping { get; set; } = new Map<Type, TableMappingAttribute>();
@@ -29,24 +27,27 @@ namespace DataTrack.Core.SQL.DataStructures
 
         public Mapping()
         {
-            MapTablesByType(BaseType);
-            BaseType.GetProperties().ForEach(prop => MapTablesByProperty(prop));
+            GetTableByType(BaseType, out TableMappingAttribute table);
+            GetColumnsByType(BaseType, out List<ColumnMappingAttribute> columns);
+            Tables.Add(new TableWrapper(table, columns));
 
-            MapColumnsByType(BaseType);
-            BaseType.GetProperties().ForEach(prop => MapColumnsByProperty(prop));
+            foreach(var prop in BaseType.GetProperties())
+            {
+                MapTablesByProperty(prop);
+            }
 
             CacheMappingData();
         }
 
-        private void MapTablesByType(Type type)
+        private void GetTableByType(Type type, out TableMappingAttribute table)
         {
             if (Dictionaries.TypeMappingCache.ContainsKey(type))
             {
-                LoadTableMappingFromCache(type);
+                LoadTableMappingFromCache(type, out table);
             }
             else
             {
-                LoadTableMapping(type);
+                LoadTableMapping(type, out table);
             }
         }
 
@@ -59,20 +60,22 @@ namespace DataTrack.Core.SQL.DataStructures
             {
                 Type genericArgumentType = propertyType.GetGenericArguments()[0];
 
-                MapTablesByType(genericArgumentType);
+                GetTableByType(genericArgumentType, out TableMappingAttribute table);
+                GetColumnsByType(genericArgumentType, out List<ColumnMappingAttribute> columns);
+                Tables.Add(new TableWrapper(table, columns));
 
-                propertyType.GetProperties().ForEach(prop => MapTablesByProperty(prop));
+                foreach (var prop in propertyType.GetProperties())
+                {
+                    MapTablesByProperty(prop);
+                }
             }
         }
 
-        private void LoadTableMapping(Type type)
+        private void LoadTableMapping(Type type, out TableMappingAttribute table)
         {
-            TableMappingAttribute table;
-
             if (TryGetTableMappingAttribute(type, out table))
             {
                 TypeTableMapping[type] = table;
-                Tables.Add(table);
                 TableAliases[table] = type.Name;
 
                 Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded table mapping for class '{type.Name}'");
@@ -83,52 +86,33 @@ namespace DataTrack.Core.SQL.DataStructures
             }
         }
 
-        private void LoadTableMappingFromCache(Type type)
+        private void LoadTableMappingFromCache(Type type, out TableMappingAttribute table)
         {
-            TableMappingAttribute table = Dictionaries.TypeMappingCache[type].Table;
+            table = Dictionaries.TypeMappingCache[type].Table;
 
             TypeTableMapping[type] = table;
-            Tables.Add(table);
             TableAliases[table] = type.Name;
 
             Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded table mapping for class '{type.Name}' from cache");
         }
 
-        private void MapColumnsByType(Type type)
+        private void GetColumnsByType(Type type, out List<ColumnMappingAttribute> columns)
         {
             if (!Dictionaries.TypeMappingCache.ContainsKey(type))
             {
-                LoadColumnMapping(type);
+                LoadColumnMapping(type, out columns);
             }
             else
             {
-                LoadColumnMappingFromCache(type);
+                LoadColumnMappingFromCache(type, out columns);
             }
         }
 
-        private void MapColumnsByProperty(PropertyInfo property)
+        private void LoadColumnMapping(Type type, out List<ColumnMappingAttribute> columns)
         {
-            Type type = property.PropertyType;
-
-            // If the property is a generic list, then it fits the profile of a child object
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
-            {
-                Type genericArgumentType = type.GetGenericArguments()[0];
-
-                MapColumnsByType(genericArgumentType);
-
-                genericArgumentType.GetProperties().ForEach(prop => MapColumnsByProperty(prop));
-            }
-        }
-
-        private void LoadColumnMapping(Type type)
-        {
-            List<ColumnMappingAttribute> columns;
-
             if (TryGetColumnMappingAttributes(type, out columns))
             {
                 TypeColumnMapping[type] = columns;
-                Columns.AddRange(columns);
 
                 foreach (ColumnMappingAttribute column in columns)
                 {
@@ -144,12 +128,11 @@ namespace DataTrack.Core.SQL.DataStructures
             }
         }
 
-        private void LoadColumnMappingFromCache(Type type)
+        private void LoadColumnMappingFromCache(Type type, out List<ColumnMappingAttribute> columns)
         {
-            List<ColumnMappingAttribute> columns = Dictionaries.TypeMappingCache[type].Columns;
+            columns = Dictionaries.TypeMappingCache[type].Columns;
 
             TypeColumnMapping[type] = columns;
-            Columns.AddRange(columns);
 
             foreach (ColumnMappingAttribute column in columns)
             {

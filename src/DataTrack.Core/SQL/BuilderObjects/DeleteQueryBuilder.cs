@@ -45,17 +45,18 @@ namespace DataTrack.Core.SQL.BuilderObjects
                 SQLBuilder<TBase> sqlBuilder = new SQLBuilder<TBase>(Query.Mapping);
                 StringBuilder restrictionsBuilder = new StringBuilder();
 
-                for (int i = 0; i < Query.Mapping.Columns.Count; i++)
+                for (int i = 0; i < Query.Mapping.Tables.Count; i++)
                 {
-                    if (Query.Mapping.Restrictions.ContainsKey(Query.Mapping.Columns[i]))
+                    for (int j = 0; j < Query.Mapping.Tables[i].Columns.Count; j++)
+                        if (Query.Mapping.Restrictions.ContainsKey(Query.Mapping.Tables[i].Columns[j]))
                     {
                         restrictionsBuilder.Append(restrictionsBuilder.Length == 0 ? "where " : "and ");
-                        restrictionsBuilder.AppendLine(Query.Mapping.Restrictions[Query.Mapping.Columns[i]]);
+                        restrictionsBuilder.AppendLine(Query.Mapping.Restrictions[Query.Mapping.Tables[i].Columns[j]]);
                     }
                 }
 
                 sqlBuilder.AppendLine();
-                sqlBuilder.AppendLine($"delete {Query.Mapping.TableAliases[Query.Mapping.Tables[0]]} from {Query.Mapping.Tables[0].TableName} {Query.Mapping.TableAliases[Query.Mapping.Tables[0]]}");
+                sqlBuilder.AppendLine($"delete {Query.Mapping.TableAliases[Query.Mapping.Tables[0].Table]} from {Query.Mapping.Tables[0].Table.TableName} {Query.Mapping.TableAliases[Query.Mapping.Tables[0].Table]}");
                 sqlBuilder.Append(restrictionsBuilder.ToString());
 
                 // For insert statements return the number of rows affected

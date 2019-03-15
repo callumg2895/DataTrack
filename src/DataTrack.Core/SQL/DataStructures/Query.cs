@@ -11,6 +11,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Reflection;
+using System.Linq;
 
 namespace DataTrack.Core.SQL.DataStructures
 {
@@ -46,7 +47,14 @@ namespace DataTrack.Core.SQL.DataStructures
         {
             List<(string Handle, object Value)> parameters = new List<(string Handle, object Value)>();
 
-            foreach (ColumnMappingAttribute column in Mapping.Columns)
+            var tableColumns = new List<ColumnMappingAttribute>();
+
+            foreach (var columns in Mapping.Tables.Select(t => t.Columns))
+            {
+                tableColumns.AddRange(columns);
+            }
+
+            foreach (ColumnMappingAttribute column in tableColumns)
                 if (Mapping.Parameters.ContainsKey(column))
                     parameters.AddRange(Mapping.Parameters[column]);
 

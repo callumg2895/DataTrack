@@ -66,9 +66,9 @@ namespace DataTrack.Core.SQL.ExecutionObjects
             for (int tableCount = 1; tableCount < Query.Mapping.Tables.Count; tableCount++)
             {
                 reader.NextResult();
-                Type childType = Query.Mapping.TypeTableMapping[Query.Mapping.Tables[tableCount]];
+                Type childType = Query.Mapping.TypeTableMapping[Query.Mapping.Tables[tableCount].Table];
                 dynamic childCollection = Activator.CreateInstance(typeof(List<>).MakeGenericType(childType));
-                originalColumnCount = columnCount;
+                originalColumnCount = 0;
 
                 while (reader.Read())
                 {
@@ -76,7 +76,7 @@ namespace DataTrack.Core.SQL.ExecutionObjects
                     columnCount = originalColumnCount;
 
                     childType.GetProperties()
-                             .ForEach(prop => prop.SetValue(childItem, Convert.ChangeType(reader[Query.Mapping.Columns[columnCount++].ColumnName], prop.PropertyType)));
+                             .ForEach(prop => prop.SetValue(childItem, Convert.ChangeType(reader[Query.Mapping.Tables[tableCount].Columns[columnCount++].ColumnName], prop.PropertyType)));
 
                     MethodInfo addItem = childCollection.GetType().GetMethod("Add");
                     addItem.Invoke(childCollection, new object[] { childItem });
@@ -84,7 +84,7 @@ namespace DataTrack.Core.SQL.ExecutionObjects
 
                 foreach (TBase obj in results)
                 {
-                    PropertyInfo childProperty = Query.Mapping.Tables[0].GetChildProperty(baseType, Query.Mapping.Tables[tableCount].TableName);
+                    PropertyInfo childProperty = Query.Mapping.Tables[0].Table.GetChildProperty(baseType, Query.Mapping.Tables[tableCount].Table.TableName);
                     childProperty.SetValue(obj, childCollection);
                 }
             }
