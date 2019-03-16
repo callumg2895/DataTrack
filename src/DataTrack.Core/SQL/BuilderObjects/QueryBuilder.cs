@@ -37,7 +37,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
             Query.Mapping = new Mapping<TBase>();
 
             // Check for valid Table/Columns
-            if (Query.Mapping.Tables.Count == 0 || Query.Mapping.Tables.Any(t => t.Columns.Count == 0))
+            if (Query.Mapping.Tables.Count == 0 || Query.Mapping.Tables.Any(t => t.ColumnAttributes.Count == 0))
             {
                 string message = $"Mapping data for class '{BaseType.Name}' was incomplete/empty";
                 Logger.Error(MethodBase.GetCurrentMethod(), message);
@@ -76,7 +76,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
         private protected void UpdateParameters(TBase item)
         {
-            Query.Mapping.Tables.ForEach(t => t.Columns.ForEach(
+            Query.Mapping.Tables.ForEach(t => t.ColumnAttributes.ForEach(
                 columnAttribute =>
                 {
                     // For each column in the Query, find the value of the property which is decorated by that column attribute

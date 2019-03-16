@@ -49,7 +49,7 @@ namespace DataTrack.Core.SQL.DataStructures
 
             var tableColumns = new List<ColumnMappingAttribute>();
 
-            foreach (var columns in Mapping.Tables.Select(t => t.Columns))
+            foreach (var columns in Mapping.Tables.Select(t => t.ColumnAttributes))
             {
                 tableColumns.AddRange(columns);
             }

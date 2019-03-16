@@ -204,7 +204,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
         public void BuildSelectStatement()
         {
-            foreach (TableMappingAttribute table in Mapping.Tables.Select(t => t.Table))
+            foreach (TableMappingAttribute table in Mapping.Tables.Select(t => t.TableAttribute))
             {
                 List<ColumnMappingAttribute> columns = Dictionaries.TableMappingCache[table];
                 int RestrictionCount = 0;
@@ -235,7 +235,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
                     foreach (ColumnMappingAttribute column in foreignKeyColumns)
                     {
-                        TableMappingAttribute foreignTable = Mapping.Tables.Where(t => t.Table.TableName == column.ForeignKeyTableMapping).Select(t => t.Table).First();
+                        TableMappingAttribute foreignTable = Mapping.Tables.Where(t => t.TableAttribute.TableName == column.ForeignKeyTableMapping).Select(t => t.TableAttribute).First();
                         ColumnMappingAttribute foreignColumn = Dictionaries.TableMappingCache[foreignTable].Where(c => c.IsPrimaryKey()).First();
 
                         sql.Append($"{GetRestrictionKeyWord(RestrictionCount++)} ")

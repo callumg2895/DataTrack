@@ -13,9 +13,8 @@ namespace DataTrack.Core.SQL.DataStructures
 {
     public class Mapping<TBase> where TBase : new()
     {
-
         public Type BaseType { get; set; } = typeof(TBase);
-        public List<TableWrapper> Tables { get; set; } = new List<TableWrapper>();
+        public List<Table> Tables { get; set; } = new List<Table>();
         internal Dictionary<TableMappingAttribute, string> TableAliases { get; set; } = new Dictionary<TableMappingAttribute, string>();
         internal Dictionary<ColumnMappingAttribute, string> ColumnAliases { get; set; } = new Dictionary<ColumnMappingAttribute, string>();
         internal Map<Type, TableMappingAttribute> TypeTableMapping { get; set; } = new Map<Type, TableMappingAttribute>();
@@ -29,7 +28,7 @@ namespace DataTrack.Core.SQL.DataStructures
         {
             GetTableByType(BaseType, out TableMappingAttribute table);
             GetColumnsByType(BaseType, out List<ColumnMappingAttribute> columns);
-            Tables.Add(new TableWrapper(table, columns));
+            Tables.Add(new Table(table, columns));
 
             foreach(var prop in BaseType.GetProperties())
             {
@@ -62,7 +61,7 @@ namespace DataTrack.Core.SQL.DataStructures
 
                 GetTableByType(genericArgumentType, out TableMappingAttribute table);
                 GetColumnsByType(genericArgumentType, out List<ColumnMappingAttribute> columns);
-                Tables.Add(new TableWrapper(table, columns));
+                Tables.Add(new Table(table, columns));
 
                 foreach (var prop in propertyType.GetProperties())
                 {
