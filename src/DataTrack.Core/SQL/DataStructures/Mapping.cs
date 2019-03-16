@@ -15,7 +15,6 @@ namespace DataTrack.Core.SQL.DataStructures
     {
         public Type BaseType { get; set; } = typeof(TBase);
         public List<Table> Tables { get; set; } = new List<Table>();
-        internal Dictionary<TableMappingAttribute, string> TableAliases { get; set; } = new Dictionary<TableMappingAttribute, string>();
         internal Dictionary<ColumnMappingAttribute, string> ColumnAliases { get; set; } = new Dictionary<ColumnMappingAttribute, string>();
         internal Map<Type, Table> TypeTableMapping { get; set; } = new Map<Type, Table>();
         internal Dictionary<ColumnMappingAttribute, string> ColumnPropertyNames { get; set; } = new Dictionary<ColumnMappingAttribute, string>();
@@ -28,7 +27,7 @@ namespace DataTrack.Core.SQL.DataStructures
             GetTableByType(BaseType, out TableMappingAttribute tableAttribute);
             GetColumnsByType(BaseType, out List<ColumnMappingAttribute> columnAttributes);
 
-            Table table = new Table(tableAttribute, columnAttributes);
+            Table table = new Table(BaseType, tableAttribute, columnAttributes);
 
             Tables.Add(table);
             TypeTableMapping[BaseType] = table;
@@ -65,7 +64,7 @@ namespace DataTrack.Core.SQL.DataStructures
                 GetTableByType(genericArgumentType, out TableMappingAttribute tableAttribute);
                 GetColumnsByType(genericArgumentType, out List<ColumnMappingAttribute> columnAttributes);
 
-                Table table = new Table(tableAttribute, columnAttributes);
+                Table table = new Table(genericArgumentType, tableAttribute, columnAttributes);
 
                 Tables.Add(table);
                 TypeTableMapping[genericArgumentType] = table;
@@ -81,8 +80,6 @@ namespace DataTrack.Core.SQL.DataStructures
         {
             if (TryGetTableMappingAttribute(type, out table))
             {
-                TableAliases[table] = type.Name;
-
                 Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded table mapping for class '{type.Name}'");
             }
             else
@@ -94,8 +91,6 @@ namespace DataTrack.Core.SQL.DataStructures
         private void LoadTableMappingFromCache(Type type, out TableMappingAttribute table)
         {
             table = Dictionaries.TypeMappingCache[type].Table;
-
-            TableAliases[table] = type.Name;
 
             Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded table mapping for class '{type.Name}' from cache");
         }

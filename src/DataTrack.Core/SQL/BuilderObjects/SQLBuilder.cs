@@ -124,18 +124,18 @@ namespace DataTrack.Core.SQL.BuilderObjects
             StringBuilder setBuilder = new StringBuilder();
             StringBuilder restrictionBuilder = new StringBuilder();
 
-            TableMappingAttribute table = Mapping.TypeTableMapping[BaseType].TableAttribute;
+            Table table = Mapping.TypeTableMapping[BaseType];
             List<ColumnMappingAttribute> columns = Mapping.TypeTableMapping[BaseType].ColumnAttributes.Where(c => !c.IsPrimaryKey()).ToList(); 
 
             int processedRestrictions = 0;
             int totalColumns = columns.Count;
 
-            sql.AppendLine($"update {Mapping.TableAliases[table]}");
+            sql.AppendLine($"update {table.Alias}");
             sql.Append("set ");
 
             for (int i = 0; i < totalColumns; i++)
             {
-                setBuilder.Append(Mapping.TableAliases[table]);
+                setBuilder.Append(table.Alias);
                 setBuilder.Append(".");
                 setBuilder.Append(columns[i].ColumnName);
                 setBuilder.Append(" = ");
@@ -145,7 +145,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
                     : ",");
             }
 
-            restrictionBuilder.AppendLine($"from {table.TableName} {Mapping.TableAliases[table]}");
+            restrictionBuilder.AppendLine($"from {table.TableAttribute.TableName} {table.Alias}");
 
             foreach (ColumnMappingAttribute column in columns)
             {
@@ -229,7 +229,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
                 sql.Append(" from ")
                    .Append(tableAttribute.TableName)
                    .Append(" as ")
-                   .AppendLine(Mapping.TableAliases[tableAttribute]);        
+                   .AppendLine(table.Alias);        
 
                 if (Mapping.TypeTableMapping[table] != BaseType && columns.Where(c => c.IsForeignKey()).Count() > 0)
                 {
