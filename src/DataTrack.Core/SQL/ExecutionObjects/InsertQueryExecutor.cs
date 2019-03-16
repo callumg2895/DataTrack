@@ -33,7 +33,7 @@ namespace DataTrack.Core.SQL.ExecutionObjects
 
             foreach (Table table in Query.Mapping.Tables)
             {
-                if (Query.Mapping.DataTableMapping.ContainsKey(table.TableAttribute))
+                if (Query.Mapping.DataTableMapping.ContainsKey(table))
                     WriteToServer(table);
             }
 
@@ -70,7 +70,7 @@ namespace DataTrack.Core.SQL.ExecutionObjects
             SqlBulkCopy bulkCopy = new SqlBulkCopy(_connection, copyOptions, _transaction);
 
             bulkCopy.DestinationTableName = table.TableAttribute.StagingTableName;
-            bulkCopy.WriteToServer(Query.Mapping.DataTableMapping[table.TableAttribute]);
+            bulkCopy.WriteToServer(Query.Mapping.DataTableMapping[table]);
 
             using (SqlCommand cmd = _connection.CreateCommand())
             {

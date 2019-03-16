@@ -24,7 +24,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
         public Map<Type, Table> TypeTableMapping { get; private set; }
         public Map<Type, List<ColumnMappingAttribute>> TypeColumnMapping { get; private set; }
 
-        private Map<TableMappingAttribute, DataTable> DataMap { get; set; } = new Map<TableMappingAttribute, DataTable>();
+        private Map<Table, DataTable> DataMap { get; set; } = new Map<Table, DataTable>();
         private Map<ColumnMappingAttribute, DataColumn> ColumnMap { get; set; } = new Map<ColumnMappingAttribute, DataColumn>();
         private Type BaseType = typeof(TBase);
         #endregion
@@ -47,7 +47,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
         #region Methods
 
-        public Map<TableMappingAttribute, DataTable> YieldDataMap()
+        public Map<Table, DataTable> YieldDataMap()
         {
             ConstructData();
             return DataMap;
@@ -56,7 +56,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
         private void ConstructData()
         {
             // For inserts, we build a list of DataTables, where each 'table' in the list corresponds to the data for a table in the Query object
-            Tables.ForEach(table => DataMap[table.TableAttribute] = BuildDataFor(table));
+            Tables.ForEach(table => DataMap[table] = BuildDataFor(table));
             Logger.Info(MethodBase.GetCurrentMethod(), $"Created {DataMap.ForwardKeys.Count} DataTable{(DataMap.ForwardKeys.Count > 1 ? "s" : "")}");
         }
 
@@ -84,7 +84,6 @@ namespace DataTrack.Core.SQL.BuilderObjects
             {
                 if (Data != null && Tables[0].TableAttribute.GetChildPropertyValues(Data, table.TableAttribute.TableName) != null)
                 {
-
                     List<ColumnMappingAttribute> columns = Dictionaries.TableMappingCache[table.TableAttribute];
                     SetColumns(dataTable, columns);
 
@@ -131,7 +130,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
                     {
                         if (column.ForeignKeyTableMapping == table.TableAttribute.TableName)
                         {
-                            DataColumn parentColumn = DataMap[table.TableAttribute].Columns.Cast<DataColumn>().Where(c => ColumnMap[c].ColumnName == column.ForeignKeyColumnMapping).First();
+                            DataColumn parentColumn = DataMap[table].Columns.Cast<DataColumn>().Where(c => ColumnMap[c].ColumnName == column.ForeignKeyColumnMapping).First();
                             fk = new ForeignKeyConstraint(parentColumn, dataColumn);
                             dataTable.Constraints.Add(fk);
                         }
