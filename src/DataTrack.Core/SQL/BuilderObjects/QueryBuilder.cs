@@ -152,7 +152,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
             if (!Query.Mapping.TypeTableMapping[BaseType].ColumnAttributes.Contains(columnAttribute))
             {
-                Logger.Error(MethodBase.GetCurrentMethod(), $"'{property}' is not a property of '{Query.Mapping.TypeTableMapping[BaseType].TableAttribute.TableName}'");
+                Logger.Error(MethodBase.GetCurrentMethod(), $"'{property}' is not a property of '{Query.Mapping.TypeTableMapping[BaseType].Name}'");
                 return this;
             }
 

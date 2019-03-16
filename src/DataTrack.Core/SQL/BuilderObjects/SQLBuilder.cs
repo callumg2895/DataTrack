@@ -145,7 +145,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
                     : ",");
             }
 
-            restrictionBuilder.AppendLine($"from {table.TableAttribute.TableName} {table.Alias}");
+            restrictionBuilder.AppendLine($"from {table.Name} {table.Alias}");
 
             foreach (ColumnMappingAttribute column in columns)
             {
@@ -237,7 +237,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
                     foreach (ColumnMappingAttribute column in foreignKeyColumns)
                     {
-                        TableMappingAttribute foreignTable = Mapping.Tables.Where(t => t.TableAttribute.TableName == column.ForeignKeyTableMapping).Select(t => t.TableAttribute).First();
+                        TableMappingAttribute foreignTable = Mapping.Tables.Where(t => t.Name == column.ForeignKeyTableMapping).Select(t => t.TableAttribute).First();
                         ColumnMappingAttribute foreignColumn = Dictionaries.TableMappingCache[foreignTable].Where(c => c.IsPrimaryKey()).First();
 
                         sql.Append($"{GetRestrictionKeyWord(RestrictionCount++)} ")

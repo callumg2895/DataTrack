@@ -10,11 +10,13 @@ namespace DataTrack.Core.SQL.DataStructures
         public Table(Type type, TableMappingAttribute table, List<ColumnMappingAttribute> columns)
         {
             TableAttribute = table;
+            Name = table.TableName;
             Alias = type.Name;
             ColumnAttributes = columns;
         }
 
         public TableMappingAttribute TableAttribute { get; set; }
+        public string Name { get; set; }
         public string Alias { get; set; }
         public List<ColumnMappingAttribute> ColumnAttributes { get; set; }
     }

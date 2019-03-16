@@ -64,7 +64,7 @@ namespace DataTrack.Core.SQL.ExecutionObjects
                 cmd.ExecuteNonQuery();
             }
 
-            Logger.Debug($"Executing Bulk Insert for {table.TableAttribute.TableName}");
+            Logger.Debug($"Executing Bulk Insert for {table.Name}");
 
             SqlBulkCopyOptions copyOptions = SqlBulkCopyOptions.Default;
             SqlBulkCopy bulkCopy = new SqlBulkCopy(_connection, copyOptions, _transaction);
@@ -78,7 +78,7 @@ namespace DataTrack.Core.SQL.ExecutionObjects
                 cmd.CommandType = CommandType.Text;
                 cmd.Transaction = _transaction;
 
-                Logger.Debug($"Reading primary keys inserted into {table.TableAttribute.TableName}");
+                Logger.Debug($"Reading primary keys inserted into {table.Name}");
                 Logger.Debug($"Executing SQL: {insertFromStagingTable.ToString()}");
 
                 using (SqlDataReader reader = cmd.ExecuteReader())
@@ -92,12 +92,12 @@ namespace DataTrack.Core.SQL.ExecutionObjects
 
             if (ids.Count == 0)
             {
-                Logger.Debug($"No {table.TableAttribute.TableName} were inserted");
+                Logger.Debug($"No {table.Name} were inserted");
             }
 
             foreach (int item in ids)
             {
-                Logger.Debug($"Inserted {table.TableAttribute.TableName} item with primary key {item}");
+                Logger.Debug($"Inserted {table.Name} item with primary key {item}");
             }
         }
 

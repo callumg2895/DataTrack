@@ -62,7 +62,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
         private DataTable BuildDataFor(Table table)
         {
-            DataTable dataTable = new DataTable(table.TableAttribute.TableName);
+            DataTable dataTable = new DataTable(table.Name);
 
             if (TypeTableMapping[table] == BaseType)
             {
@@ -82,14 +82,14 @@ namespace DataTrack.Core.SQL.BuilderObjects
             }
             else
             {
-                if (Data != null && Tables[0].TableAttribute.GetChildPropertyValues(Data, table.TableAttribute.TableName) != null)
+                if (Data != null && Tables[0].TableAttribute.GetChildPropertyValues(Data, table.Name) != null)
                 {
                     List<ColumnMappingAttribute> columns = Dictionaries.TableMappingCache[table.TableAttribute];
                     SetColumns(dataTable, columns);
 
                     dynamic childItems = Activator.CreateInstance(typeof(List<>).MakeGenericType(TypeTableMapping[table]));
 
-                    foreach (var item in Tables[0].TableAttribute.GetChildPropertyValues(Data, table.TableAttribute.TableName))
+                    foreach (var item in Tables[0].TableAttribute.GetChildPropertyValues(Data, table.Name))
                     {
                         childItems.Add(item);
                     }
@@ -128,7 +128,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
                 {
                     foreach(Table table in Tables)
                     {
-                        if (column.ForeignKeyTableMapping == table.TableAttribute.TableName)
+                        if (column.ForeignKeyTableMapping == table.Name)
                         {
                             DataColumn parentColumn = DataMap[table].Columns.Cast<DataColumn>().Where(c => ColumnMap[c].ColumnName == column.ForeignKeyColumnMapping).First();
                             fk = new ForeignKeyConstraint(parentColumn, dataColumn);
