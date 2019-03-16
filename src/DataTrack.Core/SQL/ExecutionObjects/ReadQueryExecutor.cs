@@ -27,65 +27,64 @@ namespace DataTrack.Core.SQL.ExecutionObjects
         internal List<TBase> Execute(SqlDataReader reader)
         {
             List<TBase> results = new List<TBase>();
-
-            List<ColumnMappingAttribute> mainColumns = Query.Mapping.TypeTableMapping[baseType].ColumnAttributes;
-
-            int columnCount = 0;
-            int originalColumnCount = 0;
+            List<Table> tables = Query.Mapping.Tables;
 
             stopwatch.Start();
 
-            while (reader.Read())
+            foreach (Table table in tables)
             {
-                TBase obj = new TBase();
-                columnCount = originalColumnCount;
-
-                foreach (ColumnMappingAttribute column in mainColumns)
+                if (Query.Mapping.TypeTableMapping[table] == baseType)
                 {
-                    if (Query.Mapping.ColumnPropertyNames.ContainsKey(column))
+                    while (reader.Read())
                     {
-                        PropertyInfo property = baseType.GetProperty(Query.Mapping.ColumnPropertyNames[column]);
+                        TBase obj = new TBase();
 
-                        if (reader[column.ColumnName] != DBNull.Value)
-                            property.SetValue(obj, Convert.ChangeType(reader[column.ColumnName], property.PropertyType));
-                        else
-                            property.SetValue(obj, null);
+                        foreach (ColumnMappingAttribute column in table.ColumnAttributes)
+                        {
+                            if (Query.Mapping.ColumnPropertyNames.ContainsKey(column))
+                            {
+                                PropertyInfo property = baseType.GetProperty(Query.Mapping.ColumnPropertyNames[column]);
+
+                                if (reader[column.ColumnName] != DBNull.Value)
+                                    property.SetValue(obj, Convert.ChangeType(reader[column.ColumnName], property.PropertyType));
+                                else
+                                    property.SetValue(obj, null);
+                            }
+                            else
+                            {
+                                Logger.Error(MethodBase.GetCurrentMethod(), $"Could not find property in class {typeof(TBase)} mapped to column {column.ColumnName}");
+                                break;
+                            }
+                        }
+
+                        results.Add(obj);
                     }
-                    else
+                }
+                else
+                {
+                    reader.NextResult();
+                    Type childType = Query.Mapping.TypeTableMapping[table];
+                    dynamic childCollection = Activator.CreateInstance(typeof(List<>).MakeGenericType(childType));
+                    int i = 0;
+
+                    while (reader.Read())
                     {
-                        Logger.Error(MethodBase.GetCurrentMethod(), $"Could not find property in class {typeof(TBase)} mapped to column {column.ColumnName}");
-                        break;
+                        var childItem = Activator.CreateInstance(childType);
+
+                        childType.GetProperties()
+                                 .ForEach(prop => prop.SetValue(childItem, Convert.ChangeType(reader[table.ColumnAttributes[i++].ColumnName], prop.PropertyType)));
+
+                        MethodInfo addItem = childCollection.GetType().GetMethod("Add");
+                        addItem.Invoke(childCollection, new object[] { childItem });
+
+                        i = 0;
                     }
 
-                    columnCount++;
-                }
-
-                results.Add(obj);
-            }
-
-            for (int tableCount = 1; tableCount < Query.Mapping.Tables.Count; tableCount++)
-            {
-                reader.NextResult();
-                Type childType = Query.Mapping.TypeTableMapping[Query.Mapping.Tables[tableCount]];
-                dynamic childCollection = Activator.CreateInstance(typeof(List<>).MakeGenericType(childType));
-                originalColumnCount = 0;
-
-                while (reader.Read())
-                {
-                    var childItem = Activator.CreateInstance(childType);
-                    columnCount = originalColumnCount;
-
-                    childType.GetProperties()
-                             .ForEach(prop => prop.SetValue(childItem, Convert.ChangeType(reader[Query.Mapping.Tables[tableCount].ColumnAttributes[columnCount++].ColumnName], prop.PropertyType)));
-
-                    MethodInfo addItem = childCollection.GetType().GetMethod("Add");
-                    addItem.Invoke(childCollection, new object[] { childItem });
-                }
-
-                foreach (TBase obj in results)
-                {
-                    PropertyInfo childProperty = Query.Mapping.Tables[0].TableAttribute.GetChildProperty(baseType, Query.Mapping.Tables[tableCount].TableAttribute.TableName);
-                    childProperty.SetValue(obj, childCollection);
+                    foreach (TBase obj in results)
+                    {
+                        PropertyInfo childProperty = Query.Mapping.Tables[0].TableAttribute.GetChildProperty(baseType, table.TableAttribute.TableName);
+                        childProperty.SetValue(obj, childCollection);
+                    }
                 }
             }
 
