@@ -23,7 +23,7 @@ namespace DataTrack.Core.Logging
         {
             StringBuilder logOutputBuilder = new StringBuilder();
 
-            logOutputBuilder.Append(DateTime.Now.ToLongTimeString());
+            logOutputBuilder.Append($"[{DateTime.Now.ToString("HH:mm:ss.fff")}]");
             logOutputBuilder.Append(" | ");
             logOutputBuilder.Append(GetLogLevelString());
             logOutputBuilder.Append(" | ");
