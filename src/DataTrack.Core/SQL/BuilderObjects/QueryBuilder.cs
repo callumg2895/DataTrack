@@ -49,7 +49,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
         {
             typePKColumn = null;
 
-            foreach (ColumnMappingAttribute column in Query.Mapping.TypeColumnMapping[type])
+            foreach (ColumnMappingAttribute column in Query.Mapping.TypeTableMapping[type].ColumnAttributes)
                 if (column.IsPrimaryKey())
                 {
                     typePKColumn = column;
@@ -64,7 +64,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
             TableMappingAttribute typeTable = Dictionaries.TypeMappingCache[type].Table;
             typeFKColumn = null;
 
-            foreach (ColumnMappingAttribute column in Query.Mapping.TypeColumnMapping[type])
+            foreach (ColumnMappingAttribute column in Query.Mapping.TypeTableMapping[type].ColumnAttributes)
                 if (column.IsForeignKey() && column.TableName == typeTable.TableName && column.ForeignKeyTableMapping == table)
                 {
                     typeFKColumn = column;
@@ -150,9 +150,9 @@ namespace DataTrack.Core.SQL.BuilderObjects
                 return this;
             }
 
-            if (!Query.Mapping.TypeColumnMapping[BaseType].Contains(columnAttribute))
+            if (!Query.Mapping.TypeTableMapping[BaseType].ColumnAttributes.Contains(columnAttribute))
             {
-                Logger.Error(MethodBase.GetCurrentMethod(), $"'{property}' is not a property of '{Query.Mapping.TypeTableMapping[BaseType].TableName}'");
+                Logger.Error(MethodBase.GetCurrentMethod(), $"'{property}' is not a property of '{Query.Mapping.TypeTableMapping[BaseType].TableAttribute.TableName}'");
                 return this;
             }
 

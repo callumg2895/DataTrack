@@ -28,7 +28,7 @@ namespace DataTrack.Core.SQL.ExecutionObjects
         {
             List<TBase> results = new List<TBase>();
 
-            List<ColumnMappingAttribute> mainColumns = Query.Mapping.TypeColumnMapping[baseType];
+            List<ColumnMappingAttribute> mainColumns = Query.Mapping.TypeTableMapping[baseType].ColumnAttributes;
 
             int columnCount = 0;
             int originalColumnCount = 0;
@@ -66,7 +66,7 @@ namespace DataTrack.Core.SQL.ExecutionObjects
             for (int tableCount = 1; tableCount < Query.Mapping.Tables.Count; tableCount++)
             {
                 reader.NextResult();
-                Type childType = Query.Mapping.TypeTableMapping[Query.Mapping.Tables[tableCount].TableAttribute];
+                Type childType = Query.Mapping.TypeTableMapping[Query.Mapping.Tables[tableCount]];
                 dynamic childCollection = Activator.CreateInstance(typeof(List<>).MakeGenericType(childType));
                 originalColumnCount = 0;
 

@@ -17,8 +17,7 @@ namespace DataTrack.Core.SQL.DataStructures
         public List<Table> Tables { get; set; } = new List<Table>();
         internal Dictionary<TableMappingAttribute, string> TableAliases { get; set; } = new Dictionary<TableMappingAttribute, string>();
         internal Dictionary<ColumnMappingAttribute, string> ColumnAliases { get; set; } = new Dictionary<ColumnMappingAttribute, string>();
-        internal Map<Type, TableMappingAttribute> TypeTableMapping { get; set; } = new Map<Type, TableMappingAttribute>();
-        internal Map<Type, List<ColumnMappingAttribute>> TypeColumnMapping { get; set; } = new Map<Type, List<ColumnMappingAttribute>>();
+        internal Map<Type, Table> TypeTableMapping { get; set; } = new Map<Type, Table>();
         internal Dictionary<ColumnMappingAttribute, string> ColumnPropertyNames { get; set; } = new Dictionary<ColumnMappingAttribute, string>();
         internal Dictionary<ColumnMappingAttribute, List<(string Handle, object Value)>> Parameters { get; set; } = new Dictionary<ColumnMappingAttribute, List<(string Handle, object Value)>>();
         internal Dictionary<ColumnMappingAttribute, string> Restrictions { get; set; } = new Dictionary<ColumnMappingAttribute, string>();
@@ -26,11 +25,15 @@ namespace DataTrack.Core.SQL.DataStructures
 
         public Mapping()
         {
-            GetTableByType(BaseType, out TableMappingAttribute table);
-            GetColumnsByType(BaseType, out List<ColumnMappingAttribute> columns);
-            Tables.Add(new Table(table, columns));
+            GetTableByType(BaseType, out TableMappingAttribute tableAttribute);
+            GetColumnsByType(BaseType, out List<ColumnMappingAttribute> columnAttributes);
 
-            foreach(var prop in BaseType.GetProperties())
+            Table table = new Table(tableAttribute, columnAttributes);
+
+            Tables.Add(table);
+            TypeTableMapping[BaseType] = table;
+
+            foreach (var prop in BaseType.GetProperties())
             {
                 MapTablesByProperty(prop);
             }
@@ -59,9 +62,13 @@ namespace DataTrack.Core.SQL.DataStructures
             {
                 Type genericArgumentType = propertyType.GetGenericArguments()[0];
 
-                GetTableByType(genericArgumentType, out TableMappingAttribute table);
-                GetColumnsByType(genericArgumentType, out List<ColumnMappingAttribute> columns);
-                Tables.Add(new Table(table, columns));
+                GetTableByType(genericArgumentType, out TableMappingAttribute tableAttribute);
+                GetColumnsByType(genericArgumentType, out List<ColumnMappingAttribute> columnAttributes);
+
+                Table table = new Table(tableAttribute, columnAttributes);
+
+                Tables.Add(table);
+                TypeTableMapping[genericArgumentType] = table;
 
                 foreach (var prop in propertyType.GetProperties())
                 {
@@ -74,7 +81,6 @@ namespace DataTrack.Core.SQL.DataStructures
         {
             if (TryGetTableMappingAttribute(type, out table))
             {
-                TypeTableMapping[type] = table;
                 TableAliases[table] = type.Name;
 
                 Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded table mapping for class '{type.Name}'");
@@ -89,7 +95,6 @@ namespace DataTrack.Core.SQL.DataStructures
         {
             table = Dictionaries.TypeMappingCache[type].Table;
 
-            TypeTableMapping[type] = table;
             TableAliases[table] = type.Name;
 
             Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded table mapping for class '{type.Name}' from cache");
@@ -111,8 +116,6 @@ namespace DataTrack.Core.SQL.DataStructures
         {
             if (TryGetColumnMappingAttributes(type, out columns))
             {
-                TypeColumnMapping[type] = columns;
-
                 foreach (ColumnMappingAttribute column in columns)
                 {
                     ColumnAliases[column] = $"{type.Name}.{column.ColumnName}";
@@ -131,8 +134,6 @@ namespace DataTrack.Core.SQL.DataStructures
         {
             columns = Dictionaries.TypeMappingCache[type].Columns;
 
-            TypeColumnMapping[type] = columns;
-
             foreach (ColumnMappingAttribute column in columns)
             {
                 ColumnAliases[column] = $"{type.Name}.{column.ColumnName}";
@@ -148,11 +149,10 @@ namespace DataTrack.Core.SQL.DataStructures
             {
                 if (!Dictionaries.TypeMappingCache.ContainsKey(type))
                 {
-                    TableMappingAttribute table = TypeTableMapping[type];
-                    List<ColumnMappingAttribute> columns = TypeColumnMapping[type];
+                    Table table = TypeTableMapping[type];
 
-                    Dictionaries.TypeMappingCache[type] = (table, columns);
-                    Dictionaries.TableMappingCache[table] = columns;
+                    Dictionaries.TypeMappingCache[type] = (table.TableAttribute, table.ColumnAttributes);
+                    Dictionaries.TableMappingCache[table.TableAttribute] = table.ColumnAttributes;
                 }
             }
         }
@@ -164,7 +164,7 @@ namespace DataTrack.Core.SQL.DataStructures
             // Check the dictionary first to save using reflection
             if (TypeTableMapping.ContainsKey(type))
             {
-                mappingAttribute = TypeTableMapping[type];
+                mappingAttribute = TypeTableMapping[type].TableAttribute;
                 return true;
             }
 
@@ -179,9 +179,9 @@ namespace DataTrack.Core.SQL.DataStructures
             attributes = new List<ColumnMappingAttribute>();
 
             // Check the dictionary first to save using reflection
-            if (TypeColumnMapping.ContainsKey(type))
+            if (TypeTableMapping.ContainsKey(type))
             {
-                attributes = TypeColumnMapping[type];
+                attributes = TypeTableMapping[type].ColumnAttributes;
                 return true;
             }
 

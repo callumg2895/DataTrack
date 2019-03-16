@@ -31,9 +31,10 @@ namespace DataTrack.Core.SQL.ExecutionObjects
         {
             stopwatch.Start();
 
-            foreach (TableMappingAttribute table in Query.Mapping.DataTableMapping.ForwardKeys)
+            foreach (Table table in Query.Mapping.Tables)
             {
-                WriteToServer(table);
+                if (Query.Mapping.DataTableMapping.ContainsKey(table.TableAttribute))
+                    WriteToServer(table);
             }
 
             stopwatch.Stop();
@@ -42,14 +43,14 @@ namespace DataTrack.Core.SQL.ExecutionObjects
             return true;
         }
 
-        private void WriteToServer(TableMappingAttribute table)
+        private void WriteToServer(Table table)
         {
             SQLBuilder<TBase> createStagingTable = new SQLBuilder<TBase>(Query.Mapping);
             SQLBuilder<TBase> insertFromStagingTable = new SQLBuilder<TBase>(Query.Mapping);
             List<int> ids = new List<int>();
 
-            createStagingTable.CreateStagingTable(Dictionaries.TableMappingCache[table], table);
-            insertFromStagingTable.BuildInsertFromStagingToMainWithOutputIds(Dictionaries.TableMappingCache[table], table);
+            createStagingTable.CreateStagingTable(table);
+            insertFromStagingTable.BuildInsertFromStagingToMainWithOutputIds(table.ColumnAttributes, table.TableAttribute);
 
             using (SqlCommand cmd = _connection.CreateCommand())
             {
@@ -57,19 +58,19 @@ namespace DataTrack.Core.SQL.ExecutionObjects
                 cmd.CommandType = CommandType.Text;
                 cmd.Transaction = _transaction;
 
-                Logger.Debug($"Creating staging table {table.StagingTableName}");
+                Logger.Debug($"Creating staging table {table.TableAttribute.StagingTableName}");
                 Logger.Debug($"Executing SQL: {createStagingTable.ToString()}");
 
                 cmd.ExecuteNonQuery();
             }
 
-            Logger.Debug($"Executing Bulk Insert for {table.TableName}");
+            Logger.Debug($"Executing Bulk Insert for {table.TableAttribute.TableName}");
 
             SqlBulkCopyOptions copyOptions = SqlBulkCopyOptions.Default;
             SqlBulkCopy bulkCopy = new SqlBulkCopy(_connection, copyOptions, _transaction);
 
-            bulkCopy.DestinationTableName = table.StagingTableName;
-            bulkCopy.WriteToServer(Query.Mapping.DataTableMapping[table]);
+            bulkCopy.DestinationTableName = table.TableAttribute.StagingTableName;
+            bulkCopy.WriteToServer(Query.Mapping.DataTableMapping[table.TableAttribute]);
 
             using (SqlCommand cmd = _connection.CreateCommand())
             {
@@ -77,7 +78,7 @@ namespace DataTrack.Core.SQL.ExecutionObjects
                 cmd.CommandType = CommandType.Text;
                 cmd.Transaction = _transaction;
 
-                Logger.Debug($"Reading primary keys inserted into {table.TableName}");
+                Logger.Debug($"Reading primary keys inserted into {table.TableAttribute.TableName}");
                 Logger.Debug($"Executing SQL: {insertFromStagingTable.ToString()}");
 
                 using (SqlDataReader reader = cmd.ExecuteReader())
@@ -91,12 +92,12 @@ namespace DataTrack.Core.SQL.ExecutionObjects
 
             if (ids.Count == 0)
             {
-                Logger.Debug($"No {table.TableName} were inserted");
+                Logger.Debug($"No {table.TableAttribute.TableName} were inserted");
             }
 
             foreach (int item in ids)
             {
-                Logger.Debug($"Inserted {table.TableName} item with primary key {item}");
+                Logger.Debug($"Inserted {table.TableAttribute.TableName} item with primary key {item}");
             }
         }
 

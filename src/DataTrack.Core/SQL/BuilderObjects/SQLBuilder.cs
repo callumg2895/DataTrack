@@ -32,16 +32,16 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
         #region Methods
 
-        public void CreateStagingTable(List<ColumnMappingAttribute> columns, TableMappingAttribute table)
+        public void CreateStagingTable(Table table)
         {
             Type type = Mapping.TypeTableMapping[table];
 
-            sql.AppendLine($"create table {table.StagingTableName}");
+            sql.AppendLine($"create table {table.TableAttribute.StagingTableName}");
             sql.AppendLine("(");
 
-            for (int i = 0; i < columns.Count; i++)
+            for (int i = 0; i < table.ColumnAttributes.Count; i++)
             {
-                ColumnMappingAttribute column = columns[i];
+                ColumnMappingAttribute column = table.ColumnAttributes[i];
                 SqlDbType sqlDbType = column.GetSqlDbType(type);
 
                 if (column.IsPrimaryKey())
@@ -54,7 +54,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
                     sql.Append($"{column.ColumnName} {sqlDbType.ToSqlString()} not null");
                 }
 
-                sql.AppendLine(i == columns.Count - 1 ? "" : ",");
+                sql.AppendLine(i == table.ColumnAttributes.Count - 1 ? "" : ",");
             }
 
             sql.AppendLine(")")
@@ -124,8 +124,8 @@ namespace DataTrack.Core.SQL.BuilderObjects
             StringBuilder setBuilder = new StringBuilder();
             StringBuilder restrictionBuilder = new StringBuilder();
 
-            TableMappingAttribute table = Mapping.TypeTableMapping[BaseType];
-            List<ColumnMappingAttribute> columns = Mapping.TypeColumnMapping[BaseType].Where(c => !c.IsPrimaryKey()).ToList(); 
+            TableMappingAttribute table = Mapping.TypeTableMapping[BaseType].TableAttribute;
+            List<ColumnMappingAttribute> columns = Mapping.TypeTableMapping[BaseType].ColumnAttributes.Where(c => !c.IsPrimaryKey()).ToList(); 
 
             int processedRestrictions = 0;
             int totalColumns = columns.Count;
@@ -204,9 +204,11 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
         public void BuildSelectStatement()
         {
-            foreach (TableMappingAttribute table in Mapping.Tables.Select(t => t.TableAttribute))
+            foreach (Table table in Mapping.Tables)
             {
-                List<ColumnMappingAttribute> columns = Dictionaries.TableMappingCache[table];
+                TableMappingAttribute tableAttribute = table.TableAttribute;
+                List<ColumnMappingAttribute> columns = Dictionaries.TableMappingCache[tableAttribute];
+
                 int RestrictionCount = 0;
 
                 sql.AppendLine();
@@ -222,12 +224,12 @@ namespace DataTrack.Core.SQL.BuilderObjects
                 sql.AppendLine();
 
                 sql.Append("into ")
-                   .Append(table.StagingTableName);
+                   .Append(tableAttribute.StagingTableName);
 
                 sql.Append(" from ")
-                   .Append(table.TableName)
+                   .Append(tableAttribute.TableName)
                    .Append(" as ")
-                   .AppendLine(Mapping.TableAliases[table]);        
+                   .AppendLine(Mapping.TableAliases[tableAttribute]);        
 
                 if (Mapping.TypeTableMapping[table] != BaseType && columns.Where(c => c.IsForeignKey()).Count() > 0)
                 {
@@ -254,7 +256,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
                 }
 
                 sql.AppendLine();
-                sql.AppendLine($"select * from {table.StagingTableName}");
+                sql.AppendLine($"select * from {tableAttribute.StagingTableName}");
             }
         }
 
