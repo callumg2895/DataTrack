@@ -11,7 +11,7 @@ using System.Text;
 
 namespace DataTrack.Core.SQL.ExecutionObjects
 {
-    public class UpdateQueryExecutor<TBase> : QueryExecutor<TBase> where TBase : new()
+    public class UpdateQueryExecutor<TBase> : QueryExecutor<TBase> where TBase : Entity, new()
     {
 
         internal UpdateQueryExecutor(Query<TBase> query, SqlConnection connection, SqlTransaction? transaction = null)

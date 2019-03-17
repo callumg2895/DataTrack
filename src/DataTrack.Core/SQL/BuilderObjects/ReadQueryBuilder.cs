@@ -9,7 +9,7 @@ using System.Reflection;
 
 namespace DataTrack.Core.SQL.BuilderObjects
 {
-    public class ReadQueryBuilder<TBase> : QueryBuilder<TBase> where TBase : new()
+    public class ReadQueryBuilder<TBase> : QueryBuilder<TBase> where TBase : Entity, new()
     {
         #region Members
 

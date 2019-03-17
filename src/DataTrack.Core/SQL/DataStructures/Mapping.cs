@@ -11,7 +11,7 @@ using System.Text;
 
 namespace DataTrack.Core.SQL.DataStructures
 {
-    public class Mapping<TBase> where TBase : new()
+    public class Mapping<TBase> where TBase : Entity
     {
         public Type BaseType { get; set; } = typeof(TBase);
         public List<Table> Tables { get; set; } = new List<Table>();

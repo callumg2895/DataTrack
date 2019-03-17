@@ -1,11 +1,12 @@
 ﻿using DataTrack.Core.Attributes;
 using DataTrack.Core.Enums;
+using DataTrack.Core.SQL.DataStructures;
 using System.Collections.Generic;
 
 namespace DataTrack.Core.Tests.TestObjects
 {
     [TableMapping("authors")]
-    public class Author
+    public class Author : Entity
     {
         [ColumnMapping("authors", "id", (byte)KeyTypes.PrimaryKey)]
         public virtual int ID { get; set; }

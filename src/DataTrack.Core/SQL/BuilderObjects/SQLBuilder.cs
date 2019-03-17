@@ -10,7 +10,7 @@ using System.Text;
 
 namespace DataTrack.Core.SQL.BuilderObjects
 {
-    public class SQLBuilder<TBase> where TBase : new()
+    public class SQLBuilder<TBase> where TBase : Entity
     {
         #region Members
 

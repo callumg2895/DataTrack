@@ -14,7 +14,7 @@ using System.Linq;
 
 namespace DataTrack.Core.SQL.BuilderObjects
 {
-    public abstract class QueryBuilder<TBase> : IQueryBuilder<TBase> where TBase : new()
+    public abstract class QueryBuilder<TBase> : IQueryBuilder<TBase> where TBase : Entity, new()
     {
         #region Members
 

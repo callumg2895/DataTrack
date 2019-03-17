@@ -15,7 +15,7 @@ using System.Linq;
 
 namespace DataTrack.Core.SQL.DataStructures
 {
-    public class Query<TBase> where TBase : new()
+    public class Query<TBase> where TBase : Entity, new()
     {
         #region Members
 

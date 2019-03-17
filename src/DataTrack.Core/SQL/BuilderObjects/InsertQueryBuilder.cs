@@ -13,7 +13,7 @@ using System.Text;
 
 namespace DataTrack.Core.SQL.BuilderObjects
 {
-    public class InsertQueryBuilder<TBase> : QueryBuilder<TBase> where TBase : new()
+    public class InsertQueryBuilder<TBase> : QueryBuilder<TBase> where TBase : Entity, new()
     {
 
         #region Members

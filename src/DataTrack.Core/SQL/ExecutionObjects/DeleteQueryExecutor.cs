@@ -11,7 +11,7 @@ using System.Text;
 
 namespace DataTrack.Core.SQL.ExecutionObjects
 {
-    public class DeleteQueryExecutor<TBase> : QueryExecutor<TBase> where TBase : new()
+    public class DeleteQueryExecutor<TBase> : QueryExecutor<TBase> where TBase : Entity, new()
     {
         internal DeleteQueryExecutor(Query<TBase> query, SqlConnection connection, SqlTransaction? transaction = null)
         {

@@ -12,7 +12,7 @@ using System.Text;
 
 namespace DataTrack.Core.SQL.ExecutionObjects
 {
-    public class ReadQueryExecutor<TBase> : QueryExecutor<TBase> where TBase : new()
+    public class ReadQueryExecutor<TBase> : QueryExecutor<TBase> where TBase : Entity, new()
     {
         internal ReadQueryExecutor(Query<TBase> query, SqlConnection connection, SqlTransaction? transaction = null)
         {

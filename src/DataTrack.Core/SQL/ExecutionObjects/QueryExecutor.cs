@@ -7,7 +7,7 @@ using System.Text;
 
 namespace DataTrack.Core.SQL.ExecutionObjects
 {
-    public abstract class QueryExecutor<TBase> where TBase : new()
+    public abstract class QueryExecutor<TBase> where TBase : Entity, new()
     {
         private protected Query<TBase> Query;
         private protected Stopwatch stopwatch;

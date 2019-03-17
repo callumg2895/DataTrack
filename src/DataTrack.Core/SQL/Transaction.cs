@@ -9,7 +9,7 @@ using System.Reflection;
 
 namespace DataTrack.Core.SQL
 {
-    public class Transaction<TBase> : IDisposable where TBase : new()
+    public class Transaction<TBase> : IDisposable where TBase : Entity, new()
     {
         #region Members
 

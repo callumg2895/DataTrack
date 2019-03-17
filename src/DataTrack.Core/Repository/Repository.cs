@@ -1,12 +1,13 @@
 ﻿using DataTrack.Core.Enums;
 using DataTrack.Core.SQL.BuilderObjects;
+using DataTrack.Core.SQL.DataStructures;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 
 namespace DataTrack.Core.Repository
 {
-    public static class Repository<TBase> where TBase : new()
+    public static class Repository<TBase> where TBase : Entity, new()
     {
         #region Create
 

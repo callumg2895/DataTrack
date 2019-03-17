@@ -13,7 +13,7 @@ using DataTrack.Core.SQL.DataStructures;
 
 namespace DataTrack.Core.SQL.BuilderObjects
 {
-    public class BulkDataBuilder<TBase> where TBase : new()
+    public class BulkDataBuilder<TBase> where TBase : Entity
     {
 
         #region Members
@@ -96,7 +96,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
                     Logger.Info(MethodBase.GetCurrentMethod(), $"Building DataTable for: {TypeTableMapping[table].ToString()}");
 
-                    foreach (object item in childItems)
+                    foreach (var item in childItems)
                     {
                         List<object> values = item.GetPropertyValues();
                         AddRow(dataTable, columns, values);
