@@ -71,7 +71,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
                 if (Data != null)
                 {
-                    List<object> items = table.TableAttribute.GetPropertyValues(Data);
+                    List<object> items = Data.GetPropertyValues();
 
                     SetColumns(dataTable, columns);
                     AddRow(dataTable, columns, items);
@@ -82,23 +82,23 @@ namespace DataTrack.Core.SQL.BuilderObjects
             }
             else
             {
-                if (Data != null && Tables[0].TableAttribute.GetChildPropertyValues(Data, table.Name) != null)
+                if (Data != null && Data.GetChildPropertyValues(table.Name) != null)
                 {
                     List<ColumnMappingAttribute> columns = Dictionaries.TableMappingCache[table.TableAttribute];
                     SetColumns(dataTable, columns);
 
                     dynamic childItems = Activator.CreateInstance(typeof(List<>).MakeGenericType(TypeTableMapping[table]));
 
-                    foreach (var item in Tables[0].TableAttribute.GetChildPropertyValues(Data, table.Name))
+                    foreach (var item in Data.GetChildPropertyValues(table.Name))
                     {
                         childItems.Add(item);
                     }
 
                     Logger.Info(MethodBase.GetCurrentMethod(), $"Building DataTable for: {TypeTableMapping[table].ToString()}");
 
-                    foreach (dynamic item in childItems)
+                    foreach (object item in childItems)
                     {
-                        List<object> values = table.TableAttribute.GetPropertyValues(item);
+                        List<object> values = item.GetPropertyValues();
                         AddRow(dataTable, columns, values);
 
                         values.ForEach(value => Logger.Info(value?.ToString() ?? "NULL"));

@@ -82,7 +82,7 @@ namespace DataTrack.Core.SQL.ExecutionObjects
 
                     foreach (TBase obj in results)
                     {
-                        PropertyInfo childProperty = Query.Mapping.Tables[0].TableAttribute.GetChildProperty(baseType, table.Name);
+                        PropertyInfo childProperty = baseType.GetChildProperty(table.Name);
                         childProperty.SetValue(obj, childCollection);
                     }
                 }
