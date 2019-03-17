@@ -45,10 +45,8 @@ namespace DataTrack.Core.SQL.BuilderObjects
             }
         }
 
-        private protected bool TryGetPrimaryKeyColumnForType(Type type, out ColumnMappingAttribute typePKColumn)
+        private protected bool TryGetPrimaryKeyColumnForType(Type type, out ColumnMappingAttribute? typePKColumn)
         {
-            typePKColumn = null;
-
             foreach (ColumnMappingAttribute column in Query.Mapping.TypeTableMapping[type].ColumnAttributes)
                 if (column.IsPrimaryKey())
                 {
@@ -56,13 +54,13 @@ namespace DataTrack.Core.SQL.BuilderObjects
                     return true;
                 }
 
+            typePKColumn = null;
             return false;
         }
 
-        private protected bool TryGetForeignKeyColumnForType(Type type, string table, out ColumnMappingAttribute typeFKColumn)
+        private protected bool TryGetForeignKeyColumnForType(Type type, string table, out ColumnMappingAttribute? typeFKColumn)
         {
             TableMappingAttribute typeTable = Dictionaries.TypeMappingCache[type].Table;
-            typeFKColumn = null;
 
             foreach (ColumnMappingAttribute column in Query.Mapping.TypeTableMapping[type].ColumnAttributes)
                 if (column.IsForeignKey() && column.TableName == typeTable.TableName && column.ForeignKeyTableMapping == table)
@@ -71,6 +69,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
                     return true;
                 }
 
+            typeFKColumn = null;
             return false;
         }
 
@@ -82,10 +81,9 @@ namespace DataTrack.Core.SQL.BuilderObjects
                     // For each column in the Query, find the value of the property which is decorated by that column attribute
                     // Then update the dictionary of parameters with this value.
 
-                    string handle = $"@{columnAttribute.TableName}_{columnAttribute.ColumnName}_{CurrentParameterIndex}";
-                    string? propertyName;
+                    string handle = $"@{t.Name}_{columnAttribute.ColumnName}_{CurrentParameterIndex}";
 
-                    if (columnAttribute.TryGetPropertyName(BaseType, out propertyName))
+                    if (columnAttribute.TryGetPropertyName(BaseType, out string? propertyName))
                     {
                         object propertyValue = item.GetPropertyValue(propertyName);
 
@@ -109,10 +107,8 @@ namespace DataTrack.Core.SQL.BuilderObjects
         private protected void AddPrimaryKeyRestriction(TBase item)
         {
             // Find the name and value of the primary key property in the 'item' object
-            ColumnMappingAttribute primaryKeyColumnAttribute;
-            string? primaryKeyColumnPropertyname;
-
-            if (TryGetPrimaryKeyColumnForType(BaseType, out primaryKeyColumnAttribute) && primaryKeyColumnAttribute.TryGetPropertyName(BaseType, out primaryKeyColumnPropertyname))
+            if (TryGetPrimaryKeyColumnForType(BaseType, out ColumnMappingAttribute primaryKeyColumnAttribute) && 
+                primaryKeyColumnAttribute.TryGetPropertyName(BaseType, out string? primaryKeyColumnPropertyname))
             {
                 var primaryKeyValue = item.GetPropertyValue(primaryKeyColumnPropertyname);
                 this.AddRestriction<object>(primaryKeyColumnAttribute.ColumnName, RestrictionTypes.EqualTo, primaryKeyValue);
@@ -125,7 +121,8 @@ namespace DataTrack.Core.SQL.BuilderObjects
             ColumnMappingAttribute foreignKeyColumnAttribute;
             string? primaryKeyColumnPropertyname;
 
-            if (TryGetForeignKeyColumnForType(BaseType, table, out foreignKeyColumnAttribute) && foreignKeyColumnAttribute.TryGetPropertyName(BaseType, out primaryKeyColumnPropertyname))
+            if (TryGetForeignKeyColumnForType(BaseType, table, out foreignKeyColumnAttribute) && 
+                foreignKeyColumnAttribute.TryGetPropertyName(BaseType, out primaryKeyColumnPropertyname))
             {
                 this.AddRestriction<int>(foreignKeyColumnAttribute.ColumnName, RestrictionTypes.EqualTo, value);
             }
@@ -137,28 +134,25 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
         public virtual QueryBuilder<TBase> AddRestriction<TProp>(string property, RestrictionTypes rType, TProp value)
         {
-            TableMappingAttribute tableAttribute = Dictionaries.TypeMappingCache[BaseType].Table;
-            List<ColumnMappingAttribute> columnAttributes = Dictionaries.TypeMappingCache[BaseType].Columns;
-            ColumnMappingAttribute columnAttribute;
+            Table table = Query.Mapping.TypeTableMapping[BaseType];
+            ColumnMappingAttribute columnAttribute = table.ColumnAttributes.Find(x => x.ColumnName == property);
             StringBuilder restrictionBuilder = new StringBuilder();
-
-            columnAttribute = columnAttributes.Find(x => x.ColumnName == property);
 
             if (columnAttribute == null)
             {
-                Logger.Error(MethodBase.GetCurrentMethod(), $"Could not find property '{property}' in table '{tableAttribute.TableName}'");
+                Logger.Error(MethodBase.GetCurrentMethod(), $"Could not find property '{property}' in table '{table.Name}'");
                 return this;
             }
 
-            if (!Query.Mapping.TypeTableMapping[BaseType].ColumnAttributes.Contains(columnAttribute))
+            if (!table.ColumnAttributes.Contains(columnAttribute))
             {
-                Logger.Error(MethodBase.GetCurrentMethod(), $"'{property}' is not a property of '{Query.Mapping.TypeTableMapping[BaseType].Name}'");
+                Logger.Error(MethodBase.GetCurrentMethod(), $"'{property}' is not a property of '{table.Name}'");
                 return this;
             }
 
             // Generate a handle for SQL parameter. This is in the form @[TableName]_[ColumnName]
             //      eg: @books_author
-            string handle = $"@{columnAttribute.TableName}_{columnAttribute.ColumnName}_{CurrentParameterIndex}";
+            string handle = $"@{table.Name}_{columnAttribute.ColumnName}_{CurrentParameterIndex}";
 
             // Generate the SQL for the restriction clause
             switch (rType)

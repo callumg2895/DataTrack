@@ -152,7 +152,7 @@ namespace DataTrack.Core.SQL.DataStructures
             }
         }
 
-        private protected bool TryGetTableMappingAttribute(Type type, out TableMappingAttribute mappingAttribute)
+        private protected bool TryGetTableMappingAttribute(Type type, out TableMappingAttribute? mappingAttribute)
         {
             mappingAttribute = null;
 
