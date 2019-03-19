@@ -12,18 +12,20 @@ namespace DataTrack.Core.Logging
         {
             Method = method;
             Message = message;
+            DateTime = DateTime.Now;
             Level = level;
         }
 
         public MethodBase? Method;
         public string Message;
+        public DateTime DateTime;
         public LogLevel Level;
 
         public override string ToString()
         {
             StringBuilder logOutputBuilder = new StringBuilder();
 
-            logOutputBuilder.Append($"[{DateTime.Now.ToString("HH:mm:ss.fff")}]");
+            logOutputBuilder.Append($"[{DateTime.ToString("HH:mm:ss.fff")}]");
             logOutputBuilder.Append(" | ");
             logOutputBuilder.Append(GetLogLevelString());
             logOutputBuilder.Append(" | ");
