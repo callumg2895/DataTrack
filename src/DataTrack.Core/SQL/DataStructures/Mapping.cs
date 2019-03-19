@@ -1,4 +1,5 @@
 ﻿using DataTrack.Core.Attributes;
+using DataTrack.Core.Exceptions;
 using DataTrack.Core.Logging;
 using DataTrack.Core.Util;
 using DataTrack.Core.Util.DataStructures;
@@ -24,10 +25,7 @@ namespace DataTrack.Core.SQL.DataStructures
 
         public Mapping()
         {
-            GetTableByType(BaseType, out TableMappingAttribute tableAttribute);
-            GetColumnsByType(BaseType, out List<ColumnMappingAttribute> columnAttributes);
-
-            Table table = new Table(BaseType, tableAttribute, columnAttributes);
+            GetTableByType(BaseType, out Table table);
 
             Tables.Add(table);
             TypeTableMapping[BaseType] = table;
@@ -40,7 +38,7 @@ namespace DataTrack.Core.SQL.DataStructures
             CacheMappingData();
         }
 
-        private void GetTableByType(Type type, out TableMappingAttribute table)
+        private void GetTableByType(Type type, out Table table)
         {
             if (Dictionaries.TypeMappingCache.ContainsKey(type))
             {
@@ -61,10 +59,7 @@ namespace DataTrack.Core.SQL.DataStructures
             {
                 Type genericArgumentType = propertyType.GetGenericArguments()[0];
 
-                GetTableByType(genericArgumentType, out TableMappingAttribute tableAttribute);
-                GetColumnsByType(genericArgumentType, out List<ColumnMappingAttribute> columnAttributes);
-
-                Table table = new Table(genericArgumentType, tableAttribute, columnAttributes);
+                GetTableByType(genericArgumentType, out Table table);
 
                 Tables.Add(table);
                 TypeTableMapping[genericArgumentType] = table;
@@ -75,10 +70,10 @@ namespace DataTrack.Core.SQL.DataStructures
                 }
             }
         }
-
-        private void LoadTableMapping(Type type, out TableMappingAttribute table)
+        
+        private void LoadTableMapping(Type type, out Table table)
         {
-            if (TryGetTableMappingAttribute(type, out table))
+            if (TryGetTable(type, out table))
             {
                 Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded table mapping for class '{type.Name}'");
             }
@@ -86,56 +81,24 @@ namespace DataTrack.Core.SQL.DataStructures
             {
                 Logger.Error(MethodBase.GetCurrentMethod(), $"Failed to load table mapping for class '{type.Name}'");
             }
-        }
 
-        private void LoadTableMappingFromCache(Type type, out TableMappingAttribute table)
-        {
-            table = Dictionaries.TypeMappingCache[type].Table;
-
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded table mapping for class '{type.Name}' from cache");
-        }
-
-        private void GetColumnsByType(Type type, out List<ColumnMappingAttribute> columns)
-        {
-            if (!Dictionaries.TypeMappingCache.ContainsKey(type))
+            if (table == null)
             {
-                LoadColumnMapping(type, out columns);
-            }
-            else
-            {
-                LoadColumnMappingFromCache(type, out columns);
+                throw new TableMappingException(type, string.Empty);
             }
         }
 
-        private void LoadColumnMapping(Type type, out List<ColumnMappingAttribute> columns)
+        private void LoadTableMappingFromCache(Type type, out Table table)
         {
-            if (TryGetColumnMappingAttributes(type, out columns))
-            {
-                foreach (ColumnMappingAttribute column in columns)
-                {
-                    ColumnAliases[column] = $"{type.Name}.{column.ColumnName}";
-                    ColumnPropertyNames[column] = column.GetPropertyName(type);
-                }
+            table = Dictionaries.TypeMappingCache[type];
 
-                Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded column mapping for class '{type.Name}'");
-            }
-            else
-            {
-                Logger.Error(MethodBase.GetCurrentMethod(), $"Failed to load column mapping for class '{type.Name}'");
-            }
-        }
-
-        private void LoadColumnMappingFromCache(Type type, out List<ColumnMappingAttribute> columns)
-        {
-            columns = Dictionaries.TypeMappingCache[type].Columns;
-
-            foreach (ColumnMappingAttribute column in columns)
+            foreach (ColumnMappingAttribute column in table.ColumnAttributes)
             {
                 ColumnAliases[column] = $"{type.Name}.{column.ColumnName}";
                 ColumnPropertyNames[column] = column.GetPropertyName(type);
             }
 
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded column mapping for class '{type.Name}' from cache");
+            Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded table mapping for class '{type.Name}' from cache");
         }
 
         private void CacheMappingData()
@@ -146,39 +109,27 @@ namespace DataTrack.Core.SQL.DataStructures
                 {
                     Table table = TypeTableMapping[type];
 
-                    Dictionaries.TypeMappingCache[type] = (table.TableAttribute, table.ColumnAttributes);
-                    Dictionaries.TableMappingCache[table.TableAttribute] = table.ColumnAttributes;
+                    Dictionaries.TypeMappingCache[type] = table;
                 }
             }
         }
 
-        private protected bool TryGetTableMappingAttribute(Type type, out TableMappingAttribute? mappingAttribute)
+        private protected bool TryGetTable(Type type, out Table? table)
         {
-            mappingAttribute = null;
+            table = null;
+
+            TableMappingAttribute tableAttribute = null;
+            List<ColumnMappingAttribute> columnAttributes = new List<ColumnMappingAttribute>();
 
             // Check the dictionary first to save using reflection
             if (TypeTableMapping.ContainsKey(type))
             {
-                mappingAttribute = TypeTableMapping[type].TableAttribute;
+                table = TypeTableMapping[type];
                 return true;
             }
 
             foreach (Attribute attribute in type.GetCustomAttributes())
-                mappingAttribute = attribute as TableMappingAttribute;
-
-            return mappingAttribute != null;
-        }
-
-        private protected bool TryGetColumnMappingAttributes(Type type, out List<ColumnMappingAttribute> attributes)
-        {
-            attributes = new List<ColumnMappingAttribute>();
-
-            // Check the dictionary first to save using reflection
-            if (TypeTableMapping.ContainsKey(type))
-            {
-                attributes = TypeTableMapping[type].ColumnAttributes;
-                return true;
-            }
+                tableAttribute = attribute as TableMappingAttribute;
 
             foreach (PropertyInfo property in type.GetProperties())
                 foreach (Attribute attribute in property.GetCustomAttributes())
@@ -186,12 +137,21 @@ namespace DataTrack.Core.SQL.DataStructures
                     ColumnMappingAttribute? mappingAttribute = attribute as ColumnMappingAttribute;
                     if (mappingAttribute != null)
                     {
-                        attributes.Add(mappingAttribute);
+                       columnAttributes.Add(mappingAttribute);
                         break;
                     }
                 }
 
-            return attributes.Count > 0;
+            if (tableAttribute != null)
+            {
+                table = new Table(type, tableAttribute, columnAttributes);
+                return true;
+            }
+            else
+            {
+                table = null;
+                return false;
+            }
         }
     }
 }

@@ -60,10 +60,10 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
         private protected bool TryGetForeignKeyColumnForType(Type type, string table, out ColumnMappingAttribute? typeFKColumn)
         {
-            TableMappingAttribute typeTable = Dictionaries.TypeMappingCache[type].Table;
+            Table typeTable = Dictionaries.TypeMappingCache[type];
 
             foreach (ColumnMappingAttribute column in Query.Mapping.TypeTableMapping[type].ColumnAttributes)
-                if (column.IsForeignKey() && column.TableName == typeTable.TableName && column.ForeignKeyTableMapping == table)
+                if (column.IsForeignKey() && column.TableName == typeTable.Name && column.ForeignKeyTableMapping == table)
                 {
                     typeFKColumn = column;
                     return true;
