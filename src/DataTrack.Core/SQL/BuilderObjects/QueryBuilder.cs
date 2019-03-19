@@ -90,7 +90,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
                         if (propertyValue == null || (columnAttribute.IsPrimaryKey() && (int)propertyValue == 0))
                             return;
 
-                        Query.AddParameter(columnAttribute, (handle, propertyValue));
+                        Query.AddParameter(columnAttribute, new Parameter(handle, propertyValue));
                     }
                 }));
 
@@ -193,7 +193,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
             // Store the SQL for the restriction clause against the column attribute for the 
             // property, then store the value of the parameter against its handle if no error occurs.
             Query.Mapping.Restrictions[columnAttribute] = restrictionBuilder.ToString();
-            Query.AddParameter(columnAttribute, (handle, value));
+            Query.AddParameter(columnAttribute, new Parameter(handle, value));
 
             return this;
         }

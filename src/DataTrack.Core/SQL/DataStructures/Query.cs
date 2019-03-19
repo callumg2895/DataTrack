@@ -43,9 +43,9 @@ namespace DataTrack.Core.SQL.DataStructures
 
         #region Methods
 
-        public List<(string Handle, object Value)> GetParameters()
+        public List<Parameter> GetParameters()
         {
-            List<(string Handle, object Value)> parameters = new List<(string Handle, object Value)>();
+            List<Parameter> parameters = new List<Parameter>();
 
             var tableColumns = new List<ColumnMappingAttribute>();
 
@@ -61,12 +61,12 @@ namespace DataTrack.Core.SQL.DataStructures
             return parameters;
         }
 
-        public void AddParameter(ColumnMappingAttribute column, (string Handle, object Value) parameter)
+        public void AddParameter(ColumnMappingAttribute column, Parameter parameter)
         {
             if (Mapping.Parameters.ContainsKey(column))
                 Mapping.Parameters[column].Add(parameter);
             else
-                Mapping.Parameters[column] = new List<(string Handle, object Value)>() { parameter };
+                Mapping.Parameters[column] = new List<Parameter>() { parameter };
         }
 
         public dynamic Execute()

@@ -19,7 +19,7 @@ namespace DataTrack.Core.SQL.DataStructures
         internal Dictionary<ColumnMappingAttribute, string> ColumnAliases { get; set; } = new Dictionary<ColumnMappingAttribute, string>();
         internal Map<Type, Table> TypeTableMapping { get; set; } = new Map<Type, Table>();
         internal Dictionary<ColumnMappingAttribute, string> ColumnPropertyNames { get; set; } = new Dictionary<ColumnMappingAttribute, string>();
-        internal Dictionary<ColumnMappingAttribute, List<(string Handle, object Value)>> Parameters { get; set; } = new Dictionary<ColumnMappingAttribute, List<(string Handle, object Value)>>();
+        internal Dictionary<ColumnMappingAttribute, List<Parameter>> Parameters { get; set; } = new Dictionary<ColumnMappingAttribute, List<Parameter>>();
         internal Dictionary<ColumnMappingAttribute, string> Restrictions { get; set; } = new Dictionary<ColumnMappingAttribute, string>();
         public Map<Table, DataTable> DataTableMapping { get; set; } = new Map<Table, DataTable>();
 
