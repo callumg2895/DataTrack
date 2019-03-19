@@ -25,29 +25,28 @@ namespace DataTrack.Core.SQL.DataStructures
 
         public Mapping()
         {
-            GetTableByType(BaseType, out Table table);
-
-            Tables.Add(table);
-            TypeTableMapping[BaseType] = table;
-
-            foreach (var prop in BaseType.GetProperties())
-            {
-                MapTablesByProperty(prop);
-            }
-
+            MapTables(BaseType);
             CacheMappingData();
         }
 
-        private void GetTableByType(Type type, out Table table)
+        private void MapTables(Type type)
         {
-            if (Dictionaries.TypeMappingCache.ContainsKey(type))
+            MapTableByType(type);
+
+            foreach (var prop in type.GetProperties())
             {
-                LoadTableMappingFromCache(type, out table);
+                MapTablesByProperty(prop);
             }
-            else
-            {
-                LoadTableMapping(type, out table);
-            }
+        }
+
+        private void MapTableByType(Type type)
+        {
+            Table table = Dictionaries.TypeMappingCache.ContainsKey(type)
+                ? LoadTableMappingFromCache(type)
+                : LoadTableMapping(type);
+
+            Tables.Add(table);
+            TypeTableMapping[type] = table;
         }
 
         private void MapTablesByProperty(PropertyInfo property)
@@ -59,21 +58,13 @@ namespace DataTrack.Core.SQL.DataStructures
             {
                 Type genericArgumentType = propertyType.GetGenericArguments()[0];
 
-                GetTableByType(genericArgumentType, out Table table);
-
-                Tables.Add(table);
-                TypeTableMapping[genericArgumentType] = table;
-
-                foreach (var prop in propertyType.GetProperties())
-                {
-                    MapTablesByProperty(prop);
-                }
+                MapTables(genericArgumentType);
             }
         }
         
-        private void LoadTableMapping(Type type, out Table table)
+        private Table LoadTableMapping(Type type)
         {
-            if (TryGetTable(type, out table))
+            if (TryGetTable(type, out Table? table))
             {
                 Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded table mapping for class '{type.Name}'");
             }
@@ -86,11 +77,13 @@ namespace DataTrack.Core.SQL.DataStructures
             {
                 throw new TableMappingException(type, string.Empty);
             }
+
+            return table;
         }
 
-        private void LoadTableMappingFromCache(Type type, out Table table)
+        private Table LoadTableMappingFromCache(Type type)
         {
-            table = Dictionaries.TypeMappingCache[type];
+            Table table = Dictionaries.TypeMappingCache[type];
 
             foreach (ColumnMappingAttribute column in table.ColumnAttributes)
             {
@@ -99,26 +92,15 @@ namespace DataTrack.Core.SQL.DataStructures
             }
 
             Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded table mapping for class '{type.Name}' from cache");
-        }
 
-        private void CacheMappingData()
-        {
-            foreach (Type type in TypeTableMapping.ForwardKeys)
-            {
-                if (!Dictionaries.TypeMappingCache.ContainsKey(type))
-                {
-                    Table table = TypeTableMapping[type];
-
-                    Dictionaries.TypeMappingCache[type] = table;
-                }
-            }
+            return table;
         }
 
         private protected bool TryGetTable(Type type, out Table? table)
         {
             table = null;
 
-            TableMappingAttribute tableAttribute = null;
+            TableMappingAttribute? tableAttribute = null;
             List<ColumnMappingAttribute> columnAttributes = new List<ColumnMappingAttribute>();
 
             // Check the dictionary first to save using reflection
@@ -151,6 +133,19 @@ namespace DataTrack.Core.SQL.DataStructures
             {
                 table = null;
                 return false;
+            }
+        }
+
+        private void CacheMappingData()
+        {
+            foreach (Type type in TypeTableMapping.ForwardKeys)
+            {
+                if (!Dictionaries.TypeMappingCache.ContainsKey(type))
+                {
+                    Table table = TypeTableMapping[type];
+
+                    Dictionaries.TypeMappingCache[type] = table;
+                }
             }
         }
     }
