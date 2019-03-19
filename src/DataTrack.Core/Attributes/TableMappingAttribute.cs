@@ -12,10 +12,8 @@ namespace DataTrack.Core.Attributes
         public TableMappingAttribute(string tableName)
         {
             TableName = tableName;
-            StagingTableName = $"#{tableName}_staging";
         }
 
         public string TableName { get; private set; }
-        public string StagingTableName { get; private set; }
     }
 }

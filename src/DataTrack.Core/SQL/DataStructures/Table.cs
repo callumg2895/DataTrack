@@ -9,6 +9,7 @@ namespace DataTrack.Core.SQL.DataStructures
     {
         public TableMappingAttribute TableAttribute { get; set; }
         public string Name { get; set; }
+        public string StagingName { get; set; }
         public string Alias { get; set; }
         public List<ColumnMappingAttribute> ColumnAttributes { get; set; }
 
@@ -16,6 +17,7 @@ namespace DataTrack.Core.SQL.DataStructures
         {
             TableAttribute = tableAttribute;
             Name = tableAttribute.TableName;
+            StagingName = $"#{Name}_staging";
             Alias = type.Name;
             ColumnAttributes = columnAttributes;
         }

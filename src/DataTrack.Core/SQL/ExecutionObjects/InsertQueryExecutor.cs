@@ -50,15 +50,14 @@ namespace DataTrack.Core.SQL.ExecutionObjects
             List<int> ids = new List<int>();
 
             createStagingTable.CreateStagingTable(table);
-            insertFromStagingTable.BuildInsertFromStagingToMainWithOutputIds(table.ColumnAttributes, table.TableAttribute);
-
+            insertFromStagingTable.BuildInsertFromStagingToMainWithOutputIds(table);
             using (SqlCommand cmd = _connection.CreateCommand())
             {
                 cmd.CommandText = createStagingTable.ToString();
                 cmd.CommandType = CommandType.Text;
                 cmd.Transaction = _transaction;
 
-                Logger.Debug($"Creating staging table {table.TableAttribute.StagingTableName}");
+                Logger.Debug($"Creating staging table {table.StagingName}");
                 Logger.Debug($"Executing SQL: {createStagingTable.ToString()}");
 
                 cmd.ExecuteNonQuery();
@@ -69,7 +68,7 @@ namespace DataTrack.Core.SQL.ExecutionObjects
             SqlBulkCopyOptions copyOptions = SqlBulkCopyOptions.Default;
             SqlBulkCopy bulkCopy = new SqlBulkCopy(_connection, copyOptions, _transaction);
 
-            bulkCopy.DestinationTableName = table.TableAttribute.StagingTableName;
+            bulkCopy.DestinationTableName = table.StagingName;
             bulkCopy.WriteToServer(Query.Mapping.DataTableMapping[table]);
 
             using (SqlCommand cmd = _connection.CreateCommand())

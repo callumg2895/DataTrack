@@ -36,7 +36,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
         {
             Type type = Mapping.TypeTableMapping[table];
 
-            sql.AppendLine($"create table {table.TableAttribute.StagingTableName}");
+            sql.AppendLine($"create table {table.StagingName}");
             sql.AppendLine("(");
 
             for (int i = 0; i < table.ColumnAttributes.Count; i++)
@@ -61,15 +61,18 @@ namespace DataTrack.Core.SQL.BuilderObjects
                .AppendLine();
         }
 
-        public void BuildInsertFromStagingToMainWithOutputIds(List<ColumnMappingAttribute> columns, TableMappingAttribute table)
+        public void BuildInsertFromStagingToMainWithOutputIds(Table table)
         {
+            List<ColumnMappingAttribute> columns = table.ColumnAttributes;
+
+
             if (columns.Count == 0) return;
 
             string primaryKeyColumnName = string.Empty;
 
             sql.AppendLine("create table #insertedIds (id int);")
                .AppendLine()
-               .Append("insert into " + table.TableName + " (");
+               .Append("insert into " + table.Name + " (");
 
             for (int i = 0; i < columns.Count; i++)
             {
@@ -92,12 +95,12 @@ namespace DataTrack.Core.SQL.BuilderObjects
             }
 
             sql.AppendLine()
-               .AppendLine($"from {table.StagingTableName}")
+               .AppendLine($"from {table.StagingName}")
                .AppendLine()
                .AppendLine("select * from #insertedIds")
                .AppendLine()
                .AppendLine("drop table #insertedIds")
-               .AppendLine($"drop table {table.StagingTableName}")
+               .AppendLine($"drop table {table.StagingName}")
                .AppendLine();
         }
 
@@ -206,8 +209,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
         {
             foreach (Table table in Mapping.Tables)
             {
-                TableMappingAttribute tableAttribute = table.TableAttribute;
-                List<ColumnMappingAttribute> columns = Dictionaries.TableMappingCache[tableAttribute];
+                List<ColumnMappingAttribute> columns = table.ColumnAttributes;
 
                 int RestrictionCount = 0;
 
@@ -224,10 +226,10 @@ namespace DataTrack.Core.SQL.BuilderObjects
                 sql.AppendLine();
 
                 sql.Append("into ")
-                   .Append(tableAttribute.StagingTableName);
+                   .Append(table.StagingName);
 
                 sql.Append(" from ")
-                   .Append(tableAttribute.TableName)
+                   .Append(table.Name)
                    .Append(" as ")
                    .AppendLine(table.Alias);        
 
@@ -237,11 +239,11 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
                     foreach (ColumnMappingAttribute column in foreignKeyColumns)
                     {
-                        TableMappingAttribute foreignTable = Mapping.Tables.Where(t => t.Name == column.ForeignKeyTableMapping).Select(t => t.TableAttribute).First();
-                        ColumnMappingAttribute foreignColumn = Dictionaries.TableMappingCache[foreignTable].Where(c => c.IsPrimaryKey()).First();
+                        Table foreignTable = Mapping.Tables.Where(t => t.Name == column.ForeignKeyTableMapping).First();
+                        ColumnMappingAttribute foreignColumn = foreignTable.ColumnAttributes.Where(c => c.IsPrimaryKey()).First();
 
                         sql.Append($"{GetRestrictionKeyWord(RestrictionCount++)} ")
-                           .AppendLine($"{Mapping.ColumnAliases[column]} in (select {foreignColumn.ColumnName} from {foreignTable.StagingTableName})");
+                           .AppendLine($"{Mapping.ColumnAliases[column]} in (select {foreignColumn.ColumnName} from {foreignTable.StagingName})");
 
                     }             
                 }
@@ -256,7 +258,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
                 }
 
                 sql.AppendLine();
-                sql.AppendLine($"select * from {tableAttribute.StagingTableName}");
+                sql.AppendLine($"select * from {table.StagingName}");
             }
         }
 

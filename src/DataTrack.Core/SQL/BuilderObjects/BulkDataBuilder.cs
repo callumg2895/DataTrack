@@ -67,7 +67,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
             if (TypeTableMapping[table] == BaseType)
             {
                 Logger.Info(MethodBase.GetCurrentMethod(), $"Building DataTable for: {Data?.GetType().ToString()}");
-                List<ColumnMappingAttribute> columns = Dictionaries.TableMappingCache[table.TableAttribute];
+                List<ColumnMappingAttribute> columns = table.ColumnAttributes;
 
                 if (Data != null)
                 {
@@ -84,7 +84,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
             {
                 if (Data != null && Data.GetChildPropertyValues(table.Name) != null)
                 {
-                    List<ColumnMappingAttribute> columns = Dictionaries.TableMappingCache[table.TableAttribute];
+                    List<ColumnMappingAttribute> columns = table.ColumnAttributes;
                     SetColumns(dataTable, columns);
 
                     dynamic childItems = Activator.CreateInstance(typeof(List<>).MakeGenericType(TypeTableMapping[table]));
