@@ -138,6 +138,9 @@ namespace DataTrack.Core.SQL.DataStructures
 
         private void CacheMappingData()
         {
+            if (Dictionaries.TypeMappingCache.ContainsKey(BaseType))
+                return;
+
             foreach (Type type in TypeTableMapping.ForwardKeys)
             {
                 if (!Dictionaries.TypeMappingCache.ContainsKey(type))
