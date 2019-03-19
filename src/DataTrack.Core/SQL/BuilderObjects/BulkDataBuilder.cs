@@ -20,12 +20,10 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
         public TBase Data { get; private set; }
         public List<Table> Tables { get; private set; }
-        public List<ColumnMappingAttribute> Columns { get; private set; }
         public Map<Type, Table> TypeTableMapping { get; private set; }
-        public Map<Type, List<ColumnMappingAttribute>> TypeColumnMapping { get; private set; }
 
-        private Map<Table, DataTable> DataMap { get; set; } = new Map<Table, DataTable>();
-        private Map<ColumnMappingAttribute, DataColumn> ColumnMap { get; set; } = new Map<ColumnMappingAttribute, DataColumn>();
+        private Map<Table, DataTable> DataMap = new Map<Table, DataTable>();
+        private Map<ColumnMappingAttribute, DataColumn> ColumnMap = new Map<ColumnMappingAttribute, DataColumn>();
         private Type BaseType = typeof(TBase);
         #endregion
 
@@ -35,11 +33,6 @@ namespace DataTrack.Core.SQL.BuilderObjects
         {
             Data = data;
             Tables = mapping.Tables;
-            Columns = new List<ColumnMappingAttribute>();
-            foreach ( var columns in mapping.Tables.Select(t => t.ColumnAttributes))
-            {
-                Columns.AddRange(columns);
-            }
             TypeTableMapping = mapping.TypeTableMapping;
         }
 
