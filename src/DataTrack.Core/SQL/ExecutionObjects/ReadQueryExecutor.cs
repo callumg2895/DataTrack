@@ -33,7 +33,7 @@ namespace DataTrack.Core.SQL.ExecutionObjects
 
             foreach (Table table in tables)
             {
-                if (Query.Mapping.TypeTableMapping[table] == baseType)
+                if (table.Type == baseType)
                 {
                     while (reader.Read())
                     {
@@ -55,7 +55,7 @@ namespace DataTrack.Core.SQL.ExecutionObjects
                 else
                 {
                     reader.NextResult();
-                    Type childType = Query.Mapping.TypeTableMapping[table];
+                    Type childType = table.Type;
                     dynamic childCollection = Activator.CreateInstance(typeof(List<>).MakeGenericType(childType));
                     int i = 0;
 

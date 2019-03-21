@@ -7,6 +7,7 @@ using DataTrack.Core.Util.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 
@@ -16,7 +17,7 @@ namespace DataTrack.Core.SQL.DataStructures
     {
         public Type BaseType { get; set; } = typeof(TBase);
         public List<Table> Tables { get; set; } = new List<Table>();
-        internal Map<Type, Table> TypeTableMapping { get; set; } = new Map<Type, Table>();
+        internal Dictionary<Type, Table> TypeTableMapping { get; set; } = new Dictionary<Type, Table>();
         internal Dictionary<Column, List<Parameter>> Parameters { get; set; } = new Dictionary<Column, List<Parameter>>();
         internal Dictionary<Column, string> Restrictions { get; set; } = new Dictionary<Column, string>();
         public Map<Table, DataTable> DataTableMapping { get; set; } = new Map<Table, DataTable>();
@@ -133,12 +134,12 @@ namespace DataTrack.Core.SQL.DataStructures
             if (Dictionaries.TypeMappingCache.ContainsKey(BaseType))
                 return;
 
-            foreach (Type type in TypeTableMapping.ForwardKeys)
+            foreach (Table table in Tables)
             {
+                Type type = table.Type;
+
                 if (!Dictionaries.TypeMappingCache.ContainsKey(type))
                 {
-                    Table table = TypeTableMapping[type];
-
                     Dictionaries.TypeMappingCache[type] = table;
                 }
             }

@@ -34,15 +34,13 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
         public void CreateStagingTable(Table table)
         {
-            Type type = Mapping.TypeTableMapping[table];
-
             sql.AppendLine($"create table {table.StagingName}");
             sql.AppendLine("(");
 
             for (int i = 0; i < table.Columns.Count; i++)
             {
                 Column column = table.Columns[i];
-                SqlDbType sqlDbType = column.GetSqlDbType(type);
+                SqlDbType sqlDbType = column.GetSqlDbType(table.Type);
 
                 if (column.IsPrimaryKey())
                 {
@@ -232,7 +230,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
                    .Append(" as ")
                    .AppendLine(table.Alias);        
 
-                if (Mapping.TypeTableMapping[table] != BaseType && columns.Where(c => c.IsForeignKey()).Count() > 0)
+                if (table.Type != BaseType && columns.Where(c => c.IsForeignKey()).Count() > 0)
                 {
                     List<Column> foreignKeyColumns = columns.Where(c => c.IsForeignKey()).ToList();
 

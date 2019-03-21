@@ -20,7 +20,6 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
         public TBase Data { get; private set; }
         public List<Table> Tables { get; private set; }
-        public Map<Type, Table> TypeTableMapping { get; private set; }
 
         private Map<Table, DataTable> DataMap = new Map<Table, DataTable>();
         private Map<Column, DataColumn> ColumnMap = new Map<Column, DataColumn>();
@@ -33,7 +32,6 @@ namespace DataTrack.Core.SQL.BuilderObjects
         {
             Data = data;
             Tables = mapping.Tables;
-            TypeTableMapping = mapping.TypeTableMapping;
         }
 
         #endregion Constructors
@@ -49,25 +47,25 @@ namespace DataTrack.Core.SQL.BuilderObjects
         private void ConstructData()
         {
             // For inserts, we build a list of DataTables, where each 'table' in the list corresponds to the data for a table in the Query object
-            Tables.ForEach(table => DataMap[table] = BuildDataFor(table));
+            Tables.ForEach(table => BuildDataFor(table));
             Logger.Info(MethodBase.GetCurrentMethod(), $"Created {DataMap.ForwardKeys.Count} DataTable{(DataMap.ForwardKeys.Count > 1 ? "s" : "")}");
         }
 
         private DataTable BuildDataFor(Table table)
         {
             DataTable dataTable = new DataTable(table.Name);
+            DataMap[dataTable] = table;
 
-            if (TypeTableMapping[table] == BaseType)
+            if (table.Type == BaseType)
             {
                 Logger.Info(MethodBase.GetCurrentMethod(), $"Building DataTable for: {Data?.GetType().ToString()}");
-                List<Column> columns = table.Columns;
 
                 if (Data != null)
                 {
                     List<object> items = Data.GetPropertyValues();
 
-                    SetColumns(dataTable, columns);
-                    AddRow(dataTable, columns, items);
+                    SetColumns(dataTable);
+                    AddRow(dataTable, items);
 
                     Logger.Info($"Current table row count: {dataTable.Rows.Count}");
                     items.ForEach(item => Logger.Info(item?.ToString() ?? "NULL"));
@@ -77,22 +75,21 @@ namespace DataTrack.Core.SQL.BuilderObjects
             {
                 if (Data != null && Data.GetChildPropertyValues(table.Name) != null)
                 {
-                    List<Column> columns = table.Columns;
-                    SetColumns(dataTable, columns);
+                    SetColumns(dataTable);
 
-                    dynamic childItems = Activator.CreateInstance(typeof(List<>).MakeGenericType(TypeTableMapping[table]));
+                    dynamic childItems = Activator.CreateInstance(typeof(List<>).MakeGenericType(table.Type));
 
                     foreach (var item in Data.GetChildPropertyValues(table.Name))
                     {
                         childItems.Add(item);
                     }
 
-                    Logger.Info(MethodBase.GetCurrentMethod(), $"Building DataTable for: {TypeTableMapping[table].ToString()}");
+                    Logger.Info(MethodBase.GetCurrentMethod(), $"Building DataTable for: {table.Name}");
 
                     foreach (var item in childItems)
                     {
                         List<object> values = item.GetPropertyValues();
-                        AddRow(dataTable, columns, values);
+                        AddRow(dataTable, values);
 
                         values.ForEach(value => Logger.Info(value?.ToString() ?? "NULL"));
                         Logger.Info($"Current table row count: {dataTable.Rows.Count}");
@@ -103,8 +100,10 @@ namespace DataTrack.Core.SQL.BuilderObjects
             return dataTable;
         }
 
-        private void SetColumns(DataTable dataTable, List<Column> columns)
+        private void SetColumns(DataTable dataTable)
         {
+            List<Column> columns = DataMap[dataTable].Columns;
+
             foreach (Column column in columns)
             {
                 DataColumn dataColumn = new DataColumn(column.Name);
@@ -119,7 +118,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
                 if (column.IsForeignKey())
                 {
-                    foreach(Table table in Tables)
+                    foreach (Table table in Tables)
                     {
                         if (column.ForeignKeyTableMapping == table.Name)
                         {
@@ -134,13 +133,14 @@ namespace DataTrack.Core.SQL.BuilderObjects
             }
         }
 
-        private void AddRow(DataTable dataTable, List<Column> columns, List<object> rowData)
+        private void AddRow(DataTable dataTable, List<object> rowData)
         {
+            Table table = DataMap[dataTable];
             DataRow dataRow = dataTable.NewRow();
 
             for (int i = 0; i < rowData.Count; i++)
             {
-                Column column = columns[i];
+                Column column = table.Columns[i];
                 dataRow[column.Name] = rowData[i];
             }
 
