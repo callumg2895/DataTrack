@@ -37,7 +37,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
             Query.Mapping = new Mapping<TBase>();
 
             // Check for valid Table/Columns
-            if (Query.Mapping.Tables.Count == 0 || Query.Mapping.Tables.Any(t => t.ColumnAttributes.Count == 0))
+            if (Query.Mapping.Tables.Count == 0 || Query.Mapping.Tables.Any(t => t.Columns.Count == 0))
             {
                 string message = $"Mapping data for class '{BaseType.Name}' was incomplete/empty";
                 Logger.Error(MethodBase.GetCurrentMethod(), message);
@@ -45,9 +45,9 @@ namespace DataTrack.Core.SQL.BuilderObjects
             }
         }
 
-        private protected bool TryGetPrimaryKeyColumnForType(Type type, out ColumnMappingAttribute? typePKColumn)
+        private protected bool TryGetPrimaryKeyColumnForType(Type type, out Column? typePKColumn)
         {
-            foreach (ColumnMappingAttribute column in Query.Mapping.TypeTableMapping[type].ColumnAttributes)
+            foreach (Column column in Query.Mapping.TypeTableMapping[type].Columns)
                 if (column.IsPrimaryKey())
                 {
                     typePKColumn = column;
@@ -58,12 +58,12 @@ namespace DataTrack.Core.SQL.BuilderObjects
             return false;
         }
 
-        private protected bool TryGetForeignKeyColumnForType(Type type, string table, out ColumnMappingAttribute? typeFKColumn)
+        private protected bool TryGetForeignKeyColumnForType(Type type, string table, out Column? typeFKColumn)
         {
             Table typeTable = Dictionaries.TypeMappingCache[type];
 
-            foreach (ColumnMappingAttribute column in Query.Mapping.TypeTableMapping[type].ColumnAttributes)
-                if (column.IsForeignKey() && column.TableName == typeTable.Name && column.ForeignKeyTableMapping == table)
+            foreach (Column column in Query.Mapping.TypeTableMapping[type].Columns)
+                if (column.IsForeignKey() && column.Table.Name == typeTable.Name && column.ForeignKeyTableMapping == table)
                 {
                     typeFKColumn = column;
                     return true;
@@ -75,22 +75,22 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
         private protected void UpdateParameters(TBase item)
         {
-            Query.Mapping.Tables.ForEach(t => t.ColumnAttributes.ForEach(
-                columnAttribute =>
+            Query.Mapping.Tables.ForEach(t => t.Columns.ForEach(
+                column =>
                 {
                     // For each column in the Query, find the value of the property which is decorated by that column attribute
                     // Then update the dictionary of parameters with this value.
 
-                    string handle = $"@{t.Name}_{columnAttribute.ColumnName}_{CurrentParameterIndex}";
+                    string handle = $"@{t.Name}_{column.Name}_{CurrentParameterIndex}";
 
-                    if (columnAttribute.TryGetPropertyName(BaseType, out string? propertyName))
+                    if (column.ColumnMappingAttribute.TryGetPropertyName(BaseType, out string? propertyName))
                     {
                         object propertyValue = item.GetPropertyValue(propertyName);
 
-                        if (propertyValue == null || (columnAttribute.IsPrimaryKey() && (int)propertyValue == 0))
+                        if (propertyValue == null || (column.IsPrimaryKey() && (int)propertyValue == 0))
                             return;
 
-                        Query.AddParameter(columnAttribute, new Parameter(handle, propertyValue));
+                        Query.AddParameter(column.ColumnMappingAttribute, new Parameter(handle, propertyValue));
                     }
                 }));
 
@@ -107,24 +107,24 @@ namespace DataTrack.Core.SQL.BuilderObjects
         private protected void AddPrimaryKeyRestriction(TBase item)
         {
             // Find the name and value of the primary key property in the 'item' object
-            if (TryGetPrimaryKeyColumnForType(BaseType, out ColumnMappingAttribute primaryKeyColumnAttribute) && 
-                primaryKeyColumnAttribute.TryGetPropertyName(BaseType, out string? primaryKeyColumnPropertyname))
+            if (TryGetPrimaryKeyColumnForType(BaseType, out Column primaryKeyColumn) && 
+                primaryKeyColumn.ColumnMappingAttribute.TryGetPropertyName(BaseType, out string? primaryKeyColumnPropertyname))
             {
                 var primaryKeyValue = item.GetPropertyValue(primaryKeyColumnPropertyname);
-                this.AddRestriction<object>(primaryKeyColumnAttribute.ColumnName, RestrictionTypes.EqualTo, primaryKeyValue);
+                this.AddRestriction<object>(primaryKeyColumn.ColumnMappingAttribute.ColumnName, RestrictionTypes.EqualTo, primaryKeyValue);
             }
         }
 
         private protected void AddForeignKeyRestriction(int value, string table)
         {
             // Find the name and value of the primary key property in the 'item' object
-            ColumnMappingAttribute foreignKeyColumnAttribute;
+            Column foreignKeyColumn;
             string? primaryKeyColumnPropertyname;
 
-            if (TryGetForeignKeyColumnForType(BaseType, table, out foreignKeyColumnAttribute) && 
-                foreignKeyColumnAttribute.TryGetPropertyName(BaseType, out primaryKeyColumnPropertyname))
+            if (TryGetForeignKeyColumnForType(BaseType, table, out foreignKeyColumn) && 
+                foreignKeyColumn.ColumnMappingAttribute.TryGetPropertyName(BaseType, out primaryKeyColumnPropertyname))
             {
-                this.AddRestriction<int>(foreignKeyColumnAttribute.ColumnName, RestrictionTypes.EqualTo, value);
+                this.AddRestriction<int>(foreignKeyColumn.Name, RestrictionTypes.EqualTo, value);
             }
         }
 
@@ -135,16 +135,16 @@ namespace DataTrack.Core.SQL.BuilderObjects
         public virtual QueryBuilder<TBase> AddRestriction<TProp>(string property, RestrictionTypes rType, TProp value)
         {
             Table table = Query.Mapping.TypeTableMapping[BaseType];
-            ColumnMappingAttribute columnAttribute = table.ColumnAttributes.Find(x => x.ColumnName == property);
+            Column column= table.Columns.Find(x => x.Name == property);
             StringBuilder restrictionBuilder = new StringBuilder();
 
-            if (columnAttribute == null)
+            if (column == null)
             {
                 Logger.Error(MethodBase.GetCurrentMethod(), $"Could not find property '{property}' in table '{table.Name}'");
                 return this;
             }
 
-            if (!table.ColumnAttributes.Contains(columnAttribute))
+            if (!table.Columns.Contains(column))
             {
                 Logger.Error(MethodBase.GetCurrentMethod(), $"'{property}' is not a property of '{table.Name}'");
                 return this;
@@ -152,14 +152,14 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
             // Generate a handle for SQL parameter. This is in the form @[TableName]_[ColumnName]
             //      eg: @books_author
-            string handle = $"@{table.Name}_{columnAttribute.ColumnName}_{CurrentParameterIndex}";
+            string handle = $"@{table.Name}_{column.Name}_{CurrentParameterIndex}";
 
             // Generate the SQL for the restriction clause
             switch (rType)
             {
                 case RestrictionTypes.NotIn:
                 case RestrictionTypes.In:
-                    restrictionBuilder.Append(Query.Mapping.ColumnAliases[columnAttribute] + " ");
+                    restrictionBuilder.Append(Query.Mapping.ColumnAliases[column.ColumnMappingAttribute] + " ");
                     restrictionBuilder.Append(rType.ToSqlString() + " (");
                     restrictionBuilder.Append(handle);
                     restrictionBuilder.Append(")");
@@ -175,7 +175,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
                     }
                     else
                     {
-                        restrictionBuilder.Append(Query.Mapping.ColumnAliases[columnAttribute] + " ");
+                        restrictionBuilder.Append(Query.Mapping.ColumnAliases[column.ColumnMappingAttribute] + " ");
                         restrictionBuilder.Append(rType.ToSqlString() + " ");
                         restrictionBuilder.Append(handle);
                         break;
@@ -184,7 +184,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
                 case RestrictionTypes.EqualTo:
                 case RestrictionTypes.NotEqualTo:
                 default:
-                    restrictionBuilder.Append(Query.Mapping.ColumnAliases[columnAttribute] + " ");
+                    restrictionBuilder.Append(Query.Mapping.ColumnAliases[column.ColumnMappingAttribute] + " ");
                     restrictionBuilder.Append(rType.ToSqlString() + " ");
                     restrictionBuilder.Append(handle);
                     break;
@@ -192,8 +192,8 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
             // Store the SQL for the restriction clause against the column attribute for the 
             // property, then store the value of the parameter against its handle if no error occurs.
-            Query.Mapping.Restrictions[columnAttribute] = restrictionBuilder.ToString();
-            Query.AddParameter(columnAttribute, new Parameter(handle, value));
+            Query.Mapping.Restrictions[column.ColumnMappingAttribute] = restrictionBuilder.ToString();
+            Query.AddParameter(column.ColumnMappingAttribute, new Parameter(handle, value));
 
             return this;
         }

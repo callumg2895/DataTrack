@@ -85,10 +85,10 @@ namespace DataTrack.Core.SQL.DataStructures
         {
             Table table = Dictionaries.TypeMappingCache[type];
 
-            foreach (ColumnMappingAttribute column in table.ColumnAttributes)
+            foreach (Column column in table.Columns)
             {
-                ColumnAliases[column] = $"{type.Name}.{column.ColumnName}";
-                ColumnPropertyNames[column] = column.GetPropertyName(type);
+                ColumnAliases[column.ColumnMappingAttribute] = $"{type.Name}.{column.Name}";
+                ColumnPropertyNames[column.ColumnMappingAttribute] = column.ColumnMappingAttribute.GetPropertyName(type);
             }
 
             Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded table mapping for class '{type.Name}' from cache");

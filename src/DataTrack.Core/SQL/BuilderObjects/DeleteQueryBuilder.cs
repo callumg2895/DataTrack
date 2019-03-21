@@ -28,10 +28,10 @@ namespace DataTrack.Core.SQL.BuilderObjects
         private void AddPrimaryKeyDeleteRestriction(TBase item)
         {
             // Find the name and value of the primary key property in the 'item' object
-            if (TryGetPrimaryKeyColumnForType(typeof(TBase), out ColumnMappingAttribute? primaryKeyColumnAttribute) && primaryKeyColumnAttribute.TryGetPropertyName(BaseType, out string? primaryKeyColumnPropertyname))
+            if (TryGetPrimaryKeyColumnForType(typeof(TBase), out Column? primaryKeyColumn) && primaryKeyColumn.ColumnMappingAttribute.TryGetPropertyName(BaseType, out string? primaryKeyColumnPropertyname))
             {
                 var primaryKeyValue = item.GetPropertyValue(primaryKeyColumnPropertyname);
-                this.AddRestriction<object>(primaryKeyColumnAttribute.ColumnName, RestrictionTypes.In, primaryKeyValue);
+                this.AddRestriction<object>(primaryKeyColumn.Name, RestrictionTypes.In, primaryKeyValue);
             }
         }
 
@@ -44,11 +44,11 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
                 for (int i = 0; i < Query.Mapping.Tables.Count; i++)
                 {
-                    for (int j = 0; j < Query.Mapping.Tables[i].ColumnAttributes.Count; j++)
-                        if (Query.Mapping.Restrictions.ContainsKey(Query.Mapping.Tables[i].ColumnAttributes[j]))
+                    for (int j = 0; j < Query.Mapping.Tables[i].Columns.Count; j++)
+                        if (Query.Mapping.Restrictions.ContainsKey(Query.Mapping.Tables[i].Columns[j].ColumnMappingAttribute))
                     {
                         restrictionsBuilder.Append(restrictionsBuilder.Length == 0 ? "where " : "and ");
-                        restrictionsBuilder.AppendLine(Query.Mapping.Restrictions[Query.Mapping.Tables[i].ColumnAttributes[j]]);
+                        restrictionsBuilder.AppendLine(Query.Mapping.Restrictions[Query.Mapping.Tables[i].Columns[j].ColumnMappingAttribute]);
                     }
                 }
 

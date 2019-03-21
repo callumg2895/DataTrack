@@ -60,7 +60,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
             if (TypeTableMapping[table] == BaseType)
             {
                 Logger.Info(MethodBase.GetCurrentMethod(), $"Building DataTable for: {Data?.GetType().ToString()}");
-                List<ColumnMappingAttribute> columns = table.ColumnAttributes;
+                List<Column> columns = table.Columns;
 
                 if (Data != null)
                 {
@@ -77,7 +77,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
             {
                 if (Data != null && Data.GetChildPropertyValues(table.Name) != null)
                 {
-                    List<ColumnMappingAttribute> columns = table.ColumnAttributes;
+                    List<Column> columns = table.Columns;
                     SetColumns(dataTable, columns);
 
                     dynamic childItems = Activator.CreateInstance(typeof(List<>).MakeGenericType(TypeTableMapping[table]));
@@ -103,16 +103,16 @@ namespace DataTrack.Core.SQL.BuilderObjects
             return dataTable;
         }
 
-        private void SetColumns(DataTable dataTable, List<ColumnMappingAttribute> columns)
+        private void SetColumns(DataTable dataTable, List<Column> columns)
         {
-            foreach (ColumnMappingAttribute column in columns)
+            foreach (Column column in columns)
             {
-                DataColumn dataColumn = new DataColumn(column.ColumnName);
+                DataColumn dataColumn = new DataColumn(column.Name);
                 List<DataColumn> primaryKeys = new List<DataColumn>();
                 ForeignKeyConstraint fk;
 
                 dataTable.Columns.Add(dataColumn);
-                ColumnMap[column] = dataColumn;
+                ColumnMap[column.ColumnMappingAttribute] = dataColumn;
 
                 if (column.IsPrimaryKey())
                     primaryKeys.Add(dataColumn);
@@ -134,14 +134,14 @@ namespace DataTrack.Core.SQL.BuilderObjects
             }
         }
 
-        private void AddRow(DataTable dataTable, List<ColumnMappingAttribute> columns, List<object> rowData)
+        private void AddRow(DataTable dataTable, List<Column> columns, List<object> rowData)
         {
             DataRow dataRow = dataTable.NewRow();
 
             for (int i = 0; i < rowData.Count; i++)
             {
-                ColumnMappingAttribute column = columns[i];
-                dataRow[column.ColumnName] = rowData[i];
+                Column column = columns[i];
+                dataRow[column.Name] = rowData[i];
             }
 
             dataTable.Rows.Add(dataRow);

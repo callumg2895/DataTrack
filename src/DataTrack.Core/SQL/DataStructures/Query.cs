@@ -47,16 +47,16 @@ namespace DataTrack.Core.SQL.DataStructures
         {
             List<Parameter> parameters = new List<Parameter>();
 
-            var tableColumns = new List<ColumnMappingAttribute>();
+            var tableColumns = new List<Column>();
 
-            foreach (var columns in Mapping.Tables.Select(t => t.ColumnAttributes))
+            foreach (var columns in Mapping.Tables.Select(t => t.Columns))
             {
                 tableColumns.AddRange(columns);
             }
 
-            foreach (ColumnMappingAttribute column in tableColumns)
-                if (Mapping.Parameters.ContainsKey(column))
-                    parameters.AddRange(Mapping.Parameters[column]);
+            foreach (Column column in tableColumns)
+                if (Mapping.Parameters.ContainsKey(column.ColumnMappingAttribute))
+                    parameters.AddRange(Mapping.Parameters[column.ColumnMappingAttribute]);
 
             return parameters;
         }

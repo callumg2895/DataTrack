@@ -10,14 +10,19 @@ namespace DataTrack.Core.SQL.DataStructures
         public string Name { get; set; }
         public string StagingName { get; set; }
         public string Alias { get; set; }
-        public List<ColumnMappingAttribute> ColumnAttributes { get; set; }
+        public List<Column> Columns { get; set; }
 
         public Table(Type type, TableMappingAttribute tableAttribute, List<ColumnMappingAttribute> columnAttributes)
         {
             Name = tableAttribute.TableName;
             StagingName = $"#{Name}_staging";
             Alias = type.Name;
-            ColumnAttributes = columnAttributes;
+            Columns = new List<Column>();
+
+            foreach (ColumnMappingAttribute columnAttribute in columnAttributes)
+            {
+                Columns.Add(new Column(columnAttribute, this));
+            }
         }
     }
 }

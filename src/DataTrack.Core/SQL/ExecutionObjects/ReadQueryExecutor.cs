@@ -39,20 +39,20 @@ namespace DataTrack.Core.SQL.ExecutionObjects
                     {
                         TBase obj = new TBase();
 
-                        foreach (ColumnMappingAttribute column in table.ColumnAttributes)
+                        foreach (Column column in table.Columns)
                         {
-                            if (Query.Mapping.ColumnPropertyNames.ContainsKey(column))
+                            if (Query.Mapping.ColumnPropertyNames.ContainsKey(column.ColumnMappingAttribute))
                             {
-                                PropertyInfo property = baseType.GetProperty(Query.Mapping.ColumnPropertyNames[column]);
+                                PropertyInfo property = baseType.GetProperty(Query.Mapping.ColumnPropertyNames[column.ColumnMappingAttribute]);
 
-                                if (reader[column.ColumnName] != DBNull.Value)
-                                    property.SetValue(obj, Convert.ChangeType(reader[column.ColumnName], property.PropertyType));
+                                if (reader[column.Name] != DBNull.Value)
+                                    property.SetValue(obj, Convert.ChangeType(reader[column.Name], property.PropertyType));
                                 else
                                     property.SetValue(obj, null);
                             }
                             else
                             {
-                                Logger.Error(MethodBase.GetCurrentMethod(), $"Could not find property in class {typeof(TBase)} mapped to column {column.ColumnName}");
+                                Logger.Error(MethodBase.GetCurrentMethod(), $"Could not find property in class {typeof(TBase)} mapped to column {column.Name}");
                                 break;
                             }
                         }
@@ -72,7 +72,7 @@ namespace DataTrack.Core.SQL.ExecutionObjects
                         var childItem = Activator.CreateInstance(childType);
 
                         childType.GetProperties()
-                                 .ForEach(prop => prop.SetValue(childItem, Convert.ChangeType(reader[table.ColumnAttributes[i++].ColumnName], prop.PropertyType)));
+                                 .ForEach(prop => prop.SetValue(childItem, Convert.ChangeType(reader[table.Columns[i++].Name], prop.PropertyType)));
 
                         MethodInfo addItem = childCollection.GetType().GetMethod("Add");
                         addItem.Invoke(childCollection, new object[] { childItem });

@@ -39,22 +39,22 @@ namespace DataTrack.Core.SQL.BuilderObjects
             sql.AppendLine($"create table {table.StagingName}");
             sql.AppendLine("(");
 
-            for (int i = 0; i < table.ColumnAttributes.Count; i++)
+            for (int i = 0; i < table.Columns.Count; i++)
             {
-                ColumnMappingAttribute column = table.ColumnAttributes[i];
-                SqlDbType sqlDbType = column.GetSqlDbType(type);
+                Column column = table.Columns[i];
+                SqlDbType sqlDbType = column.ColumnMappingAttribute.GetSqlDbType(type);
 
                 if (column.IsPrimaryKey())
                 {
-                    sql.AppendLine($"{column.ColumnName} {sqlDbType.ToSqlString()} not null identity(1,1),");
-                    sql.Append($"primary key ({column.ColumnName})");
+                    sql.AppendLine($"{column.Name} {sqlDbType.ToSqlString()} not null identity(1,1),");
+                    sql.Append($"primary key ({column.Name})");
                 }
                 else
                 {
-                    sql.Append($"{column.ColumnName} {sqlDbType.ToSqlString()} not null");
+                    sql.Append($"{column.Name} {sqlDbType.ToSqlString()} not null");
                 }
 
-                sql.AppendLine(i == table.ColumnAttributes.Count - 1 ? "" : ",");
+                sql.AppendLine(i == table.Columns.Count - 1 ? "" : ",");
             }
 
             sql.AppendLine(")")
@@ -63,8 +63,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
         public void BuildInsertFromStagingToMainWithOutputIds(Table table)
         {
-            List<ColumnMappingAttribute> columns = table.ColumnAttributes;
-
+            List<Column> columns = table.Columns;
 
             if (columns.Count == 0) return;
 
@@ -77,9 +76,9 @@ namespace DataTrack.Core.SQL.BuilderObjects
             for (int i = 0; i < columns.Count; i++)
             {
                 if (!columns[i].IsPrimaryKey())
-                    sql.Append(columns[i].ColumnName + (i == columns.Count - 1 ? "" : ", "));
+                    sql.Append(columns[i].Name + (i == columns.Count - 1 ? "" : ", "));
                 else
-                    primaryKeyColumnName = columns[i].ColumnName;
+                    primaryKeyColumnName = columns[i].Name;
             }
 
             sql.AppendLine(")")
@@ -91,7 +90,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
             for (int i = 0; i < columns.Count; i++)
             {
                 if (!columns[i].IsPrimaryKey())
-                    sql.Append(columns[i].ColumnName + (i == columns.Count - 1 ? "" : ", "));
+                    sql.Append(columns[i].Name + (i == columns.Count - 1 ? "" : ", "));
             }
 
             sql.AppendLine()
@@ -104,7 +103,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
                .AppendLine();
         }
 
-        public void BuildInsertStatement(List<ColumnMappingAttribute> columns, TableMappingAttribute table)
+        public void BuildInsertStatement(List<Column> columns, TableMappingAttribute table)
         {
             if (columns.Count == 0) return;
 
@@ -112,11 +111,11 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
             sql.Append("insert into " + table.TableName + " (");
 
-            sql.Append(columns[0].ColumnName);
+            sql.Append(columns[0].Name);
 
             for (int i = 1; i < columns.Count; i++)
             {
-                sql.Append(", " + columns[i].ColumnName);
+                sql.Append(", " + columns[i].Name);
             }
 
             sql.AppendLine(")");
@@ -128,7 +127,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
             StringBuilder restrictionBuilder = new StringBuilder();
 
             Table table = Mapping.TypeTableMapping[BaseType];
-            List<ColumnMappingAttribute> columns = Mapping.TypeTableMapping[BaseType].ColumnAttributes.Where(c => !c.IsPrimaryKey()).ToList(); 
+            List<Column> columns = Mapping.TypeTableMapping[BaseType].Columns.Where(c => !c.IsPrimaryKey()).ToList(); 
 
             int processedRestrictions = 0;
             int totalColumns = columns.Count;
@@ -140,9 +139,9 @@ namespace DataTrack.Core.SQL.BuilderObjects
             {
                 setBuilder.Append(table.Alias);
                 setBuilder.Append(".");
-                setBuilder.Append(columns[i].ColumnName);
+                setBuilder.Append(columns[i].Name);
                 setBuilder.Append(" = ");
-                setBuilder.Append(Mapping.Parameters[columns[i]][0].Handle);
+                setBuilder.Append(Mapping.Parameters[columns[i].ColumnMappingAttribute][0].Handle);
                 setBuilder.AppendLine(i == totalColumns - 1
                     ? ""
                     : ",");
@@ -150,9 +149,9 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
             restrictionBuilder.AppendLine($"from {table.Name} {table.Alias}");
 
-            foreach (ColumnMappingAttribute column in columns)
+            foreach (Column column in columns)
             {
-                if (Mapping.Restrictions.ContainsKey(column))
+                if (Mapping.Restrictions.ContainsKey(column.ColumnMappingAttribute))
                 {
                     if (processedRestrictions++ == 0)
                     {
@@ -164,7 +163,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
                         restrictionBuilder.Append("and ");
                     }
 
-                    restrictionBuilder.AppendLine(Mapping.Restrictions[column]);
+                    restrictionBuilder.AppendLine(Mapping.Restrictions[column.ColumnMappingAttribute]);
                 }
             }
 
@@ -173,14 +172,14 @@ namespace DataTrack.Core.SQL.BuilderObjects
             sql.Append(restrictionBuilder.ToString());
         }
 
-        public void BuildValuesStatement(List<ColumnMappingAttribute> columns, TableMappingAttribute table)
+        public void BuildValuesStatement(List<Column> columns, TableMappingAttribute table)
         {
             if (columns.Count == 0) return;
 
-            columns = columns.Where(c => !c.IsPrimaryKey() && Mapping.Parameters.Keys.Contains(c)).ToList();
+            columns = columns.Where(c => !c.IsPrimaryKey() && Mapping.Parameters.Keys.Contains(c.ColumnMappingAttribute)).ToList();
 
             // Assert that all colums for a given table have the same number of parameters
-            int paramCount = columns.Where(c => Mapping.Parameters.Keys.Contains(c)).Select(c => Mapping.Parameters[c].Count).Max();
+            int paramCount = columns.Where(c => Mapping.Parameters.Keys.Contains(c.ColumnMappingAttribute)).Select(c => Mapping.Parameters[c.ColumnMappingAttribute].Count).Max();
 
             sql.Append("values ");
 
@@ -189,11 +188,11 @@ namespace DataTrack.Core.SQL.BuilderObjects
             for (int j = 0; j < paramCount; j++)
             {
                 sql.Append("(");
-                sql.Append(Mapping.Parameters[columns[0]][j].Handle);
+                sql.Append(Mapping.Parameters[columns[0].ColumnMappingAttribute][j].Handle);
 
                 for (int i = 1; i < columns.Count; i++)
                 {
-                    sql.Append(", " + Mapping.Parameters[columns[i]][j].Handle);
+                    sql.Append(", " + Mapping.Parameters[columns[i].ColumnMappingAttribute][j].Handle);
                 }
 
                 sql.Append(")");
@@ -209,18 +208,18 @@ namespace DataTrack.Core.SQL.BuilderObjects
         {
             foreach (Table table in Mapping.Tables)
             {
-                List<ColumnMappingAttribute> columns = table.ColumnAttributes;
+                List<Column> columns = table.Columns;
 
                 int RestrictionCount = 0;
 
                 sql.AppendLine();
                 sql.Append("select ");
-                sql.Append(Mapping.ColumnAliases[columns[0]]);
+                sql.Append(Mapping.ColumnAliases[columns[0].ColumnMappingAttribute]);
 
                 for (int i = 1; i < columns.Count; i++)
                 {
                     sql.Append(", ");
-                    sql.Append(Mapping.ColumnAliases[columns[i]]);
+                    sql.Append(Mapping.ColumnAliases[columns[i].ColumnMappingAttribute]);
                 }
 
                 sql.AppendLine();
@@ -235,25 +234,25 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
                 if (Mapping.TypeTableMapping[table] != BaseType && columns.Where(c => c.IsForeignKey()).Count() > 0)
                 {
-                    List<ColumnMappingAttribute> foreignKeyColumns = columns.Where(c => c.IsForeignKey()).ToList();
+                    List<Column> foreignKeyColumns = columns.Where(c => c.IsForeignKey()).ToList();
 
-                    foreach (ColumnMappingAttribute column in foreignKeyColumns)
+                    foreach (Column column in foreignKeyColumns)
                     {
                         Table foreignTable = Mapping.Tables.Where(t => t.Name == column.ForeignKeyTableMapping).First();
-                        ColumnMappingAttribute foreignColumn = foreignTable.ColumnAttributes.Where(c => c.IsPrimaryKey()).First();
+                        Column foreignColumn = foreignTable.Columns.Find(c => c.IsPrimaryKey());
 
                         sql.Append($"{GetRestrictionKeyWord(RestrictionCount++)} ")
-                           .AppendLine($"{Mapping.ColumnAliases[column]} in (select {foreignColumn.ColumnName} from {foreignTable.StagingName})");
+                           .AppendLine($"{Mapping.ColumnAliases[column.ColumnMappingAttribute]} in (select {foreignColumn.Name} from {foreignTable.StagingName})");
 
                     }             
                 }
 
-                foreach (ColumnMappingAttribute column in columns)
+                foreach (Column column in columns)
                 {
-                    if (Mapping.Restrictions.ContainsKey(column))
+                    if (Mapping.Restrictions.ContainsKey(column.ColumnMappingAttribute))
                     {
                         sql.Append($"{GetRestrictionKeyWord(RestrictionCount++)} ")
-                           .AppendLine(Mapping.Restrictions[column]);
+                           .AppendLine(Mapping.Restrictions[column.ColumnMappingAttribute]);
                     }
                 }
 
