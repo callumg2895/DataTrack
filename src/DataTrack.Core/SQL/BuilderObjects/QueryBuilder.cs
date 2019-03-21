@@ -83,7 +83,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
                     string handle = $"@{t.Name}_{column.Name}_{CurrentParameterIndex}";
 
-                    if (column.ColumnMappingAttribute.TryGetPropertyName(BaseType, out string? propertyName))
+                    if (column.TryGetPropertyName(BaseType, out string? propertyName))
                     {
                         object propertyValue = item.GetPropertyValue(propertyName);
 
@@ -108,10 +108,10 @@ namespace DataTrack.Core.SQL.BuilderObjects
         {
             // Find the name and value of the primary key property in the 'item' object
             if (TryGetPrimaryKeyColumnForType(BaseType, out Column primaryKeyColumn) && 
-                primaryKeyColumn.ColumnMappingAttribute.TryGetPropertyName(BaseType, out string? primaryKeyColumnPropertyname))
+                primaryKeyColumn.TryGetPropertyName(BaseType, out string? primaryKeyColumnPropertyname))
             {
                 var primaryKeyValue = item.GetPropertyValue(primaryKeyColumnPropertyname);
-                this.AddRestriction<object>(primaryKeyColumn.ColumnMappingAttribute.ColumnName, RestrictionTypes.EqualTo, primaryKeyValue);
+                this.AddRestriction<object>(primaryKeyColumn.Name, RestrictionTypes.EqualTo, primaryKeyValue);
             }
         }
 
@@ -122,7 +122,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
             string? primaryKeyColumnPropertyname;
 
             if (TryGetForeignKeyColumnForType(BaseType, table, out foreignKeyColumn) && 
-                foreignKeyColumn.ColumnMappingAttribute.TryGetPropertyName(BaseType, out primaryKeyColumnPropertyname))
+                foreignKeyColumn.TryGetPropertyName(BaseType, out primaryKeyColumnPropertyname))
             {
                 this.AddRestriction<int>(foreignKeyColumn.Name, RestrictionTypes.EqualTo, value);
             }

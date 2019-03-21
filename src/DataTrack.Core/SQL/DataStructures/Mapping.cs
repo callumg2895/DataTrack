@@ -88,7 +88,7 @@ namespace DataTrack.Core.SQL.DataStructures
             foreach (Column column in table.Columns)
             {
                 ColumnAliases[column.ColumnMappingAttribute] = $"{type.Name}.{column.Name}";
-                ColumnPropertyNames[column.ColumnMappingAttribute] = column.ColumnMappingAttribute.GetPropertyName(type);
+                ColumnPropertyNames[column.ColumnMappingAttribute] = column.GetPropertyName(type);
             }
 
             Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded table mapping for class '{type.Name}' from cache");

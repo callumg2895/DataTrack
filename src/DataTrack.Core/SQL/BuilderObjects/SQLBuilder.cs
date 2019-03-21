@@ -42,7 +42,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
             for (int i = 0; i < table.Columns.Count; i++)
             {
                 Column column = table.Columns[i];
-                SqlDbType sqlDbType = column.ColumnMappingAttribute.GetSqlDbType(type);
+                SqlDbType sqlDbType = column.GetSqlDbType(type);
 
                 if (column.IsPrimaryKey())
                 {

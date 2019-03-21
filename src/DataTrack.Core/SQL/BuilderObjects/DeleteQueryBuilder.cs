@@ -28,7 +28,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
         private void AddPrimaryKeyDeleteRestriction(TBase item)
         {
             // Find the name and value of the primary key property in the 'item' object
-            if (TryGetPrimaryKeyColumnForType(typeof(TBase), out Column? primaryKeyColumn) && primaryKeyColumn.ColumnMappingAttribute.TryGetPropertyName(BaseType, out string? primaryKeyColumnPropertyname))
+            if (TryGetPrimaryKeyColumnForType(typeof(TBase), out Column? primaryKeyColumn) && primaryKeyColumn.TryGetPropertyName(BaseType, out string? primaryKeyColumnPropertyname))
             {
                 var primaryKeyValue = item.GetPropertyValue(primaryKeyColumnPropertyname);
                 this.AddRestriction<object>(primaryKeyColumn.Name, RestrictionTypes.In, primaryKeyValue);
