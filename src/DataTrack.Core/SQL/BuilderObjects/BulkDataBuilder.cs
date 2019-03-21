@@ -23,7 +23,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
         public Map<Type, Table> TypeTableMapping { get; private set; }
 
         private Map<Table, DataTable> DataMap = new Map<Table, DataTable>();
-        private Map<ColumnMappingAttribute, DataColumn> ColumnMap = new Map<ColumnMappingAttribute, DataColumn>();
+        private Map<Column, DataColumn> ColumnMap = new Map<Column, DataColumn>();
         private Type BaseType = typeof(TBase);
         #endregion
 
@@ -112,7 +112,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
                 ForeignKeyConstraint fk;
 
                 dataTable.Columns.Add(dataColumn);
-                ColumnMap[column.ColumnMappingAttribute] = dataColumn;
+                ColumnMap[column] = dataColumn;
 
                 if (column.IsPrimaryKey())
                     primaryKeys.Add(dataColumn);
@@ -123,7 +123,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
                     {
                         if (column.ForeignKeyTableMapping == table.Name)
                         {
-                            DataColumn parentColumn = DataMap[table].Columns.Cast<DataColumn>().Where(c => ColumnMap[c].ColumnName == column.ForeignKeyColumnMapping).First();
+                            DataColumn parentColumn = DataMap[table].Columns.Cast<DataColumn>().Where(c => ColumnMap[c].Name == column.ForeignKeyColumnMapping).First();
                             fk = new ForeignKeyConstraint(parentColumn, dataColumn);
                             dataTable.Constraints.Add(fk);
                         }
