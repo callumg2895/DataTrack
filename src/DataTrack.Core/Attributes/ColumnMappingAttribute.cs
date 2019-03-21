@@ -27,11 +27,6 @@ namespace DataTrack.Core.Attributes
             KeyType = keyType;
             ForeignKeyTableMapping = foreignKeyTableMapping;
             ForeignKeyColumnMapping = foreignKeyColumnMapping;
-
-            if (this.IsForeignKey() && string.IsNullOrEmpty(ForeignKeyTableMapping))
-                Logger.Warn(MethodBase.GetCurrentMethod(), $"Column '{columnName}' is a foreign key but is not mapped to a table");
         }
-
-        public bool IsForeignKey() => (KeyType & (byte)KeyTypes.ForeignKey) == (byte)KeyTypes.ForeignKey;
     }
 }

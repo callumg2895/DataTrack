@@ -55,13 +55,13 @@ namespace DataTrack.Core.SQL.DataStructures
             }
 
             foreach (Column column in tableColumns)
-                if (Mapping.Parameters.ContainsKey(column.ColumnMappingAttribute))
-                    parameters.AddRange(Mapping.Parameters[column.ColumnMappingAttribute]);
+                if (Mapping.Parameters.ContainsKey(column))
+                    parameters.AddRange(Mapping.Parameters[column]);
 
             return parameters;
         }
 
-        public void AddParameter(ColumnMappingAttribute column, Parameter parameter)
+        public void AddParameter(Column column, Parameter parameter)
         {
             if (Mapping.Parameters.ContainsKey(column))
                 Mapping.Parameters[column].Add(parameter);

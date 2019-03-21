@@ -141,7 +141,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
                 setBuilder.Append(".");
                 setBuilder.Append(columns[i].Name);
                 setBuilder.Append(" = ");
-                setBuilder.Append(Mapping.Parameters[columns[i].ColumnMappingAttribute][0].Handle);
+                setBuilder.Append(Mapping.Parameters[columns[i]][0].Handle);
                 setBuilder.AppendLine(i == totalColumns - 1
                     ? ""
                     : ",");
@@ -151,7 +151,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
             foreach (Column column in columns)
             {
-                if (Mapping.Restrictions.ContainsKey(column.ColumnMappingAttribute))
+                if (Mapping.Restrictions.ContainsKey(column))
                 {
                     if (processedRestrictions++ == 0)
                     {
@@ -163,7 +163,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
                         restrictionBuilder.Append("and ");
                     }
 
-                    restrictionBuilder.AppendLine(Mapping.Restrictions[column.ColumnMappingAttribute]);
+                    restrictionBuilder.AppendLine(Mapping.Restrictions[column]);
                 }
             }
 
@@ -176,10 +176,10 @@ namespace DataTrack.Core.SQL.BuilderObjects
         {
             if (columns.Count == 0) return;
 
-            columns = columns.Where(c => !c.IsPrimaryKey() && Mapping.Parameters.Keys.Contains(c.ColumnMappingAttribute)).ToList();
+            columns = columns.Where(c => !c.IsPrimaryKey() && Mapping.Parameters.Keys.Contains(c)).ToList();
 
             // Assert that all colums for a given table have the same number of parameters
-            int paramCount = columns.Where(c => Mapping.Parameters.Keys.Contains(c.ColumnMappingAttribute)).Select(c => Mapping.Parameters[c.ColumnMappingAttribute].Count).Max();
+            int paramCount = columns.Where(c => Mapping.Parameters.Keys.Contains(c)).Select(c => Mapping.Parameters[c].Count).Max();
 
             sql.Append("values ");
 
@@ -188,11 +188,11 @@ namespace DataTrack.Core.SQL.BuilderObjects
             for (int j = 0; j < paramCount; j++)
             {
                 sql.Append("(");
-                sql.Append(Mapping.Parameters[columns[0].ColumnMappingAttribute][j].Handle);
+                sql.Append(Mapping.Parameters[columns[0]][j].Handle);
 
                 for (int i = 1; i < columns.Count; i++)
                 {
-                    sql.Append(", " + Mapping.Parameters[columns[i].ColumnMappingAttribute][j].Handle);
+                    sql.Append(", " + Mapping.Parameters[columns[i]][j].Handle);
                 }
 
                 sql.Append(")");
@@ -249,10 +249,10 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
                 foreach (Column column in columns)
                 {
-                    if (Mapping.Restrictions.ContainsKey(column.ColumnMappingAttribute))
+                    if (Mapping.Restrictions.ContainsKey(column))
                     {
                         sql.Append($"{GetRestrictionKeyWord(RestrictionCount++)} ")
-                           .AppendLine(Mapping.Restrictions[column.ColumnMappingAttribute]);
+                           .AppendLine(Mapping.Restrictions[column]);
                     }
                 }
 

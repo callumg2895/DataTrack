@@ -15,7 +15,6 @@ namespace DataTrack.Core.SQL.DataStructures
     {
         public Column(ColumnMappingAttribute columnAttribute, Table table)
         {
-            ColumnMappingAttribute = columnAttribute;
             Table = table;
             Name = columnAttribute.ColumnName;
             Alias = $"{table.Type.Name}.{Name}";
@@ -23,9 +22,11 @@ namespace DataTrack.Core.SQL.DataStructures
             KeyType = columnAttribute.KeyType;
             ForeignKeyColumnMapping = columnAttribute.ForeignKeyColumnMapping;
             ForeignKeyTableMapping = columnAttribute.ForeignKeyTableMapping;
+
+            if (this.IsForeignKey() && string.IsNullOrEmpty(ForeignKeyTableMapping))
+                Logger.Warn(MethodBase.GetCurrentMethod(), $"Column '{Name}' is a foreign key but is not mapped to a table");
         }
 
-        public ColumnMappingAttribute ColumnMappingAttribute { get; set; }
         public Table Table { get; set; }
         public string Name { get; set; }
         public string Alias { get; set; }

@@ -17,8 +17,8 @@ namespace DataTrack.Core.SQL.DataStructures
         public Type BaseType { get; set; } = typeof(TBase);
         public List<Table> Tables { get; set; } = new List<Table>();
         internal Map<Type, Table> TypeTableMapping { get; set; } = new Map<Type, Table>();
-        internal Dictionary<ColumnMappingAttribute, List<Parameter>> Parameters { get; set; } = new Dictionary<ColumnMappingAttribute, List<Parameter>>();
-        internal Dictionary<ColumnMappingAttribute, string> Restrictions { get; set; } = new Dictionary<ColumnMappingAttribute, string>();
+        internal Dictionary<Column, List<Parameter>> Parameters { get; set; } = new Dictionary<Column, List<Parameter>>();
+        internal Dictionary<Column, string> Restrictions { get; set; } = new Dictionary<Column, string>();
         public Map<Table, DataTable> DataTableMapping { get; set; } = new Map<Table, DataTable>();
 
         public Mapping()

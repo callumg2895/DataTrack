@@ -45,10 +45,10 @@ namespace DataTrack.Core.SQL.BuilderObjects
                 for (int i = 0; i < Query.Mapping.Tables.Count; i++)
                 {
                     for (int j = 0; j < Query.Mapping.Tables[i].Columns.Count; j++)
-                        if (Query.Mapping.Restrictions.ContainsKey(Query.Mapping.Tables[i].Columns[j].ColumnMappingAttribute))
+                        if (Query.Mapping.Restrictions.ContainsKey(Query.Mapping.Tables[i].Columns[j]))
                     {
                         restrictionsBuilder.Append(restrictionsBuilder.Length == 0 ? "where " : "and ");
-                        restrictionsBuilder.AppendLine(Query.Mapping.Restrictions[Query.Mapping.Tables[i].Columns[j].ColumnMappingAttribute]);
+                        restrictionsBuilder.AppendLine(Query.Mapping.Restrictions[Query.Mapping.Tables[i].Columns[j]]);
                     }
                 }
 
