@@ -18,6 +18,8 @@ namespace DataTrack.Core.SQL.DataStructures
             ColumnMappingAttribute = columnAttribute;
             Table = table;
             Name = columnAttribute.ColumnName;
+            Alias = $"{table.Type.Name}.{Name}";
+            PropertyName = GetPropertyName(table.Type);
             KeyType = columnAttribute.KeyType;
             ForeignKeyColumnMapping = columnAttribute.ForeignKeyColumnMapping;
             ForeignKeyTableMapping = columnAttribute.ForeignKeyTableMapping;
@@ -26,6 +28,8 @@ namespace DataTrack.Core.SQL.DataStructures
         public ColumnMappingAttribute ColumnMappingAttribute { get; set; }
         public Table Table { get; set; }
         public string Name { get; set; }
+        public string Alias { get; set; }
+        public string PropertyName { get; set; }
         public byte KeyType { get; set; }
         public string? ForeignKeyTableMapping { get; set; }
         public string? ForeignKeyColumnMapping { get; set; }

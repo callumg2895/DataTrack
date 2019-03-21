@@ -41,20 +41,12 @@ namespace DataTrack.Core.SQL.ExecutionObjects
 
                         foreach (Column column in table.Columns)
                         {
-                            if (Query.Mapping.ColumnPropertyNames.ContainsKey(column.ColumnMappingAttribute))
-                            {
-                                PropertyInfo property = baseType.GetProperty(Query.Mapping.ColumnPropertyNames[column.ColumnMappingAttribute]);
+                            PropertyInfo property = baseType.GetProperty(column.PropertyName);
 
-                                if (reader[column.Name] != DBNull.Value)
-                                    property.SetValue(obj, Convert.ChangeType(reader[column.Name], property.PropertyType));
-                                else
-                                    property.SetValue(obj, null);
-                            }
+                            if (reader[column.Name] != DBNull.Value)
+                                property.SetValue(obj, Convert.ChangeType(reader[column.Name], property.PropertyType));
                             else
-                            {
-                                Logger.Error(MethodBase.GetCurrentMethod(), $"Could not find property in class {typeof(TBase)} mapped to column {column.Name}");
-                                break;
-                            }
+                                property.SetValue(obj, null);
                         }
 
                         results.Add(obj);

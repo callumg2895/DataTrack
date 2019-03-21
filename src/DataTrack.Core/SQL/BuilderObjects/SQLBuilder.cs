@@ -214,12 +214,12 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
                 sql.AppendLine();
                 sql.Append("select ");
-                sql.Append(Mapping.ColumnAliases[columns[0].ColumnMappingAttribute]);
+                sql.Append(columns[0].Alias);
 
                 for (int i = 1; i < columns.Count; i++)
                 {
                     sql.Append(", ");
-                    sql.Append(Mapping.ColumnAliases[columns[i].ColumnMappingAttribute]);
+                    sql.Append(columns[i].Alias);
                 }
 
                 sql.AppendLine();
@@ -242,7 +242,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
                         Column foreignColumn = foreignTable.Columns.Find(c => c.IsPrimaryKey());
 
                         sql.Append($"{GetRestrictionKeyWord(RestrictionCount++)} ")
-                           .AppendLine($"{Mapping.ColumnAliases[column.ColumnMappingAttribute]} in (select {foreignColumn.Name} from {foreignTable.StagingName})");
+                           .AppendLine($"{column.Alias} in (select {foreignColumn.Name} from {foreignTable.StagingName})");
 
                     }             
                 }

@@ -159,7 +159,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
             {
                 case RestrictionTypes.NotIn:
                 case RestrictionTypes.In:
-                    restrictionBuilder.Append(Query.Mapping.ColumnAliases[column.ColumnMappingAttribute] + " ");
+                    restrictionBuilder.Append(column.Alias + " ");
                     restrictionBuilder.Append(rType.ToSqlString() + " (");
                     restrictionBuilder.Append(handle);
                     restrictionBuilder.Append(")");
@@ -175,7 +175,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
                     }
                     else
                     {
-                        restrictionBuilder.Append(Query.Mapping.ColumnAliases[column.ColumnMappingAttribute] + " ");
+                        restrictionBuilder.Append(column.Alias + " ");
                         restrictionBuilder.Append(rType.ToSqlString() + " ");
                         restrictionBuilder.Append(handle);
                         break;
@@ -184,7 +184,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
                 case RestrictionTypes.EqualTo:
                 case RestrictionTypes.NotEqualTo:
                 default:
-                    restrictionBuilder.Append(Query.Mapping.ColumnAliases[column.ColumnMappingAttribute] + " ");
+                    restrictionBuilder.Append(column.Alias + " ");
                     restrictionBuilder.Append(rType.ToSqlString() + " ");
                     restrictionBuilder.Append(handle);
                     break;

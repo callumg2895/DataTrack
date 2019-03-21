@@ -16,9 +16,7 @@ namespace DataTrack.Core.SQL.DataStructures
     {
         public Type BaseType { get; set; } = typeof(TBase);
         public List<Table> Tables { get; set; } = new List<Table>();
-        internal Dictionary<ColumnMappingAttribute, string> ColumnAliases { get; set; } = new Dictionary<ColumnMappingAttribute, string>();
         internal Map<Type, Table> TypeTableMapping { get; set; } = new Map<Type, Table>();
-        internal Dictionary<ColumnMappingAttribute, string> ColumnPropertyNames { get; set; } = new Dictionary<ColumnMappingAttribute, string>();
         internal Dictionary<ColumnMappingAttribute, List<Parameter>> Parameters { get; set; } = new Dictionary<ColumnMappingAttribute, List<Parameter>>();
         internal Dictionary<ColumnMappingAttribute, string> Restrictions { get; set; } = new Dictionary<ColumnMappingAttribute, string>();
         public Map<Table, DataTable> DataTableMapping { get; set; } = new Map<Table, DataTable>();
@@ -84,12 +82,6 @@ namespace DataTrack.Core.SQL.DataStructures
         private Table LoadTableMappingFromCache(Type type)
         {
             Table table = Dictionaries.TypeMappingCache[type];
-
-            foreach (Column column in table.Columns)
-            {
-                ColumnAliases[column.ColumnMappingAttribute] = $"{type.Name}.{column.Name}";
-                ColumnPropertyNames[column.ColumnMappingAttribute] = column.GetPropertyName(type);
-            }
 
             Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded table mapping for class '{type.Name}' from cache");
 
