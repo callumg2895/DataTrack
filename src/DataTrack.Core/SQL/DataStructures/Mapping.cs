@@ -65,11 +65,11 @@ namespace DataTrack.Core.SQL.DataStructures
         {
             if (TryGetTable(type, out Table? table))
             {
-                Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded table mapping for class '{type.Name}'");
+                Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded Table object for '{type.Name}' entity");
             }
             else
             {
-                Logger.Error(MethodBase.GetCurrentMethod(), $"Failed to load table mapping for class '{type.Name}'");
+                Logger.Error(MethodBase.GetCurrentMethod(), $"Failed to load Table object for '{type.Name}' entity");
             }
 
             if (table == null)
@@ -84,7 +84,7 @@ namespace DataTrack.Core.SQL.DataStructures
         {
             Table table = Dictionaries.TypeMappingCache[type];
 
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded table mapping for class '{type.Name}' from cache");
+            Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded Table object for '{type.Name}' entity from cache");
 
             return table;
         }
