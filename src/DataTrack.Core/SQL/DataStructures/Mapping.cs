@@ -18,37 +18,42 @@ namespace DataTrack.Core.SQL.DataStructures
         public Type BaseType { get; set; } = typeof(TBase);
         public List<Table> Tables { get; set; } = new List<Table>();
         internal Dictionary<Type, Table> TypeTableMapping { get; set; } = new Dictionary<Type, Table>();
+        internal Dictionary<Table, List<Table>> ParentChildMapping { get; set; } = new Dictionary<Table, List<Table>>();
         internal Dictionary<Column, List<Parameter>> Parameters { get; set; } = new Dictionary<Column, List<Parameter>>();
         internal Dictionary<Column, string> Restrictions { get; set; } = new Dictionary<Column, string>();
         public Map<Table, DataTable> DataTableMapping { get; set; } = new Map<Table, DataTable>();
 
         public Mapping()
         {
-            MapTables(BaseType);
+            MapTable(BaseType);
             CacheMappingData();
+            LogTableRelationships();
         }
 
-        private void MapTables(Type type)
+        private void MapTable(Type type)
         {
-            MapTableByType(type);
+            Table parentTable = MapTableByType(type);
 
             foreach (var prop in type.GetProperties())
             {
-                MapTablesByProperty(prop);
+                MapTablesByProperty(prop, parentTable);
             }
         }
 
-        private void MapTableByType(Type type)
+        private Table MapTableByType(Type type)
         {
             Table table = Dictionaries.TypeMappingCache.ContainsKey(type)
                 ? LoadTableMappingFromCache(type)
                 : LoadTableMapping(type);
 
             Tables.Add(table);
-            TypeTableMapping[type] = table;
+            TypeTableMapping.Add(type, table);
+            ParentChildMapping.Add(table, new List<Table>());
+
+            return table;
         }
 
-        private void MapTablesByProperty(PropertyInfo property)
+        private void MapTablesByProperty(PropertyInfo property, Table parentTable)
         {
             Type propertyType = property.PropertyType;
 
@@ -57,7 +62,11 @@ namespace DataTrack.Core.SQL.DataStructures
             {
                 Type genericArgumentType = propertyType.GetGenericArguments()[0];
 
-                MapTables(genericArgumentType);
+                MapTable(genericArgumentType);
+
+                Table mappedTable = TypeTableMapping[genericArgumentType];
+
+                ParentChildMapping[parentTable].Add(mappedTable);
             }
         }
         
@@ -143,6 +152,26 @@ namespace DataTrack.Core.SQL.DataStructures
                     Dictionaries.TypeMappingCache[type] = table;
                 }
             }
+        }
+
+        private void LogTableRelationships()
+        {
+            StringBuilder logMessage = new StringBuilder();
+            logMessage.AppendLine();
+
+            foreach (Table table in Tables)
+            {
+                logMessage.AppendLine($"Mapped table '{table.Name}' with {ParentChildMapping[table].Count} child table(s):");
+
+                foreach (Table childTable in ParentChildMapping[table])
+                {
+                    logMessage.AppendLine($"- {childTable.Name}");
+                }
+
+                logMessage.AppendLine();
+            }
+
+            Logger.Debug(logMessage.ToString());
         }
     }
 }
