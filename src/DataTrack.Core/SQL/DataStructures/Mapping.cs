@@ -70,21 +70,14 @@ namespace DataTrack.Core.SQL.DataStructures
 
         private Table LoadTableMapping(Type type)
         {
-            if (TryGetTable(type, out Table? table))
+            if (TryGetTable(type, out Table? table) && table != null)
             {
                 Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded Table object for '{type.Name}' entity");
-            }
-            else
-            {
-                Logger.Error(MethodBase.GetCurrentMethod(), $"Failed to load Table object for '{type.Name}' entity");
+                return table;
             }
 
-            if (table == null)
-            {
-                throw new TableMappingException(type, string.Empty);
-            }
-
-            return table;
+            Logger.Error(MethodBase.GetCurrentMethod(), $"Failed to load Table object for '{type.Name}' entity");
+            throw new TableMappingException(type, string.Empty);       
         }
 
         private Table LoadTableMappingFromCache(Type type)
