@@ -32,25 +32,16 @@ namespace DataTrack.Core.SQL.DataStructures
 
         private void MapTable(Type type)
         {
-            Table parentTable = MapTableByType(type);
-
-            foreach (var prop in type.GetProperties())
-            {
-                MapTablesByProperty(prop, parentTable);
-            }
-        }
-
-        private Table MapTableByType(Type type)
-        {
-            Table table = Dictionaries.TypeMappingCache.ContainsKey(type)
-                ? LoadTableMappingFromCache(type)
-                : LoadTableMapping(type);
+            Table table = GetTableByType(type);
 
             Tables.Add(table);
             TypeTableMapping.Add(type, table);
             ParentChildMapping.Add(table, new List<Table>());
 
-            return table;
+            foreach (var prop in type.GetProperties())
+            {
+                MapTablesByProperty(prop, table);
+            }
         }
 
         private void MapTablesByProperty(PropertyInfo property, Table parentTable)
@@ -69,7 +60,14 @@ namespace DataTrack.Core.SQL.DataStructures
                 ParentChildMapping[parentTable].Add(mappedTable);
             }
         }
-        
+
+        private Table GetTableByType(Type type)
+        {
+            return Dictionaries.TypeMappingCache.ContainsKey(type)
+                ? LoadTableMappingFromCache(type)
+                : LoadTableMapping(type);
+        }
+
         private Table LoadTableMapping(Type type)
         {
             if (TryGetTable(type, out Table? table))
