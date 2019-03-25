@@ -45,19 +45,6 @@ namespace DataTrack.Core.SQL.BuilderObjects
             }
         }
 
-        private protected bool TryGetPrimaryKeyColumnForType(Type type, out Column? typePKColumn)
-        {
-            foreach (Column column in Query.Mapping.TypeTableMapping[type].Columns)
-                if (column.IsPrimaryKey())
-                {
-                    typePKColumn = column;
-                    return true;
-                }
-
-            typePKColumn = null;
-            return false;
-        }
-
         private protected bool TryGetForeignKeyColumnForType(Type type, string table, out Column? typeFKColumn)
         {
             Table typeTable = Dictionaries.TypeMappingCache[type];
@@ -106,9 +93,10 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
         private protected void AddPrimaryKeyRestriction(TBase item)
         {
+            Column primaryKeyColumn = Query.Mapping.TypeTableMapping[BaseType].GetPrimaryKeyColumn(); 
+
             // Find the name and value of the primary key property in the 'item' object
-            if (TryGetPrimaryKeyColumnForType(BaseType, out Column primaryKeyColumn) && 
-                primaryKeyColumn.TryGetPropertyName(BaseType, out string? primaryKeyColumnPropertyname))
+            if (primaryKeyColumn.TryGetPropertyName(BaseType, out string? primaryKeyColumnPropertyname))
             {
                 var primaryKeyValue = item.GetPropertyValue(primaryKeyColumnPropertyname);
                 this.AddRestriction<object>(primaryKeyColumn.Name, RestrictionTypes.EqualTo, primaryKeyValue);

@@ -1,4 +1,5 @@
 ﻿using DataTrack.Core.Attributes;
+using DataTrack.Core.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -25,6 +26,17 @@ namespace DataTrack.Core.SQL.DataStructures
             {
                 Columns.Add(new Column(columnAttribute, this));
             }
+        }
+
+        public Column GetPrimaryKeyColumn()
+        {
+            foreach (Column column in Columns)
+            {
+                if (column.IsPrimaryKey())
+                    return column;
+            }
+
+            throw new TableMappingException(Type, Name);
         }
     }
 }
