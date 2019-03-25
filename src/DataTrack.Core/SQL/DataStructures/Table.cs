@@ -38,5 +38,16 @@ namespace DataTrack.Core.SQL.DataStructures
 
             throw new TableMappingException(Type, Name);
         }
+
+        public Column GetForeignKeyColumn(string foreignTableName)
+        {
+            foreach (Column column in Columns)
+            { 
+                if (column.IsForeignKey() && column.ForeignKeyTableMapping == foreignTableName)
+                    return column;
+            }
+
+            throw new TableMappingException(Type, Name);
+        }
     }
 }

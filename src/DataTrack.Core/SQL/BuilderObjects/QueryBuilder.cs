@@ -45,21 +45,6 @@ namespace DataTrack.Core.SQL.BuilderObjects
             }
         }
 
-        private protected bool TryGetForeignKeyColumnForType(Type type, string table, out Column? typeFKColumn)
-        {
-            Table typeTable = Dictionaries.TypeMappingCache[type];
-
-            foreach (Column column in Query.Mapping.TypeTableMapping[type].Columns)
-                if (column.IsForeignKey() && column.Table.Name == typeTable.Name && column.ForeignKeyTableMapping == table)
-                {
-                    typeFKColumn = column;
-                    return true;
-                }
-
-            typeFKColumn = null;
-            return false;
-        }
-
         private protected void UpdateParameters(TBase item)
         {
             Query.Mapping.Tables.ForEach(t => t.Columns.ForEach(
@@ -106,14 +91,8 @@ namespace DataTrack.Core.SQL.BuilderObjects
         private protected void AddForeignKeyRestriction(int value, string table)
         {
             // Find the name and value of the primary key property in the 'item' object
-            Column foreignKeyColumn;
-            string? primaryKeyColumnPropertyname;
-
-            if (TryGetForeignKeyColumnForType(BaseType, table, out foreignKeyColumn) && 
-                foreignKeyColumn.TryGetPropertyName(BaseType, out primaryKeyColumnPropertyname))
-            {
-                this.AddRestriction<int>(foreignKeyColumn.Name, RestrictionTypes.EqualTo, value);
-            }
+            Column foreignKeyColumn = Query.Mapping.TypeTableMapping[BaseType].GetForeignKeyColumn(table);
+            this.AddRestriction<int>(foreignKeyColumn.Name, RestrictionTypes.EqualTo, value);    
         }
 
         private protected void SelectRowCount(ref SQLBuilder<TBase> sqlBuilder) => sqlBuilder.AppendLine("select @@rowcount as affected_rows");
