@@ -18,8 +18,8 @@ namespace DataTrack.Core.SQL.BuilderObjects
     {
         #region Members
 
-        private protected Type BaseType { get => typeof(TBase); }
-        internal Query<TBase> Query = new Query<TBase>();
+        private protected Type BaseType;
+        internal Query<TBase> Query { get; set; }
 
         // An integer which ensures that all parameter names are unique between queries and subqueries
         private protected int CurrentParameterIndex;
@@ -30,19 +30,10 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
         private protected void Init(CRUDOperationTypes opType)
         {
+            BaseType = typeof(TBase);
+
             // Define the operation type used for transactions
-            Query.OperationType = opType;
-
-            // Fetch the table and column names for TBase
-            Query.Mapping = new Mapping<TBase>();
-
-            // Check for valid Table/Columns
-            if (Query.Mapping.Tables.Count == 0 || Query.Mapping.Tables.Any(t => t.Columns.Count == 0))
-            {
-                string message = $"Mapping data for class '{BaseType.Name}' was incomplete/empty";
-                Logger.Error(MethodBase.GetCurrentMethod(), message);
-                throw new Exception(message);
-            }
+            Query = new Query<TBase>(opType);
         }
 
         private protected void UpdateParameters(TBase item)

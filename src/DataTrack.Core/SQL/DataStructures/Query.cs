@@ -30,13 +30,22 @@ namespace DataTrack.Core.SQL.DataStructures
 
         #region Constructors
 
-        public Query()
+        public Query(CRUDOperationTypes operationType)
         {
+            OperationType = operationType;
+
             Mapping = new Mapping<TBase>();
             QueryString = string.Empty;
-
             baseType = typeof(TBase);
             stopwatch = new Stopwatch();
+
+            // Check for valid Table/Columns
+            if (Mapping.Tables.Count == 0 || Mapping.Tables.Any(t => t.Columns.Count == 0))
+            {
+                string message = $"Mapping data for class '{baseType.Name}' was incomplete/empty";
+                Logger.Error(MethodBase.GetCurrentMethod(), message);
+                throw new Exception(message);
+            }
         }
 
         #endregion
