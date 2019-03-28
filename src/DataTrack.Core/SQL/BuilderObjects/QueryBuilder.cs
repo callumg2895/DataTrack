@@ -43,9 +43,6 @@ namespace DataTrack.Core.SQL.BuilderObjects
                 {
                     // For each column in the Query, find the value of the property which is decorated by that column attribute
                     // Then update the dictionary of parameters with this value.
-
-                    string handle = $"@{t.Name}_{column.Name}_{CurrentParameterIndex}";
-
                     if (column.TryGetPropertyName(BaseType, out string? propertyName))
                     {
                         object propertyValue = item.GetPropertyValue(propertyName);
@@ -53,7 +50,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
                         if (propertyValue == null || (column.IsPrimaryKey() && (int)propertyValue == 0))
                             return;
 
-                        Query.AddParameter(column, new Parameter(handle, propertyValue));
+                        Query.AddParameter(column, new Parameter(column.GetParameterHandle(CurrentParameterIndex), propertyValue));
                     }
                 }));
 
@@ -93,24 +90,8 @@ namespace DataTrack.Core.SQL.BuilderObjects
         public virtual QueryBuilder<TBase> AddRestriction<TProp>(string property, RestrictionTypes rType, TProp value)
         {
             Table table = Query.Mapping.TypeTableMapping[BaseType];
-            Column column= table.Columns.Find(x => x.Name == property);
-
-            if (column == null)
-            {
-                Logger.Error(MethodBase.GetCurrentMethod(), $"Could not find property '{property}' in table '{table.Name}'");
-                return this;
-            }
-
-            if (!table.Columns.Contains(column))
-            {
-                Logger.Error(MethodBase.GetCurrentMethod(), $"'{property}' is not a property of '{table.Name}'");
-                return this;
-            }
-
-            // Generate a handle for SQL parameter. This is in the form @[TableName]_[ColumnName]
-            //      eg: @books_author
-            string handle = $"@{table.Name}_{column.Name}_{CurrentParameterIndex}";
-
+            Column column= table.Columns.Single(x => x.Name == property);
+            string handle = column.GetParameterHandle(CurrentParameterIndex);
             Parameter parameter = new Parameter(handle, value);
 
             // Store the SQL for the restriction clause against the column attribute for the 

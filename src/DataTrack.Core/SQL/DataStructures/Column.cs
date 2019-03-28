@@ -76,6 +76,13 @@ namespace DataTrack.Core.SQL.DataStructures
             throw new ColumnMappingException(type, this.Name);
         }
 
+        public string GetParameterHandle(int parameterIndex)
+        {
+            // Generate a handle for SQL parameter. This is in the form @[TableName]_[ColumnName]
+            //      eg: @books_author
+            return $"@{Table.Name}_{Name}_{parameterIndex}";
+        }
+
         public bool IsForeignKey() => (KeyType & (byte)KeyTypes.ForeignKey) == (byte)KeyTypes.ForeignKey;
 
         public bool IsPrimaryKey() => (KeyType & (byte)KeyTypes.PrimaryKey) == (byte)KeyTypes.PrimaryKey;
