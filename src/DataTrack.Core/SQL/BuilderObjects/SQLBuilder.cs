@@ -161,7 +161,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
                         restrictionBuilder.Append("and ");
                     }
 
-                    restrictionBuilder.AppendLine(Mapping.Restrictions[column]);
+                    restrictionBuilder.AppendLine(Mapping.Restrictions[column].ToString());
                 }
             }
 
@@ -250,7 +250,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
                     if (Mapping.Restrictions.ContainsKey(column))
                     {
                         sql.Append($"{GetRestrictionKeyWord(RestrictionCount++)} ")
-                           .AppendLine(Mapping.Restrictions[column]);
+                           .AppendLine(Mapping.Restrictions[column].ToString());
                     }
                 }
 

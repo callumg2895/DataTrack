@@ -50,7 +50,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
                         if (Query.Mapping.Restrictions.ContainsKey(Query.Mapping.Tables[i].Columns[j]))
                     {
                         restrictionsBuilder.Append(restrictionsBuilder.Length == 0 ? "where " : "and ");
-                        restrictionsBuilder.AppendLine(Query.Mapping.Restrictions[Query.Mapping.Tables[i].Columns[j]]);
+                        restrictionsBuilder.AppendLine(Query.Mapping.Restrictions[Query.Mapping.Tables[i].Columns[j]].ToString());
                     }
                 }
 

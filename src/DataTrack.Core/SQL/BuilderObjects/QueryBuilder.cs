@@ -94,7 +94,6 @@ namespace DataTrack.Core.SQL.BuilderObjects
         {
             Table table = Query.Mapping.TypeTableMapping[BaseType];
             Column column= table.Columns.Find(x => x.Name == property);
-            StringBuilder restrictionBuilder = new StringBuilder();
 
             if (column == null)
             {
@@ -112,46 +111,12 @@ namespace DataTrack.Core.SQL.BuilderObjects
             //      eg: @books_author
             string handle = $"@{table.Name}_{column.Name}_{CurrentParameterIndex}";
 
-            // Generate the SQL for the restriction clause
-            switch (rType)
-            {
-                case RestrictionTypes.NotIn:
-                case RestrictionTypes.In:
-                    restrictionBuilder.Append(column.Alias + " ");
-                    restrictionBuilder.Append(rType.ToSqlString() + " (");
-                    restrictionBuilder.Append(handle);
-                    restrictionBuilder.Append(")");
-                    break;
-
-                case RestrictionTypes.LessThan:
-                case RestrictionTypes.MoreThan:
-
-                    if (Dictionaries.SQLDataTypes[value?.GetType()] == SqlDbType.VarChar)
-                    {
-                        Logger.Error(MethodBase.GetCurrentMethod(), $"Cannot apply '{rType.ToSqlString()}' operator to values of type VarChar");
-                        return this;
-                    }
-                    else
-                    {
-                        restrictionBuilder.Append(column.Alias + " ");
-                        restrictionBuilder.Append(rType.ToSqlString() + " ");
-                        restrictionBuilder.Append(handle);
-                        break;
-                    }
-
-                case RestrictionTypes.EqualTo:
-                case RestrictionTypes.NotEqualTo:
-                default:
-                    restrictionBuilder.Append(column.Alias + " ");
-                    restrictionBuilder.Append(rType.ToSqlString() + " ");
-                    restrictionBuilder.Append(handle);
-                    break;
-            }
+            Parameter parameter = new Parameter(handle, value);
 
             // Store the SQL for the restriction clause against the column attribute for the 
             // property, then store the value of the parameter against its handle if no error occurs.
-            Query.Mapping.Restrictions[column] = restrictionBuilder.ToString();
-            Query.AddParameter(column, new Parameter(handle, value));
+            Query.Mapping.Restrictions[column] = new Restriction(column, parameter, rType);
+            Query.AddParameter(column, parameter);
 
             return this;
         }
