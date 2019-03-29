@@ -36,20 +36,6 @@ namespace DataTrack.Core.SQL.BuilderObjects
             Query = new Query<TBase>(opType);
         }
 
-        private protected void UpdateParameters(TBase item)
-        {
-            Query.UpdateParameters(item, ref CurrentParameterIndex);
-
-           // CurrentParameterIndex++;
-        }
-
-        private protected void UpdateParameters(List<TBase> items)
-            => items.ForEach(item =>
-            {
-                Query.UpdateParameters(item, ref CurrentParameterIndex);
-            });
-
-
         private protected void AddPrimaryKeyRestriction(TBase item)
         {
             Column primaryKeyColumn = Query.Mapping.TypeTableMapping[BaseType].GetPrimaryKeyColumn(); 
@@ -60,13 +46,6 @@ namespace DataTrack.Core.SQL.BuilderObjects
                 var primaryKeyValue = item.GetPropertyValue(primaryKeyColumnPropertyname);
                 this.AddRestriction<object>(primaryKeyColumn.Name, RestrictionTypes.EqualTo, primaryKeyValue);
             }
-        }
-
-        private protected void AddForeignKeyRestriction(int value, string table)
-        {
-            // Find the name and value of the primary key property in the 'item' object
-            Column foreignKeyColumn = Query.Mapping.TypeTableMapping[BaseType].GetForeignKeyColumn(table);
-            this.AddRestriction<int>(foreignKeyColumn.Name, RestrictionTypes.EqualTo, value);    
         }
 
         abstract public Query<TBase> GetQuery();
