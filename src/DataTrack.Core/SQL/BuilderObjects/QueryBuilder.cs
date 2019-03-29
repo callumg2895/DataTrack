@@ -38,29 +38,15 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
         private protected void UpdateParameters(TBase item)
         {
-            Query.Mapping.Tables.ForEach(t => t.Columns.ForEach(
-                column =>
-                {
-                    // For each column in the Query, find the value of the property which is decorated by that column attribute
-                    // Then update the dictionary of parameters with this value.
-                    if (column.TryGetPropertyName(BaseType, out string? propertyName))
-                    {
-                        object propertyValue = item.GetPropertyValue(propertyName);
+            Query.UpdateParameters(item, ref CurrentParameterIndex);
 
-                        if (propertyValue == null || (column.IsPrimaryKey() && (int)propertyValue == 0))
-                            return;
-
-                        Query.AddParameter(column, new Parameter(column.GetParameterHandle(CurrentParameterIndex), propertyValue));
-                    }
-                }));
-
-            CurrentParameterIndex++;
+           // CurrentParameterIndex++;
         }
 
         private protected void UpdateParameters(List<TBase> items)
             => items.ForEach(item =>
             {
-                UpdateParameters(item);
+                Query.UpdateParameters(item, ref CurrentParameterIndex);
             });
 
 

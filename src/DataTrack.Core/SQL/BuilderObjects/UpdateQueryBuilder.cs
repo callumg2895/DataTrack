@@ -13,7 +13,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
             Init(CRUDOperationTypes.Update);
 
             CurrentParameterIndex = parameterIndex;
-            UpdateParameters(item);
+            Query.UpdateParameters(item, ref CurrentParameterIndex);
             AddPrimaryKeyRestriction(item);
         }
 

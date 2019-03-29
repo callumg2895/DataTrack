@@ -70,6 +70,29 @@ namespace DataTrack.Core.SQL.DataStructures
             return parameters;
         }
 
+        internal void UpdateParameters(TBase item, ref int parameterIndex)
+        {
+            foreach(Table table in Mapping.Tables)
+            {
+                foreach (Column column in table.Columns)
+                {
+                    // For each column in the Query, find the value of the property which is decorated by that column attribute
+                    // Then update the dictionary of parameters with this value.
+                    if (column.TryGetPropertyName(baseType, out string? propertyName))
+                    {
+                        object propertyValue = item.GetPropertyValue(propertyName);
+
+                        if (propertyValue == null || (column.IsPrimaryKey() && (int)propertyValue == 0))
+                            continue;
+
+                        AddParameter(column, new Parameter(column.GetParameterHandle(parameterIndex++), propertyValue));
+                    }
+                }
+            }
+
+            parameterIndex++;
+        }
+
         public void AddParameter(Column column, Parameter parameter)
         {
             if (Mapping.Parameters.ContainsKey(column))
