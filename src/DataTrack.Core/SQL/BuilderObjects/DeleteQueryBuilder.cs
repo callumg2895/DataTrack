@@ -59,7 +59,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
                 sqlBuilder.Append(restrictionsBuilder.ToString());
 
                 // For insert statements return the number of rows affected
-                SelectRowCount(ref sqlBuilder);
+                sqlBuilder.SelectRowCount();
 
                 string sql = sqlBuilder.ToString();
 

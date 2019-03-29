@@ -83,8 +83,6 @@ namespace DataTrack.Core.SQL.BuilderObjects
             this.AddRestriction<int>(foreignKeyColumn.Name, RestrictionTypes.EqualTo, value);    
         }
 
-        private protected void SelectRowCount(ref SQLBuilder<TBase> sqlBuilder) => sqlBuilder.AppendLine("select @@rowcount as affected_rows");
-
         abstract public Query<TBase> GetQuery();
 
         public virtual QueryBuilder<TBase> AddRestriction<TProp>(string property, RestrictionTypes rType, TProp value)

@@ -272,6 +272,11 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
         public override string ToString() => sql.ToString();
 
+        public void SelectRowCount()
+        {
+            sql.AppendLine("select @@rowcount as affected_rows");
+        }
+
         #endregion
     }
 }

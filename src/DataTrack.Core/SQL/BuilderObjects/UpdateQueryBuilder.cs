@@ -25,7 +25,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
             sqlBuilder.BuildUpdateStatement();
 
             // For update statements return the number of rows affected
-            SelectRowCount(ref sqlBuilder);
+            sqlBuilder.SelectRowCount();
 
             string sql = sqlBuilder.ToString();
 
