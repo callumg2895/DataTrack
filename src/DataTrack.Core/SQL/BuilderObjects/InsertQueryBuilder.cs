@@ -29,7 +29,6 @@ namespace DataTrack.Core.SQL.BuilderObjects
             Init(CRUDOperationTypes.Create);
 
             Item = item;
-            CurrentParameterIndex = parameterIndex;
         }
 
         #endregion
@@ -39,6 +38,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
         public override Query<TBase> GetQuery()
         {        
             Query.Mapping.DataTableMapping = new BulkDataBuilder<TBase>(Item, Query.Mapping).YieldDataMap();
+            Parameter.Index = 0;
             return Query;
         }
 

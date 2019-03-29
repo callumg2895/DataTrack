@@ -23,12 +23,11 @@ namespace DataTrack.Core.SQL.BuilderObjects
         {
         }
 
-        public ReadQueryBuilder(int? id, int parameterIndex = 1)
+        public ReadQueryBuilder(int? id)
         {
             Init(CRUDOperationTypes.Read);
 
             this.ID = id;
-            this.CurrentParameterIndex = parameterIndex;
 
             if (ID.HasValue)
                 AddRestriction<int>("id", RestrictionTypes.EqualTo, ID.Value);
@@ -49,6 +48,8 @@ namespace DataTrack.Core.SQL.BuilderObjects
             Logger.Info(MethodBase.GetCurrentMethod(), "Generated SQL: " + sql);
 
             Query.QueryString = sql;
+
+            Parameter.Index = 0;
 
             return Query;
         }

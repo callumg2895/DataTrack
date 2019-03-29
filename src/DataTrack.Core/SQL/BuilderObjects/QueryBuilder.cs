@@ -21,9 +21,6 @@ namespace DataTrack.Core.SQL.BuilderObjects
         private protected Type BaseType;
         internal Query<TBase> Query { get; set; }
 
-        // An integer which ensures that all parameter names are unique between queries and subqueries
-        private protected int CurrentParameterIndex;
-
         #endregion
 
         #region Methods
@@ -54,8 +51,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
         {
             Table table = Query.Mapping.TypeTableMapping[BaseType];
             Column column= table.Columns.Single(x => x.Name == property);
-            string handle = column.GetParameterHandle(CurrentParameterIndex);
-            Parameter parameter = new Parameter(handle, value);
+            Parameter parameter = new Parameter(column, value);
 
             // Store the SQL for the restriction clause against the column attribute for the 
             // property, then store the value of the parameter against its handle if no error occurs.

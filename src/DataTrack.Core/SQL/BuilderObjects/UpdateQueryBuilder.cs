@@ -11,9 +11,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
         public UpdateQueryBuilder(TBase item, int parameterIndex = 1)
         {
             Init(CRUDOperationTypes.Update);
-
-            CurrentParameterIndex = parameterIndex;
-            Query.UpdateParameters(item, ref CurrentParameterIndex);
+            Query.UpdateParameters(item);
             AddPrimaryKeyRestriction(item);
         }
 
@@ -32,6 +30,8 @@ namespace DataTrack.Core.SQL.BuilderObjects
             Logger.Info(MethodBase.GetCurrentMethod(), "Generated SQL: " + sql);
 
             Query.QueryString = sql;
+
+            Parameter.Index = 0;
 
             return Query;
         }

@@ -6,9 +6,11 @@ namespace DataTrack.Core.SQL.DataStructures
 {
     public struct Parameter
     {
-        public Parameter(string handle, object value)
+        public static int Index = 0;
+        
+        public Parameter(Column column, object value)
         {
-            Handle = handle;
+            Handle = column.GetParameterHandle(Index++);
             Value = value;
         }
 

@@ -16,8 +16,6 @@ namespace DataTrack.Core.SQL.BuilderObjects
         public DeleteQueryBuilder(TBase item, int parameterIndex = 1)
         {
             Init(CRUDOperationTypes.Delete);
-
-            CurrentParameterIndex = parameterIndex;
             AddPrimaryKeyDeleteRestriction(item);
         }
 
@@ -71,6 +69,8 @@ namespace DataTrack.Core.SQL.BuilderObjects
             {
                 Query.QueryString = string.Empty;
             }
+
+            Parameter.Index = 0;
 
             return Query;
         }

@@ -70,7 +70,7 @@ namespace DataTrack.Core.SQL.DataStructures
             return parameters;
         }
 
-        internal void UpdateParameters(TBase item, ref int parameterIndex)
+        internal void UpdateParameters(TBase item)
         {
             foreach(Table table in Mapping.Tables)
             {
@@ -85,12 +85,10 @@ namespace DataTrack.Core.SQL.DataStructures
                         if (propertyValue == null || (column.IsPrimaryKey() && (int)propertyValue == 0))
                             continue;
 
-                        AddParameter(column, new Parameter(column.GetParameterHandle(parameterIndex++), propertyValue));
+                        AddParameter(column, new Parameter(column, propertyValue));
                     }
                 }
             }
-
-            parameterIndex++;
         }
 
         public void AddParameter(Column column, Parameter parameter)
