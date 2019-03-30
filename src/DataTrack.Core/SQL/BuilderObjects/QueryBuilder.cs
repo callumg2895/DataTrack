@@ -49,14 +49,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
         public virtual QueryBuilder<TBase> AddRestriction<TProp>(string property, RestrictionTypes rType, TProp value)
         {
-            Table table = Query.Mapping.TypeTableMapping[BaseType];
-            Column column= table.Columns.Single(x => x.Name == property);
-            Parameter parameter = new Parameter(column, value);
-
-            // Store the SQL for the restriction clause against the column attribute for the 
-            // property, then store the value of the parameter against its handle if no error occurs.
-            Query.Mapping.Restrictions[column] = new Restriction(column, parameter, rType);
-            Query.AddParameter(column, parameter);
+            Query.AddRestriction(property, rType, value);
 
             return this;
         }

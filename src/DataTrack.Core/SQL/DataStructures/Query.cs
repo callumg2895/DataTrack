@@ -99,6 +99,19 @@ namespace DataTrack.Core.SQL.DataStructures
                 Mapping.Parameters[column] = new List<Parameter>() { parameter };
         }
 
+        public Query<TBase> AddRestriction(string property, RestrictionTypes type, object value)
+        {
+            Column column = Mapping.TypeTableMapping[baseType].Columns.Single(x => x.Name == property);
+            Parameter parameter = new Parameter(column, value);
+
+            // Store the SQL for the restriction clause against the column attribute for the 
+            // property, then store the value of the parameter against its handle if no error occurs.
+            Mapping.Restrictions[column] = new Restriction(column, parameter, type);
+            AddParameter(column, parameter);
+
+            return this;
+        }
+
         public dynamic Execute()
         {
             using (SqlConnection connection = DataTrackConfiguration.CreateConnection())
