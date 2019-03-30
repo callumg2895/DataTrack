@@ -31,8 +31,8 @@ namespace DataTrack.Core.Tests
 
             //Act
             using (Transaction<Author> t1 = new Transaction<Author>(new List<Query<Author>>(){
-                new InsertQueryBuilder<Author>(author).GetQuery(),
-                new ReadQueryBuilder<Author>().AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName).GetQuery(),
+                new Query<Author>().Create(author),
+                new Query<Author>().Read().AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName),
             }))
             {
                 results = t1.Execute();
@@ -45,10 +45,10 @@ namespace DataTrack.Core.Tests
             {
                 foreach (Book bookResult in authorResult.Books)
                 {
-                    new DeleteQueryBuilder<Book>(bookResult).GetQuery().Execute();
+                    new Query<Book>().Delete(bookResult).Execute();
                 }
 
-                new DeleteQueryBuilder<Author>(authorResult).GetQuery().Execute();
+                new Query<Author>().Delete(authorResult).Execute();
             }
 
             Author result = ((List<Author>)results[1])[0];
@@ -70,10 +70,8 @@ namespace DataTrack.Core.Tests
 
             using (Transaction<Author> t1 = new Transaction<Author>(new List<Query<Author>>()
             {
-                new InsertQueryBuilder<Author>(authorBefore).GetQuery(),
-                new ReadQueryBuilder<Author>()
-                    .AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, authorBefore.FirstName)
-                    .GetQuery(),
+                new Query<Author>().Create(authorBefore),
+                new Query<Author>().AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, authorBefore.FirstName)
             }))
             {
                 results1 = t1.Execute();
@@ -82,10 +80,8 @@ namespace DataTrack.Core.Tests
 
             using (Transaction<Author> t2 = new Transaction<Author>(new List<Query<Author>>()
             {
-                new UpdateQueryBuilder<Author>(authorAfter).GetQuery(),
-                new ReadQueryBuilder<Author>()
-                    .AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, authorAfter.FirstName)
-                    .GetQuery(),
+                new Query<Author>().Update(authorAfter),
+                new Query<Author>().AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, authorAfter.FirstName),
             }))
             {
                 results2 = t2.Execute();
@@ -95,8 +91,8 @@ namespace DataTrack.Core.Tests
             Author beforeUpdate = ((List<Author>)results1[1])[0];
             Author afterUpdate = ((List<Author>)results2[1])[0];
         
-            new DeleteQueryBuilder<Author>(beforeUpdate).GetQuery().Execute();
-            new DeleteQueryBuilder<Author>(afterUpdate).GetQuery().Execute();
+            new Query<Author>().Delete(beforeUpdate).Execute();
+            new Query<Author>().Delete(afterUpdate).Execute();
 
             // Assert
             Assert.IsTrue(AuthorsAreEqual(beforeUpdate, authorBefore));
@@ -118,22 +114,22 @@ namespace DataTrack.Core.Tests
 
             // Act
 
-            new InsertQueryBuilder<Author>(author).GetQuery().Execute();
+            new Query<Author>().Create(author).Execute();
 
-            using (Transaction<Author> t = new Transaction<Author>(new DeleteQueryBuilder<Author>(author).GetQuery()))
+            using (Transaction<Author> t = new Transaction<Author>(new Query<Author>().Delete(author)))
             {
                 t.Execute();
                 t.RollBack();
             }
 
-            resultsAfterRollBack = new ReadQueryBuilder<Author>().AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName).GetQuery().Execute();
+            resultsAfterRollBack = new Query<Author>().Read().AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName).Execute();
 
             foreach(Author result in resultsAfterRollBack)
             {
-                new DeleteQueryBuilder<Author>(result).GetQuery().Execute();
+                new Query<Author>().Delete(result).Execute();
             }
 
-            resultsAfterDelete = new ReadQueryBuilder<Author>().AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName).GetQuery().Execute();
+            resultsAfterDelete = new Query<Author>().Read().AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName).Execute();
 
             //Assert
             Assert.AreEqual(resultsAfterRollBack.Count, 1);

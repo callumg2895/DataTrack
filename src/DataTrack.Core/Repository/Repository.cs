@@ -11,39 +11,39 @@ namespace DataTrack.Core.Repository
     {
         #region Create
 
-        public static void Create(TBase item) => new InsertQueryBuilder<TBase>(item).GetQuery().Execute();
+        public static void Create(TBase item) => new Query<TBase>().Create(item).Execute();
 
         #endregion
 
         #region Read
 
-        public static TBase GetByID(int id) => new ReadQueryBuilder<TBase>().AddRestriction("id", RestrictionTypes.EqualTo, id).GetQuery().Execute()[0];
+        public static TBase GetByID(int id) => new Query<TBase>().AddRestriction("id", RestrictionTypes.EqualTo, id).Execute()[0];
 
         public static List<TBase> GetByProperty(string propName, RestrictionTypes restriction, object propValue)
         {
             Type propType = propValue.GetType();
 
-            ReadQueryBuilder<TBase> readBuilder = new ReadQueryBuilder<TBase>();
+            Query<TBase> query = new Query<TBase>().Read();
 
             MethodInfo addRestriction;
-            addRestriction = readBuilder.GetType().GetMethod("AddRestriction", BindingFlags.Instance | BindingFlags.Public);
-            addRestriction.MakeGenericMethod(propType).Invoke(readBuilder, new object[] { propName, restriction, propValue });
+            addRestriction = query.GetType().GetMethod("AddRestriction", BindingFlags.Instance | BindingFlags.Public);
+            addRestriction.Invoke(query, new object[] { propName, restriction, propValue });
 
-            return readBuilder.GetQuery().Execute();
+            return query.Execute();
         }
 
         #endregion
 
         #region Update
 
-        public static int Update(TBase item) => new UpdateQueryBuilder<TBase>(item).GetQuery().Execute();
+        public static int Update(TBase item) => new Query<TBase>().Update(item).Execute();
 
 
         #endregion
 
         #region Delete
 
-        public static void Delete(TBase item) => new DeleteQueryBuilder<TBase>(item).GetQuery().Execute();
+        public static void Delete(TBase item) => new Query<TBase>().Delete(item).Execute();
 
         #endregion
     }

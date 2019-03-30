@@ -12,6 +12,8 @@ using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Reflection;
 using System.Linq;
+using DataTrack.Core.SQL.BuilderObjects;
+using System.Text;
 
 namespace DataTrack.Core.SQL.DataStructures
 {
@@ -30,9 +32,9 @@ namespace DataTrack.Core.SQL.DataStructures
 
         #region Constructors
 
-        public Query(CRUDOperationTypes operationType)
+        public Query()
         {
-            OperationType = operationType;
+            OperationType = CRUDOperationTypes.Read;
 
             Mapping = new Mapping<TBase>();
             QueryString = string.Empty;
@@ -47,6 +49,38 @@ namespace DataTrack.Core.SQL.DataStructures
                 throw new Exception(message);
             }
         }
+        public Query<TBase> Create(TBase item)
+        {
+            OperationType = CRUDOperationTypes.Create;
+            Mapping.DataTableMapping = new BulkDataBuilder<TBase>(item, Mapping).YieldDataMap();
+            return this;
+        }
+
+        public Query<TBase> Read(int? id = null)
+        {
+            OperationType = CRUDOperationTypes.Read;
+
+            if (id.HasValue)
+                AddRestriction("id", RestrictionTypes.EqualTo, id.Value);
+
+            return this;
+        }
+
+        public Query<TBase> Update(TBase item)
+        {
+            OperationType = CRUDOperationTypes.Update;
+            UpdateParameters(item);
+            AddPrimaryKeyRestriction(item);
+            return this;
+        }
+
+        public Query<TBase> Delete(TBase item)
+        {
+            OperationType = CRUDOperationTypes.Delete;
+            AddPrimaryKeyDeleteRestriction(item);
+            return this;
+        }
+
 
         #endregion
 
@@ -112,6 +146,30 @@ namespace DataTrack.Core.SQL.DataStructures
             return this;
         }
 
+        private void AddPrimaryKeyRestriction(TBase item)
+        {
+            Column primaryKeyColumn = Mapping.TypeTableMapping[baseType].GetPrimaryKeyColumn();
+
+            // Find the name and value of the primary key property in the 'item' object
+            if (primaryKeyColumn.TryGetPropertyName(baseType, out string? primaryKeyColumnPropertyname))
+            {
+                var primaryKeyValue = item.GetPropertyValue(primaryKeyColumnPropertyname);
+                AddRestriction(primaryKeyColumn.Name, RestrictionTypes.EqualTo, primaryKeyValue);
+            }
+        }
+
+        private void AddPrimaryKeyDeleteRestriction(TBase item)
+        {
+            Column primaryKeyColumn = Mapping.TypeTableMapping[baseType].GetPrimaryKeyColumn();
+
+            // Find the name and value of the primary key property in the 'item' object
+            if (primaryKeyColumn.TryGetPropertyName(baseType, out string? primaryKeyColumnPropertyname))
+            {
+                var primaryKeyValue = item.GetPropertyValue(primaryKeyColumnPropertyname);
+                AddRestriction(primaryKeyColumn.Name, RestrictionTypes.In, primaryKeyValue);
+            }
+        }
+
         public dynamic Execute()
         {
             using (SqlConnection connection = DataTrackConfiguration.CreateConnection())
@@ -128,13 +186,14 @@ namespace DataTrack.Core.SQL.DataStructures
                 command.Transaction = transaction;
 
             command.CommandType = CommandType.Text;
-            command.CommandText = QueryString;
             command.AddParameters(GetParameters());
 
             if (OperationType == CRUDOperationTypes.Create)
             {
                 return new InsertQueryExecutor<TBase>(this, connection, transaction).Execute();
             }
+
+            command.CommandText = this.ToString();
 
             using (SqlDataReader reader = command.ExecuteReader())
             {
@@ -149,6 +208,84 @@ namespace DataTrack.Core.SQL.DataStructures
                         throw new ArgumentException("No valid operation to perform.", nameof(OperationType));
                 }
             }
+        }
+
+        public override string ToString()
+        {
+            switch (OperationType)
+            {
+                case CRUDOperationTypes.Read: return GetReadString();
+                case CRUDOperationTypes.Update: return GetUpdateString();
+                case CRUDOperationTypes.Delete: return GetDeleteString();
+                default:
+                    stopwatch.Stop();
+                    Logger.Error(MethodBase.GetCurrentMethod(), "No valid operation to perform.");
+                    throw new ArgumentException("No valid operation to perform.", nameof(OperationType));
+            }
+        }
+
+        private string GetReadString()
+        {
+            SQLBuilder<TBase> sqlBuilder = new SQLBuilder<TBase>(Mapping);
+
+            sqlBuilder.BuildSelectStatement();
+
+            string sql = sqlBuilder.ToString();
+
+            Logger.Info(MethodBase.GetCurrentMethod(), "Generated SQL: " + sql);
+
+            return sql;
+        }
+
+        private string GetUpdateString()
+        {
+            SQLBuilder<TBase> sqlBuilder = new SQLBuilder<TBase>(Mapping);
+
+            sqlBuilder.AppendLine();
+            sqlBuilder.BuildUpdateStatement();
+
+            // For update statements return the number of rows affected
+            sqlBuilder.SelectRowCount();
+
+            string sql = sqlBuilder.ToString();
+
+            Logger.Info(MethodBase.GetCurrentMethod(), "Generated SQL: " + sql);
+
+            return sql;
+        }
+
+        private string GetDeleteString()
+        {
+            if (Mapping.Parameters.Count >= 1)
+            {
+                SQLBuilder<TBase> sqlBuilder = new SQLBuilder<TBase>(Mapping);
+                StringBuilder restrictionsBuilder = new StringBuilder();
+
+                for (int i = 0; i < Mapping.Tables.Count; i++)
+                {
+                    for (int j = 0; j < Mapping.Tables[i].Columns.Count; j++)
+                        if (Mapping.Restrictions.ContainsKey(Mapping.Tables[i].Columns[j]))
+                        {
+                            restrictionsBuilder.Append(restrictionsBuilder.Length == 0 ? "where " : "and ");
+                            restrictionsBuilder.AppendLine(Mapping.Restrictions[Mapping.Tables[i].Columns[j]].ToString());
+                        }
+                }
+
+                sqlBuilder.AppendLine();
+                sqlBuilder.AppendLine($"delete {Mapping.Tables[0].Alias} from {Mapping.Tables[0].Name} {Mapping.Tables[0].Alias}");
+                sqlBuilder.Append(restrictionsBuilder.ToString());
+
+                // For insert statements return the number of rows affected
+                sqlBuilder.SelectRowCount();
+
+                string sql = sqlBuilder.ToString();
+
+                Logger.Info(MethodBase.GetCurrentMethod(), "Generated SQL: " + sql);
+
+                return sql;
+            }
+
+            return string.Empty;
         }
 
         #endregion

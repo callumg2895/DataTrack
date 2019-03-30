@@ -1,4 +1,5 @@
 ﻿using DataTrack.Core.SQL.BuilderObjects;
+using DataTrack.Core.SQL.DataStructures;
 using DataTrack.Core.Tests.TestObjects;
 using DataTrack.Core.Util;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -10,7 +11,7 @@ using System.Text;
 namespace DataTrack.Core.Tests
 {
     [TestClass]
-    public class QueryBuilderTest : BaseTest
+    public class QueryToStringTest : BaseTest
     {
 
         [TestMethod]
@@ -21,10 +22,10 @@ namespace DataTrack.Core.Tests
             Author author = new Author() { FirstName = string.Empty, LastName = string.Empty, Books = new List<Book>() { book } };
 
             //Act
-            ReadQueryBuilder<Author> read = new ReadQueryBuilder<Author>();
-            InsertQueryBuilder<Author> insert = new InsertQueryBuilder<Author>(author);
-            UpdateQueryBuilder<Author> update = new UpdateQueryBuilder<Author>(author);
-            DeleteQueryBuilder<Author> delete = new DeleteQueryBuilder<Author>(author);
+            Query<Author> read = new Query<Author>().Read();
+            Query<Author> insert = new Query<Author>().Create(author);
+            Query<Author> update = new Query<Author>().Update(author);
+            Query<Author> delete = new Query<Author>().Delete(author);
 
             //Assert
             Assert.IsTrue(Dictionaries.TypeMappingCache.ContainsKey(typeof(Author)));
@@ -47,7 +48,7 @@ namespace DataTrack.Core.Tests
             sqlBuilder.AppendLine("select * from #books_staging");
 
             expectedQuery = sqlBuilder.ToString();
-            testQuery = new ReadQueryBuilder<Book>().GetQuery().QueryString;
+            testQuery = new Query<Book>().Read().ToString();
 
             //Assert
             Assert.AreNotEqual(testQuery, string.Empty);
@@ -71,7 +72,7 @@ namespace DataTrack.Core.Tests
             sqlBuilder.AppendLine("from books as Book");
 
             expectedQuery = sqlBuilder.ToString();
-            testQuery = new ReadQueryBuilder<Author>().GetQuery().QueryString;
+            testQuery = testQuery = new Query<Author>().Read().ToString();
 
             //Assert
             Assert.AreNotEqual(testQuery, string.Empty);
@@ -94,7 +95,7 @@ namespace DataTrack.Core.Tests
             sqlBuilder.AppendLine("select @@rowcount as affected_rows");
 
             expectedQuery = sqlBuilder.ToString();
-            testQuery = new DeleteQueryBuilder<Author>(author).GetQuery().QueryString;
+            testQuery = new Query<Author>().Delete(author).ToString();
 
             //Assert
             Assert.AreNotEqual(testQuery, string.Empty);
@@ -121,7 +122,7 @@ namespace DataTrack.Core.Tests
             sqlBuilder.AppendLine("select @@rowcount as affected_rows");
 
             expectedQuery = sqlBuilder.ToString();
-            testQuery = new UpdateQueryBuilder<Author>(author).GetQuery().QueryString;
+            testQuery = new Query<Author>().Update(author).ToString();
 
             //Assert
             Assert.AreNotEqual(testQuery, string.Empty);
