@@ -19,7 +19,6 @@ namespace DataTrack.Core.SQL.DataStructures
         public List<Table> Tables { get; set; } = new List<Table>();
         internal Dictionary<Type, Table> TypeTableMapping { get; set; } = new Dictionary<Type, Table>();
         internal Dictionary<Table, List<Table>> ParentChildMapping { get; set; } = new Dictionary<Table, List<Table>>();
-        internal Dictionary<Column, List<Parameter>> Parameters { get; set; } = new Dictionary<Column, List<Parameter>>();
         public Map<Table, DataTable> DataTableMapping { get; set; } = new Map<Table, DataTable>();
 
         public Mapping()
@@ -99,13 +98,6 @@ namespace DataTrack.Core.SQL.DataStructures
 
             TableMappingAttribute? tableAttribute = null;
             List<ColumnMappingAttribute> columnAttributes = new List<ColumnMappingAttribute>();
-
-            // Check the dictionary first to save using reflection
-            if (TypeTableMapping.ContainsKey(type))
-            {
-                table = TypeTableMapping[type];
-                return true;
-            }
 
             foreach (Attribute attribute in type.GetCustomAttributes())
                 tableAttribute = attribute as TableMappingAttribute;

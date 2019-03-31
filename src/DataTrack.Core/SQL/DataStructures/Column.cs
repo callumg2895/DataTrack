@@ -17,6 +17,7 @@ namespace DataTrack.Core.SQL.DataStructures
         {
             Table = table;
             Restrictions = new List<Restriction>();
+            Parameters = new List<Parameter>();
             Name = columnAttribute.ColumnName;
             Alias = $"{table.Type.Name}.{Name}";
             PropertyName = GetPropertyName(table.Type);
@@ -30,6 +31,7 @@ namespace DataTrack.Core.SQL.DataStructures
 
         public Table Table { get; set; }
         public List<Restriction> Restrictions { get; set; }
+        public List<Parameter> Parameters { get; set; }
         public string Name { get; set; }
         public string Alias { get; set; }
         public string PropertyName { get; set; }
@@ -81,5 +83,20 @@ namespace DataTrack.Core.SQL.DataStructures
         public bool IsForeignKey() => (KeyType & (byte)KeyTypes.ForeignKey) == (byte)KeyTypes.ForeignKey;
 
         public bool IsPrimaryKey() => (KeyType & (byte)KeyTypes.PrimaryKey) == (byte)KeyTypes.PrimaryKey;
+
+        public void AddRestriction(RestrictionTypes type, object value)
+        {
+            Parameter parameter = new Parameter(this, value);
+            Restriction restriction = new Restriction(this, parameter, type);
+
+            Parameters.Add(parameter);
+            Restrictions.Add(restriction);
+        }
+
+        public void AddParameter(object value)
+        {
+            Parameter parameter = new Parameter(this, value);
+            Parameters.Add(parameter);
+        }
     }
 }

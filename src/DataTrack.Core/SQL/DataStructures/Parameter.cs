@@ -19,7 +19,7 @@ namespace DataTrack.Core.SQL.DataStructures
 
         private static string GetParameterHandle(Column column)
         {
-            return $"@{column.Table.Name}_{column.Name}_{Index}";
+            return $"@{column.Table.Name}_{column.Name}_{Index++}";
         }
     }
 }

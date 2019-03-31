@@ -14,6 +14,9 @@ namespace DataTrack.Core.SQL.DataStructures
         public string Alias { get; set; }
         public List<Column> Columns { get; set; }
 
+        private TableMappingAttribute tableMappingAttribute;
+        private List<ColumnMappingAttribute> columnMappingAttributes;
+
         public Table(Type type, TableMappingAttribute tableAttribute, List<ColumnMappingAttribute> columnAttributes)
         {
             Type = type;
@@ -21,6 +24,9 @@ namespace DataTrack.Core.SQL.DataStructures
             StagingName = $"#{Name}_staging";
             Alias = type.Name;
             Columns = new List<Column>();
+
+            tableMappingAttribute = tableAttribute;
+            columnMappingAttributes = columnAttributes;
 
             foreach (ColumnMappingAttribute columnAttribute in columnAttributes)
             {
@@ -52,7 +58,7 @@ namespace DataTrack.Core.SQL.DataStructures
 
         public Table Clone()
         {
-            return (Table)this.MemberwiseClone();
+            return new Table(Type, tableMappingAttribute, columnMappingAttributes);
         }
     }
 }

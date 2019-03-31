@@ -139,7 +139,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
                 setBuilder.Append(".");
                 setBuilder.Append(columns[i].Name);
                 setBuilder.Append(" = ");
-                setBuilder.Append(Mapping.Parameters[columns[i]][0].Handle);
+                setBuilder.Append(columns[i].Parameters[0].Handle);
                 setBuilder.AppendLine(i == totalColumns - 1
                     ? ""
                     : ",");
@@ -166,10 +166,10 @@ namespace DataTrack.Core.SQL.BuilderObjects
         {
             if (columns.Count == 0) return;
 
-            columns = columns.Where(c => !c.IsPrimaryKey() && Mapping.Parameters.Keys.Contains(c)).ToList();
+            columns = columns.Where(c => !c.IsPrimaryKey() && c.Parameters.Count > 0).ToList();
 
             // Assert that all colums for a given table have the same number of parameters
-            int paramCount = columns.Where(c => Mapping.Parameters.Keys.Contains(c)).Select(c => Mapping.Parameters[c].Count).Max();
+            int paramCount = columns.Select(c => c.Parameters.Count).Max();
 
             sql.Append("values ");
 
@@ -178,11 +178,11 @@ namespace DataTrack.Core.SQL.BuilderObjects
             for (int j = 0; j < paramCount; j++)
             {
                 sql.Append("(");
-                sql.Append(Mapping.Parameters[columns[0]][j].Handle);
+                sql.Append(columns[0].Parameters[j].Handle);
 
                 for (int i = 1; i < columns.Count; i++)
                 {
-                    sql.Append(", " + Mapping.Parameters[columns[i]][j].Handle);
+                    sql.Append(", " + columns[i].Parameters[j].Handle);
                 }
 
                 sql.Append(")");

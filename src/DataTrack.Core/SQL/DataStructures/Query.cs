@@ -90,16 +90,13 @@ namespace DataTrack.Core.SQL.DataStructures
         {
             List<Parameter> parameters = new List<Parameter>();
 
-            var tableColumns = new List<Column>();
-
-            foreach (var columns in Mapping.Tables.Select(t => t.Columns))
+            foreach (Table table in Mapping.Tables)
             {
-                tableColumns.AddRange(columns);
+                foreach(Column column in table.Columns)
+                {
+                    parameters.AddRange(column.Parameters);
+                }
             }
-
-            foreach (Column column in tableColumns)
-                if (Mapping.Parameters.ContainsKey(column))
-                    parameters.AddRange(Mapping.Parameters[column]);
 
             return parameters;
         }
@@ -119,29 +116,16 @@ namespace DataTrack.Core.SQL.DataStructures
                         if (propertyValue == null || (column.IsPrimaryKey() && (int)propertyValue == 0))
                             continue;
 
-                        AddParameter(column, new Parameter(column, propertyValue));
+                        column.AddParameter(propertyValue);
                     }
                 }
             }
         }
 
-        public void AddParameter(Column column, Parameter parameter)
-        {
-            if (Mapping.Parameters.ContainsKey(column))
-                Mapping.Parameters[column].Add(parameter);
-            else
-                Mapping.Parameters[column] = new List<Parameter>() { parameter };
-        }
-
         public Query<TBase> AddRestriction(string property, RestrictionTypes type, object value)
         {
             Column column = Mapping.TypeTableMapping[baseType].Columns.Single(x => x.Name == property);
-            Parameter parameter = new Parameter(column, value);
-
-            // Store the SQL for the restriction clause against the column attribute for the 
-            // property, then store the value of the parameter against its handle if no error occurs.
-            column.Restrictions.Add(new Restriction(column, parameter, type));
-            AddParameter(column, parameter);
+            column.AddRestriction(type, value);
 
             return this;
         }
@@ -256,7 +240,7 @@ namespace DataTrack.Core.SQL.DataStructures
 
         private string GetDeleteString()
         {
-            if (Mapping.Parameters.Count >= 1)
+            if (Mapping.Tables.Any(t => t.Columns.Any(c => c.Parameters.Count > 0)))
             {
                 SQLBuilder<TBase> sqlBuilder = new SQLBuilder<TBase>(Mapping);
                 StringBuilder restrictionsBuilder = new StringBuilder();
