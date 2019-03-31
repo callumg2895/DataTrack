@@ -94,8 +94,6 @@ namespace DataTrack.Core.SQL.DataStructures
 
         private protected bool TryGetTable(Type type, out Table? table)
         {
-            table = null;
-
             TableMappingAttribute? tableAttribute = null;
             List<ColumnMappingAttribute> columnAttributes = new List<ColumnMappingAttribute>();
 
@@ -113,16 +111,14 @@ namespace DataTrack.Core.SQL.DataStructures
                     }
                 }
 
-            if (tableAttribute != null)
+            if (tableAttribute != null && columnAttributes.Count > 0)
             {
                 table = new Table(type, tableAttribute, columnAttributes);
                 return true;
             }
-            else
-            {
-                table = null;
-                return false;
-            }
+
+            table = null;
+            return false;          
         }
 
         private void LogTableRelationships()
