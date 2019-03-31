@@ -30,12 +30,10 @@ namespace DataTrack.Core.Tests
             List<object> results = null;
 
             //Act
-            using (Transaction<Author> t1 = new Transaction<Author>(new List<Query<Author>>(){
-                new Query<Author>().Create(author),
-                new Query<Author>().Read().AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName),
-            }))
+            using (Transaction<Author> t1 = new Transaction<Author>())
             {
-                results = t1.Execute();
+                t1.Execute(new Query<Author>().Create(author));
+                results = t1.Execute(new Query<Author>().Read().AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName));
                 t1.Commit();
             }
 
@@ -63,33 +61,27 @@ namespace DataTrack.Core.Tests
             // Arrange
             Author authorBefore = new Author() { FirstName = "John", LastName = "Smith", Books = new List<Book>()};
             Author authorAfter = new Author() { FirstName = "James", LastName = "Smith", Books = new List<Book>()};
-            List<object> results1 = null;
-            List<object> results2 = null;
+            List<Author> results1 = null;
+            List<Author> results2 = null;
 
             // Act
 
-            using (Transaction<Author> t1 = new Transaction<Author>(new List<Query<Author>>()
+            using (Transaction<Author> t1 = new Transaction<Author>())
             {
-                new Query<Author>().Create(authorBefore),
-                new Query<Author>().AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, authorBefore.FirstName)
-            }))
-            {
-                results1 = t1.Execute();
+                t1.Execute(new Query<Author>().Create(authorBefore));
+                results1 = t1.Execute(new Query<Author>().AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, authorBefore.FirstName));
                 t1.Commit();
             }
 
-            using (Transaction<Author> t2 = new Transaction<Author>(new List<Query<Author>>()
+            using (Transaction<Author> t2 = new Transaction<Author>())
             {
-                new Query<Author>().Update(authorAfter),
-                new Query<Author>().AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, authorAfter.FirstName),
-            }))
-            {
-                results2 = t2.Execute();
+                t2.Execute(new Query<Author>().Update(authorAfter));
+                results2 = t2.Execute(new Query<Author>().AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, authorAfter.FirstName));
                 t2.Commit();
             }
 
-            Author beforeUpdate = ((List<Author>)results1[1])[0];
-            Author afterUpdate = ((List<Author>)results2[1])[0];
+            Author beforeUpdate = results1[0];
+            Author afterUpdate = results2[0];
         
             new Query<Author>().Delete(beforeUpdate).Execute();
             new Query<Author>().Delete(afterUpdate).Execute();
@@ -116,9 +108,9 @@ namespace DataTrack.Core.Tests
 
             new Query<Author>().Create(author).Execute();
 
-            using (Transaction<Author> t = new Transaction<Author>(new Query<Author>().Delete(author)))
+            using (Transaction<Author> t = new Transaction<Author>())
             {
-                t.Execute();
+                t.Execute(new Query<Author>().Delete(author));
                 t.RollBack();
             }
 

@@ -149,22 +149,16 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
             foreach (Column column in columns)
             {
-                if (Mapping.Restrictions.ContainsKey(column))
+                foreach (Restriction restriction in column.Restrictions)
                 {
-                    if (processedRestrictions++ == 0)
-                    {
-
-                        restrictionBuilder.Append("where ");
-                    }
-                    else
-                    {
-                        restrictionBuilder.Append("and ");
-                    }
-
-                    restrictionBuilder.AppendLine(Mapping.Restrictions[column].ToString());
+                    restrictionBuilder.Append(processedRestrictions++ == 0 
+                        ? "where " 
+                        : "and ");
+                    restrictionBuilder.AppendLine(restriction.ToString());
                 }
-            }
 
+                column.Restrictions.Clear();
+            }
 
             sql.Append(setBuilder.ToString());
             sql.Append(restrictionBuilder.ToString());
@@ -247,11 +241,13 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
                 foreach (Column column in columns)
                 {
-                    if (Mapping.Restrictions.ContainsKey(column))
+                    foreach(Restriction restriction in column.Restrictions)
                     {
                         sql.Append($"{GetRestrictionKeyWord(RestrictionCount++)} ")
-                           .AppendLine(Mapping.Restrictions[column].ToString());
+                           .AppendLine(restriction.ToString());
                     }
+
+                    column.Restrictions.Clear();
                 }
 
                 sql.AppendLine();

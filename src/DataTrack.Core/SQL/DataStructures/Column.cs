@@ -16,6 +16,7 @@ namespace DataTrack.Core.SQL.DataStructures
         public Column(ColumnMappingAttribute columnAttribute, Table table)
         {
             Table = table;
+            Restrictions = new List<Restriction>();
             Name = columnAttribute.ColumnName;
             Alias = $"{table.Type.Name}.{Name}";
             PropertyName = GetPropertyName(table.Type);
@@ -28,6 +29,7 @@ namespace DataTrack.Core.SQL.DataStructures
         }
 
         public Table Table { get; set; }
+        public List<Restriction> Restrictions { get; set; }
         public string Name { get; set; }
         public string Alias { get; set; }
         public string PropertyName { get; set; }

@@ -10,7 +10,7 @@ using System.Text;
 
 namespace DataTrack.Core.SQL.DataStructures
 {
-    struct Restriction
+    public struct Restriction
     {
         public string Alias;
         public string Handle;

@@ -140,7 +140,7 @@ namespace DataTrack.Core.SQL.DataStructures
 
             // Store the SQL for the restriction clause against the column attribute for the 
             // property, then store the value of the parameter against its handle if no error occurs.
-            Mapping.Restrictions[column] = new Restriction(column, parameter, type);
+            column.Restrictions.Add(new Restriction(column, parameter, type));
             AddParameter(column, parameter);
 
             return this;
@@ -264,11 +264,17 @@ namespace DataTrack.Core.SQL.DataStructures
                 for (int i = 0; i < Mapping.Tables.Count; i++)
                 {
                     for (int j = 0; j < Mapping.Tables[i].Columns.Count; j++)
-                        if (Mapping.Restrictions.ContainsKey(Mapping.Tables[i].Columns[j]))
+                    {
+                        Column column = Mapping.Tables[i].Columns[j];
+
+                        foreach (Restriction restriction in column.Restrictions)
                         {
                             restrictionsBuilder.Append(restrictionsBuilder.Length == 0 ? "where " : "and ");
-                            restrictionsBuilder.AppendLine(Mapping.Restrictions[Mapping.Tables[i].Columns[j]].ToString());
+                            restrictionsBuilder.AppendLine(restriction.ToString());
                         }
+
+                        column.Restrictions.Clear();
+                    }
                 }
 
                 sqlBuilder.AppendLine();

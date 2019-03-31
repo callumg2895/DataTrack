@@ -15,7 +15,6 @@ namespace DataTrack.Core.SQL
 
         private SqlTransaction transaction;
         private SqlConnection connection;
-        private List<Query<TBase>> queries;
         private Stopwatch stopwatch;
         private List<Object> results;
 
@@ -23,7 +22,7 @@ namespace DataTrack.Core.SQL
 
         #region Constructors
 
-        private Transaction()
+        public Transaction()
         {
             connection = DataTrackConfiguration.CreateConnection();
             transaction = connection.BeginTransaction();
@@ -31,31 +30,13 @@ namespace DataTrack.Core.SQL
             results = new List<object>();
         }
 
-        public Transaction(Query<TBase> query)
-            : this()
-        {
-            this.queries = new List<Query<TBase>>() { query };
-        }
-
-        public Transaction(List<Query<TBase>> queries)
-            : this()
-        {
-            this.queries = queries;
-        }
-
         #endregion
 
         #region Methods
 
-        public List<object> Execute()
+        public dynamic Execute(Query<TBase> query)
         {
-            stopwatch.Start();
-            queries.ForEach(query => results.Add(query.Execute(connection.CreateCommand(), connection, transaction)));
-            stopwatch.Stop();
-
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Executed Transaction ({stopwatch.GetElapsedMicroseconds()}\u03BCs): {queries.Count} {(queries.Count > 1 ? "queries" : "query")} executed");
-
-            return results;
+            return query.Execute(connection.CreateCommand(), connection, transaction);
         }
 
         public void RollBack()

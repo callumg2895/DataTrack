@@ -20,7 +20,6 @@ namespace DataTrack.Core.SQL.DataStructures
         internal Dictionary<Type, Table> TypeTableMapping { get; set; } = new Dictionary<Type, Table>();
         internal Dictionary<Table, List<Table>> ParentChildMapping { get; set; } = new Dictionary<Table, List<Table>>();
         internal Dictionary<Column, List<Parameter>> Parameters { get; set; } = new Dictionary<Column, List<Parameter>>();
-        internal Dictionary<Column, Restriction> Restrictions { get; set; } = new Dictionary<Column, Restriction>();
         public Map<Table, DataTable> DataTableMapping { get; set; } = new Map<Table, DataTable>();
 
         public Mapping()
@@ -83,6 +82,11 @@ namespace DataTrack.Core.SQL.DataStructures
         private Table LoadTableMappingFromCache(Type type)
         {
             Table table = Dictionaries.TypeMappingCache[type];
+
+            foreach (Column column in table.Columns)
+            {
+                column.Restrictions.Clear();
+            }
 
             Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded Table object for '{type.Name}' entity from cache");
 
