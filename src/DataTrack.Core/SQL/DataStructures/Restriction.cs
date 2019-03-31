@@ -18,7 +18,7 @@ namespace DataTrack.Core.SQL.DataStructures
 
         public Restriction(Column column, Parameter parameter, RestrictionTypes rType)
         {
-            if (Dictionaries.SQLDataTypes[parameter.Value?.GetType()] == SqlDbType.VarChar && (rType == RestrictionTypes.LessThan || rType == RestrictionTypes.MoreThan))
+            if (parameter.DatabaseType == SqlDbType.VarChar && (rType == RestrictionTypes.LessThan || rType == RestrictionTypes.MoreThan))
             {
                 Logger.Error(MethodBase.GetCurrentMethod(), $"Cannot apply '{rType.ToSqlString()}' operator to values of type VarChar");
             }

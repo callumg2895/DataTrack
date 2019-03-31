@@ -9,7 +9,7 @@ namespace DataTrack.Core.Util.Extensions
 
         public static SqlCommand AddParameter(this SqlCommand command, Parameter parameter)
         {
-            command.Parameters.Add(new SqlParameter(parameter.Handle, Dictionaries.SQLDataTypes[parameter.Value.GetType()]) { Value = parameter.Value });
+            command.Parameters.Add(new SqlParameter(parameter.Handle, parameter.DatabaseType) { Value = parameter.Value });
 
             return command;
         }

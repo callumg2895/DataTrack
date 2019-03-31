@@ -73,7 +73,7 @@ namespace DataTrack.Core.SQL.DataStructures
             foreach (PropertyInfo property in type.GetProperties())
                 foreach (Attribute attribute in property.GetCustomAttributes())
                     if ((attribute as ColumnMappingAttribute)?.ColumnName == this.Name)
-                        return Dictionaries.SQLDataTypes[property.PropertyType];
+                        return Parameter.SQLDataTypes[property.PropertyType];
 
             // Technically the wrong exception to throw. The problem here is that the 'type' supplied
             // does not contain a property with ColumnMappingAttribute with a matching column name.
