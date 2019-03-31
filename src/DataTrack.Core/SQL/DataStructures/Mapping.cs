@@ -25,7 +25,6 @@ namespace DataTrack.Core.SQL.DataStructures
         public Mapping()
         {
             MapTable(BaseType);
-            CacheMappingData();
             LogTableRelationships();
         }
 
@@ -72,6 +71,7 @@ namespace DataTrack.Core.SQL.DataStructures
             if (TryGetTable(type, out Table? table) && table != null)
             {
                 Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded Table object for '{type.Name}' entity");
+                Dictionaries.TypeMappingCache[type] = table;
                 return table;
             }
 
@@ -130,22 +130,6 @@ namespace DataTrack.Core.SQL.DataStructures
             {
                 table = null;
                 return false;
-            }
-        }
-
-        private void CacheMappingData()
-        {
-            if (Dictionaries.TypeMappingCache.ContainsKey(BaseType))
-                return;
-
-            foreach (Table table in Tables)
-            {
-                Type type = table.Type;
-
-                if (!Dictionaries.TypeMappingCache.ContainsKey(type))
-                {
-                    Dictionaries.TypeMappingCache[type] = table;
-                }
             }
         }
 
