@@ -10,11 +10,16 @@ namespace DataTrack.Core.SQL.DataStructures
         
         public Parameter(Column column, object value)
         {
-            Handle = column.GetParameterHandle(Index++);
+            Handle = GetParameterHandle(column);
             Value = value;
         }
 
         public string Handle { get; set; }
         public object Value {get; set;}
+
+        private static string GetParameterHandle(Column column)
+        {
+            return $"@{column.Table.Name}_{column.Name}_{Index}";
+        }
     }
 }
