@@ -49,5 +49,10 @@ namespace DataTrack.Core.SQL.DataStructures
 
             throw new TableMappingException(Type, Name);
         }
+
+        public Table Clone()
+        {
+            return (Table)this.MemberwiseClone();
+        }
     }
 }

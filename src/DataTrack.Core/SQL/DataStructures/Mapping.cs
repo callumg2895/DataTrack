@@ -72,7 +72,7 @@ namespace DataTrack.Core.SQL.DataStructures
             {
                 Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded Table object for '{type.Name}' entity");
                 Dictionaries.TypeMappingCache[type] = table;
-                return table;
+                return table.Clone();
             }
 
             Logger.Error(MethodBase.GetCurrentMethod(), $"Failed to load Table object for '{type.Name}' entity");
@@ -90,7 +90,7 @@ namespace DataTrack.Core.SQL.DataStructures
 
             Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded Table object for '{type.Name}' entity from cache");
 
-            return table;
+            return table.Clone();
         }
 
         private protected bool TryGetTable(Type type, out Table? table)

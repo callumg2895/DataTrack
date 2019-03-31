@@ -272,8 +272,6 @@ namespace DataTrack.Core.SQL.DataStructures
                             restrictionsBuilder.Append(restrictionsBuilder.Length == 0 ? "where " : "and ");
                             restrictionsBuilder.AppendLine(restriction.ToString());
                         }
-
-                        column.Restrictions.Clear();
                     }
                 }
 

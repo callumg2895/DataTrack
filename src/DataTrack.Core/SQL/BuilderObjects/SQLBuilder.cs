@@ -156,8 +156,6 @@ namespace DataTrack.Core.SQL.BuilderObjects
                         : "and ");
                     restrictionBuilder.AppendLine(restriction.ToString());
                 }
-
-                column.Restrictions.Clear();
             }
 
             sql.Append(setBuilder.ToString());
@@ -246,8 +244,6 @@ namespace DataTrack.Core.SQL.BuilderObjects
                         sql.Append($"{GetRestrictionKeyWord(RestrictionCount++)} ")
                            .AppendLine(restriction.ToString());
                     }
-
-                    column.Restrictions.Clear();
                 }
 
                 sql.AppendLine();
