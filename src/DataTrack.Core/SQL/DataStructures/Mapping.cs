@@ -68,8 +68,9 @@ namespace DataTrack.Core.SQL.DataStructures
         {
             if (TryGetTable(type, out Table? table) && table != null)
             {
-                Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded Table object for '{type.Name}' entity");
+                Logger.Trace($"Caching database mapping for Entity '{type.Name}'");
                 Dictionaries.TypeMappingCache[type] = table;
+
                 return (Table)table.Clone();
             }
 
@@ -79,15 +80,14 @@ namespace DataTrack.Core.SQL.DataStructures
 
         private Table LoadTableMappingFromCache(Type type)
         {
-            Table table = Dictionaries.TypeMappingCache[type];
-
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Loaded Table object for '{type.Name}' entity from cache");
-
-            return (Table)table.Clone();
+            Logger.Info(MethodBase.GetCurrentMethod(), $"Loading Table object for '{type.Name}' entity from cache");
+            return (Table)Dictionaries.TypeMappingCache[type].Clone();
         }
 
         private protected bool TryGetTable(Type type, out Table? table)
         {
+            Logger.Info(MethodBase.GetCurrentMethod(), $"Loading Table object for '{type.Name}' entity");
+
             TableMappingAttribute? tableAttribute = null;
             List<ColumnMappingAttribute> columnAttributes = new List<ColumnMappingAttribute>();
 
