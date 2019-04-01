@@ -14,9 +14,9 @@ namespace DataTrack.Core.SQL.BuilderObjects
     {
         #region Members
 
-        private Type BaseType = typeof(TBase);
-        private Mapping<TBase> Mapping;
-        private StringBuilder sql;
+        private Type _baseType;
+        private Mapping<TBase> _mapping;
+        private StringBuilder _sql;
 
         #endregion
 
@@ -24,8 +24,9 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
         public SQLBuilder(Mapping<TBase> mapping)
         {
-            Mapping = mapping;
-            sql = new StringBuilder();
+            _baseType = typeof(TBase);
+            _mapping = mapping;
+            _sql = new StringBuilder();
         }
 
         #endregion
@@ -34,8 +35,8 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
         public void CreateStagingTable(Table table)
         {
-            sql.AppendLine($"create table {table.StagingName}");
-            sql.AppendLine("(");
+            _sql.AppendLine($"create table {table.StagingName}");
+            _sql.AppendLine("(");
 
             for (int i = 0; i < table.Columns.Count; i++)
             {
@@ -44,19 +45,19 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
                 if (column.IsPrimaryKey())
                 {
-                    sql.AppendLine($"{column.Name} {sqlDbType.ToSqlString()} not null identity(1,1),");
-                    sql.Append($"primary key ({column.Name})");
+                    _sql.AppendLine($"{column.Name} {sqlDbType.ToSqlString()} not null identity(1,1),");
+                    _sql.Append($"primary key ({column.Name})");
                 }
                 else
                 {
-                    sql.Append($"{column.Name} {sqlDbType.ToSqlString()} not null");
+                    _sql.Append($"{column.Name} {sqlDbType.ToSqlString()} not null");
                 }
 
-                sql.AppendLine(i == table.Columns.Count - 1 ? "" : ",");
+                _sql.AppendLine(i == table.Columns.Count - 1 ? "" : ",");
             }
 
-            sql.AppendLine(")")
-               .AppendLine();
+            _sql.AppendLine(")")
+                .AppendLine();
         }
 
         public void BuildInsertFromStagingToMainWithOutputIds(Table table)
@@ -67,38 +68,38 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
             string primaryKeyColumnName = string.Empty;
 
-            sql.AppendLine("create table #insertedIds (id int);")
-               .AppendLine()
-               .Append("insert into " + table.Name + " (");
+            _sql.AppendLine("create table #insertedIds (id int);")
+                .AppendLine()
+                .Append("insert into " + table.Name + " (");
 
             for (int i = 0; i < columns.Count; i++)
             {
                 if (!columns[i].IsPrimaryKey())
-                    sql.Append(columns[i].Name + (i == columns.Count - 1 ? "" : ", "));
+                    _sql.Append(columns[i].Name + (i == columns.Count - 1 ? "" : ", "));
                 else
                     primaryKeyColumnName = columns[i].Name;
             }
 
-            sql.AppendLine(")")
-               .AppendLine()
-               .AppendLine($"output inserted.{primaryKeyColumnName} into #insertedIds(id)")
-               .AppendLine()
-               .Append("select ");
+            _sql.AppendLine(")")
+                .AppendLine()
+                .AppendLine($"output inserted.{primaryKeyColumnName} into #insertedIds(id)")
+                .AppendLine()
+                .Append("select ");
 
             for (int i = 0; i < columns.Count; i++)
             {
                 if (!columns[i].IsPrimaryKey())
-                    sql.Append(columns[i].Name + (i == columns.Count - 1 ? "" : ", "));
+                    _sql.Append(columns[i].Name + (i == columns.Count - 1 ? "" : ", "));
             }
 
-            sql.AppendLine()
-               .AppendLine($"from {table.StagingName}")
-               .AppendLine()
-               .AppendLine("select * from #insertedIds")
-               .AppendLine()
-               .AppendLine("drop table #insertedIds")
-               .AppendLine($"drop table {table.StagingName}")
-               .AppendLine();
+            _sql.AppendLine()
+                .AppendLine($"from {table.StagingName}")
+                .AppendLine()
+                .AppendLine("select * from #insertedIds")
+                .AppendLine()
+                .AppendLine("drop table #insertedIds")
+                .AppendLine($"drop table {table.StagingName}")
+                .AppendLine();
         }
 
         public void BuildInsertStatement(List<Column> columns, TableMappingAttribute table)
@@ -107,16 +108,16 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
             columns = columns.Where(c => !c.IsPrimaryKey()).ToList();
 
-            sql.Append("insert into " + table.TableName + " (");
+            _sql.Append($"insert into {table.TableName} (");
 
-            sql.Append(columns[0].Name);
+            _sql.Append(columns[0].Name);
 
             for (int i = 1; i < columns.Count; i++)
             {
-                sql.Append(", " + columns[i].Name);
+                _sql.Append(", " + columns[i].Name);
             }
 
-            sql.AppendLine(")");
+            _sql.AppendLine(")");
         }
 
         public void BuildUpdateStatement()
@@ -124,28 +125,23 @@ namespace DataTrack.Core.SQL.BuilderObjects
             StringBuilder setBuilder = new StringBuilder();
             StringBuilder restrictionBuilder = new StringBuilder();
 
-            Table table = Mapping.TypeTableMapping[BaseType];
-            List<Column> columns = Mapping.TypeTableMapping[BaseType].Columns.Where(c => !c.IsPrimaryKey()).ToList(); 
+            Table table = _mapping.TypeTableMapping[_baseType];
+            List<Column> columns = table.Columns.Where(c => !c.IsPrimaryKey()).ToList(); 
 
             int processedRestrictions = 0;
             int totalColumns = columns.Count;
 
-            sql.AppendLine($"update {table.Alias}");
-            sql.Append("set ");
+            _sql.AppendLine($"update {table.Alias}");
+            _sql.Append("set ");
 
-            for (int i = 0; i < totalColumns; i++)
+            setBuilder.Append($"{columns[0].Alias} = {columns[0].Parameters[0].Handle}");
+
+            for (int i = 1; i < totalColumns; i++)
             {
-                setBuilder.Append(table.Alias);
-                setBuilder.Append(".");
-                setBuilder.Append(columns[i].Name);
-                setBuilder.Append(" = ");
-                setBuilder.Append(columns[i].Parameters[0].Handle);
-                setBuilder.AppendLine(i == totalColumns - 1
-                    ? ""
-                    : ",");
+                setBuilder.Append($", {columns[i].Alias} = {columns[i].Parameters[0].Handle}");
             }
 
-            restrictionBuilder.AppendLine($"from {table.Name} {table.Alias}");
+            restrictionBuilder.AppendLine($" from {table.Name} {table.Alias}");
 
             foreach (Column column in columns)
             {
@@ -158,8 +154,8 @@ namespace DataTrack.Core.SQL.BuilderObjects
                 }
             }
 
-            sql.Append(setBuilder.ToString());
-            sql.Append(restrictionBuilder.ToString());
+            _sql.Append(setBuilder.ToString());
+            _sql.Append(restrictionBuilder.ToString());
         }
 
         public void BuildValuesStatement(List<Column> columns, TableMappingAttribute table)
@@ -171,67 +167,58 @@ namespace DataTrack.Core.SQL.BuilderObjects
             // Assert that all colums for a given table have the same number of parameters
             int paramCount = columns.Select(c => c.Parameters.Count).Max();
 
-            sql.Append("values ");
+            _sql.Append("values ");
 
             // For each set of parameters, we create a seperate set of values:
             // eg: values (set 1), (set 2), (set 3)
             for (int j = 0; j < paramCount; j++)
             {
-                sql.Append("(");
-                sql.Append(columns[0].Parameters[j].Handle);
+                _sql.Append($"( {columns[0].Parameters[j].Handle}");
 
                 for (int i = 1; i < columns.Count; i++)
                 {
-                    sql.Append(", " + columns[i].Parameters[j].Handle);
+                    _sql.Append($", {columns[i].Parameters[j].Handle}");
                 }
 
-                sql.Append(")");
+                _sql.Append(")");
 
                 if (j < paramCount - 1)
-                    sql.Append(",");
+                    _sql.Append(",");
             }
 
-            sql.AppendLine();
+            _sql.AppendLine();
         }
 
         public void BuildSelectStatement()
         {
-            foreach (Table table in Mapping.Tables)
+            foreach (Table table in _mapping.Tables)
             {
                 List<Column> columns = table.Columns;
 
                 int RestrictionCount = 0;
 
-                sql.AppendLine();
-                sql.Append("select ");
-                sql.Append(columns[0].Alias);
+                _sql.AppendLine()
+                    .Append($"select {columns[0].Alias}");
 
                 for (int i = 1; i < columns.Count; i++)
                 {
-                    sql.Append(", ");
-                    sql.Append(columns[i].Alias);
+                    _sql.Append(", ")
+                        .Append(columns[i].Alias);
                 }
 
-                sql.AppendLine();
+                _sql.AppendLine()
+                    .AppendLine($"into {table.StagingName} from {table.Name} as {table.Alias}");        
 
-                sql.Append("into ")
-                   .Append(table.StagingName);
-
-                sql.Append(" from ")
-                   .Append(table.Name)
-                   .Append(" as ")
-                   .AppendLine(table.Alias);        
-
-                if (table.Type != BaseType && columns.Where(c => c.IsForeignKey()).Count() > 0)
+                if (table.Type != _baseType && columns.Where(c => c.IsForeignKey()).Count() > 0)
                 {
                     List<Column> foreignKeyColumns = columns.Where(c => c.IsForeignKey()).ToList();
 
                     foreach (Column column in foreignKeyColumns)
                     {
-                        Table foreignTable = Mapping.Tables.Where(t => t.Name == column.ForeignKeyTableMapping).First();
+                        Table foreignTable = _mapping.Tables.Where(t => t.Name == column.ForeignKeyTableMapping).First();
                         Column foreignColumn = foreignTable.Columns.Find(c => c.IsPrimaryKey());
 
-                        sql.Append($"{GetRestrictionKeyWord(RestrictionCount++)} ")
+                        _sql.Append($"{GetRestrictionKeyWord(RestrictionCount++)} ")
                            .AppendLine($"{column.Alias} in (select {foreignColumn.Name} from {foreignTable.StagingName})");
 
                     }             
@@ -241,13 +228,13 @@ namespace DataTrack.Core.SQL.BuilderObjects
                 {
                     foreach(Restriction restriction in column.Restrictions)
                     {
-                        sql.Append($"{GetRestrictionKeyWord(RestrictionCount++)} ")
+                        _sql.Append($"{GetRestrictionKeyWord(RestrictionCount++)} ")
                            .AppendLine(restriction.ToString());
                     }
                 }
 
-                sql.AppendLine();
-                sql.AppendLine($"select * from {table.StagingName}");
+                _sql.AppendLine();
+                _sql.AppendLine($"select * from {table.StagingName}");
             }
         }
 
@@ -256,17 +243,17 @@ namespace DataTrack.Core.SQL.BuilderObjects
             return restrictionCount > 0 ? "and" : "where";
         }
 
-        public void Append(string text) => sql.Append(text);
+        public void Append(string text) => _sql.Append(text);
 
-        public void AppendLine() => sql.AppendLine();
+        public void AppendLine() => _sql.AppendLine();
 
-        public void AppendLine(string text) => sql.AppendLine(text);
+        public void AppendLine(string text) => _sql.AppendLine(text);
 
-        public override string ToString() => sql.ToString();
+        public override string ToString() => _sql.ToString();
 
         public void SelectRowCount()
         {
-            sql.AppendLine("select @@rowcount as affected_rows");
+            _sql.AppendLine("select @@rowcount as affected_rows");
         }
 
         #endregion
