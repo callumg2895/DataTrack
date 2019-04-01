@@ -6,7 +6,7 @@ using System.Text;
 
 namespace DataTrack.Core.SQL.DataStructures
 {
-    public class Table
+    public class Table : ICloneable
     {
         public Type Type { get; set; }
         public string Name { get; set; }
@@ -56,7 +56,7 @@ namespace DataTrack.Core.SQL.DataStructures
             throw new TableMappingException(Type, Name);
         }
 
-        public Table Clone()
+        public object Clone()
         {
             return new Table(Type, tableMappingAttribute, columnMappingAttributes);
         }
