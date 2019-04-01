@@ -24,7 +24,6 @@ namespace DataTrack.Core.SQL.DataStructures
         public Mapping()
         {
             MapTable(BaseType);
-            LogTableRelationships();
         }
 
         private void MapTable(Type type)
@@ -114,26 +113,6 @@ namespace DataTrack.Core.SQL.DataStructures
 
             table = null;
             return false;          
-        }
-
-        private void LogTableRelationships()
-        {
-            StringBuilder logMessage = new StringBuilder();
-            logMessage.AppendLine();
-
-            foreach (Table table in Tables)
-            {
-                logMessage.AppendLine($"Mapped table '{table.Name}' with {ParentChildMapping[table].Count} child table(s):");
-
-                foreach (Table childTable in ParentChildMapping[table])
-                {
-                    logMessage.AppendLine($"- {childTable.Name}");
-                }
-
-                logMessage.AppendLine();
-            }
-
-            Logger.Debug(logMessage.ToString());
         }
     }
 }

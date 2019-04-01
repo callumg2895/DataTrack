@@ -25,6 +25,8 @@ namespace DataTrack.Core.SQL.DataStructures
             ForeignKeyColumnMapping = columnAttribute.ForeignKeyColumnMapping;
             ForeignKeyTableMapping = columnAttribute.ForeignKeyTableMapping;
 
+            Logger.Trace($"Loaded database mapping for Property '{PropertyName}' of Entity '{Table.Type.Name}' (Column '{Name}')");
+
             if (this.IsForeignKey() && string.IsNullOrEmpty(ForeignKeyTableMapping))
                 Logger.Warn(MethodBase.GetCurrentMethod(), $"Column '{Name}' is a foreign key but is not mapped to a table");
         }

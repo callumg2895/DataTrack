@@ -1,5 +1,6 @@
 ﻿using DataTrack.Core.Attributes;
 using DataTrack.Core.Exceptions;
+using DataTrack.Core.Logging;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -32,6 +33,8 @@ namespace DataTrack.Core.SQL.DataStructures
             {
                 Columns.Add(new Column(columnAttribute, this));
             }
+
+            Logger.Trace($"Loaded database mapping for Entity '{Type.Name}' (Table '{Name}')");
         }
 
         public Column GetPrimaryKeyColumn()
@@ -58,6 +61,7 @@ namespace DataTrack.Core.SQL.DataStructures
 
         public object Clone()
         {
+            Logger.Trace($"Cloning database mapping for Entity '{Type.Name}' (Table '{Name}')");
             return new Table(Type, tableMappingAttribute, columnMappingAttributes);
         }
     }
