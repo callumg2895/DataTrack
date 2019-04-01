@@ -67,11 +67,14 @@ namespace DataTrack.Core.Logging
                 logBuffer.Add(new LogItem(method, message, level));
         }
 
-        public static void Info(MethodBase method, string message) => Log(method, message, LogLevel.Info);
-        public static void Info(string message) => Log(null, message, LogLevel.Info);
+        public static void Trace(MethodBase method, string message) => Log(method, message, LogLevel.Trace);
+        public static void Trace(string message) => Log(null, message, LogLevel.Trace);
 
         public static void Debug(MethodBase method, string message) => Log(method, message, LogLevel.Debug);
         public static void Debug(string message) => Log(null, message, LogLevel.Debug);
+
+        public static void Info(MethodBase method, string message) => Log(method, message, LogLevel.Info);
+        public static void Info(string message) => Log(null, message, LogLevel.Info);
 
         public static void Warn(MethodBase method, string message) => Log(method, message, LogLevel.Warn);
         public static void Warn(string message) => Log(null, message, LogLevel.Warn);
