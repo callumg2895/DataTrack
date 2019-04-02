@@ -14,6 +14,7 @@ namespace DataTrack.Core.SQL.DataStructures
         public string StagingName { get; set; }
         public string Alias { get; set; }
         public List<Column> Columns { get; set; }
+        public List<Entity> Entities { get; set; }
 
         private TableMappingAttribute tableMappingAttribute;
         private List<ColumnMappingAttribute> columnMappingAttributes;
@@ -25,6 +26,7 @@ namespace DataTrack.Core.SQL.DataStructures
             StagingName = $"#{Name}_staging";
             Alias = type.Name;
             Columns = new List<Column>();
+            Entities = new List<Entity>();
 
             tableMappingAttribute = tableAttribute;
             columnMappingAttributes = columnAttributes;

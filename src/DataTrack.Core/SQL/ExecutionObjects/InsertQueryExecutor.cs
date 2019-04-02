@@ -83,6 +83,8 @@ namespace DataTrack.Core.SQL.ExecutionObjects
                         ids.Add((int)reader["id"]);
                     }
                 }
+
+                mapping.UpdateDataTableMappingWithPrimaryKeys(table, ids);
             }
 
             if (ids.Count == 0)

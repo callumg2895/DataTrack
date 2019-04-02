@@ -27,7 +27,7 @@ namespace DataTrack.Core.Tests
                 Books = new List<Book>() { book }
             };
 
-            List<object> results = null;
+            List<Author> results = null;
 
             //Act
             using (Transaction<Author> t1 = new Transaction<Author>())
@@ -37,22 +37,18 @@ namespace DataTrack.Core.Tests
                 t1.Commit();
             }
 
-            List<Author> authorResults = (List<Author>)results[1];
-
-            foreach (Author authorResult in authorResults)
+            foreach (Author result in results)
             {
-                foreach (Book bookResult in authorResult.Books)
+                foreach (Book bookResult in result.Books)
                 {
                     new Query<Book>().Delete(bookResult).Execute();
                 }
 
-                new Query<Author>().Delete(authorResult).Execute();
+                new Query<Author>().Delete(result).Execute();
             }
 
-            Author result = ((List<Author>)results[1])[0];
-
             // Assert
-            Assert.IsTrue(AuthorsAreEqual(result, author));
+            Assert.IsTrue(AuthorsAreEqual(results[0], author));
         }
 
         [TestMethod]
