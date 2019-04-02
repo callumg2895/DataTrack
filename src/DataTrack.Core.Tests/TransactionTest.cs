@@ -69,14 +69,17 @@ namespace DataTrack.Core.Tests
                 t1.Commit();
             }
 
+            Author beforeUpdate = results1[0];
+            authorAfter.ID = beforeUpdate.ID;
+
             using (Transaction<Author> t2 = new Transaction<Author>())
             {
                 t2.Execute(new Query<Author>().Update(authorAfter));
-                results2 = t2.Execute(new Query<Author>().AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, authorAfter.FirstName));
+                results2 = t2.Execute(new Query<Author>().Read(authorAfter.ID).AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, authorAfter.FirstName));
                 t2.Commit();
             }
 
-            Author beforeUpdate = results1[0];
+
             Author afterUpdate = results2[0];
         
             new Query<Author>().Delete(beforeUpdate).Execute();
