@@ -1,4 +1,5 @@
 ﻿using DataTrack.Core.Repository;
+using DataTrack.Core.SQL.DataStructures;
 using DataTrack.Core.Tests.TestObjects;
 using DataTrack.Core.Util;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -90,15 +91,35 @@ namespace DataTrack.Core.Tests
             //Act
             Repository<Author>.Create(author);
             authorReadResult = Repository<Author>.GetByProperty("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName)[0];
-            //Repository<Book>.Delete(book1);
-            //Repository<Book>.Delete(book2);
-            //Repository<Book>.Delete(book3);
-            //Repository<Book>.Delete(book4);
-            //Repository<Book>.Delete(book5);
-            Repository<Author>.Delete(author);
+            Repository<Book>.Delete(book1);
+            Repository<Book>.Delete(book2);
+            Repository<Book>.Delete(book3);
+            Repository<Book>.Delete(book4);
+            Repository<Book>.Delete(book5);
+            Repository<Author>.Delete(authorReadResult);
 
             // Assert
             Assert.AreEqual(authorReadResult.Books.Count, 5);
+        }
+
+        [TestMethod]
+        public void TestRepository_StressTestEntityCreation()
+        {
+            int stressTestAmount = 10;
+
+            for (int i = 0; i < stressTestAmount; i++)
+            {
+                Repository<Author>.Create(new Author() { FirstName = $"FirstName{i}", LastName = $"LastName{i}" });
+            }
+
+            List<Author> createdAuthors = new Query<Author>().Read().Execute();
+
+            foreach(Author author in createdAuthors)
+            {
+                Repository<Author>.Delete(author);
+            }
+
+            Assert.AreEqual(stressTestAmount, createdAuthors.Count);
         }
 
     }
