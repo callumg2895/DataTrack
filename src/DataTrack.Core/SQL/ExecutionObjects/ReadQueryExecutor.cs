@@ -15,19 +15,15 @@ namespace DataTrack.Core.SQL.ExecutionObjects
     public class ReadQueryExecutor<TBase> : QueryExecutor<TBase> where TBase : Entity, new()
     {
         internal ReadQueryExecutor(Query<TBase> query, SqlConnection connection, SqlTransaction? transaction = null)
+            : base(query, connection, transaction)
         {
-            Query = query;
-            stopwatch = new Stopwatch();
-            _connection = connection;
 
-            if (transaction != null)
-                _transaction = transaction;
         }
 
         internal List<TBase> Execute(SqlDataReader reader)
         {
             List<TBase> results = new List<TBase>();
-            List<Table> tables = Query.Mapping.Tables;
+            List<Table> tables = mapping.Tables;
 
             stopwatch.Start();
 

@@ -9,10 +9,21 @@ namespace DataTrack.Core.SQL.ExecutionObjects
 {
     public abstract class QueryExecutor<TBase> where TBase : Entity, new()
     {
-        private protected Query<TBase> Query;
+        private protected Mapping<TBase> mapping;
         private protected Stopwatch stopwatch;
-        private protected Type baseType = typeof(TBase);
+        private protected Type baseType;
         private protected SqlConnection _connection;
         private protected SqlTransaction _transaction;
+
+        public QueryExecutor(Query<TBase> query, SqlConnection connection, SqlTransaction? transaction)
+        {
+            stopwatch = new Stopwatch();
+            mapping = query.Mapping;
+            baseType = typeof(TBase);
+            _connection = connection;
+
+            if (transaction != null)
+                _transaction = transaction;
+        }
     }
 }

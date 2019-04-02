@@ -15,13 +15,9 @@ namespace DataTrack.Core.SQL.ExecutionObjects
     {
 
         internal UpdateQueryExecutor(Query<TBase> query, SqlConnection connection, SqlTransaction? transaction = null)
+            : base(query, connection, transaction)
         {
-            Query = query;
-            stopwatch = new Stopwatch();
-            _connection = connection;
 
-            if (transaction != null)
-                _transaction = transaction;
         }
 
         internal int Execute(SqlDataReader reader)

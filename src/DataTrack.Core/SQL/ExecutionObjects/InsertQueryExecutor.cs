@@ -18,22 +18,18 @@ namespace DataTrack.Core.SQL.ExecutionObjects
     public class InsertQueryExecutor<TBase> : QueryExecutor<TBase> where TBase : Entity, new()
     {
         internal InsertQueryExecutor(Query<TBase> query, SqlConnection connection, SqlTransaction? transaction = null)
+            : base(query, connection, transaction)
         {
-            Query = query;
-            stopwatch = new Stopwatch();
-            _connection = connection;
 
-            if (transaction != null)
-                _transaction = transaction;
         }
 
         internal bool Execute()
         {
             stopwatch.Start();
 
-            foreach (Table table in Query.Mapping.Tables)
+            foreach (Table table in mapping.Tables)
             {
-                if (Query.Mapping.DataTableMapping.ContainsKey(table))
+                if (mapping.DataTableMapping.ContainsKey(table))
                     WriteToServer(table);
             }
 
@@ -45,8 +41,8 @@ namespace DataTrack.Core.SQL.ExecutionObjects
 
         private void WriteToServer(Table table)
         {
-            SQLBuilder<TBase> createStagingTable = new SQLBuilder<TBase>(Query.Mapping);
-            SQLBuilder<TBase> insertFromStagingTable = new SQLBuilder<TBase>(Query.Mapping);
+            SQLBuilder<TBase> createStagingTable = new SQLBuilder<TBase>(mapping);
+            SQLBuilder<TBase> insertFromStagingTable = new SQLBuilder<TBase>(mapping);
             List<int> ids = new List<int>();
 
             createStagingTable.CreateStagingTable(table);
@@ -69,7 +65,7 @@ namespace DataTrack.Core.SQL.ExecutionObjects
             SqlBulkCopy bulkCopy = new SqlBulkCopy(_connection, copyOptions, _transaction);
 
             bulkCopy.DestinationTableName = table.StagingName;
-            bulkCopy.WriteToServer(Query.Mapping.DataTableMapping[table]);
+            bulkCopy.WriteToServer(mapping.DataTableMapping[table]);
 
             using (SqlCommand cmd = _connection.CreateCommand())
             {
