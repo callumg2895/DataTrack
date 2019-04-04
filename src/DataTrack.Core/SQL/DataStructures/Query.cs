@@ -14,10 +14,11 @@ using System.Reflection;
 using System.Linq;
 using DataTrack.Core.SQL.BuilderObjects;
 using System.Text;
+using DataTrack.Core.Interface;
 
 namespace DataTrack.Core.SQL.DataStructures
 {
-    public class Query<TBase> where TBase : Entity, new()
+    public class Query<TBase> where TBase : IEntity, new()
     {
         #region Members
 

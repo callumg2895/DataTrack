@@ -46,14 +46,20 @@ namespace DataTrack.Core.SQL.DataStructures
             PropertyInfo[] properties = type.GetProperties();
             propertyName = null;
 
+            if (Name == "id")
+            {
+                propertyName = "ID";
+                return true;
+            }
+
             // Try to find the property with a ColumnMappingAttribute that matches the one in the method call
             foreach (PropertyInfo property in properties)
                 foreach (Attribute attribute in property.GetCustomAttributes())
-                    if ((attribute as ColumnMappingAttribute)?.ColumnName == this.Name)
-                    {
-                        propertyName = property.Name;
-                        return true;
-                    }
+                        if ((attribute as ColumnMappingAttribute)?.ColumnName == Name)
+                        {
+                            propertyName = property.Name;
+                            return true;
+                        }
 
             Logger.Error(MethodBase.GetCurrentMethod(), $"Could not find property '{propertyName}' in object with class '{type.Name}' with attached ColumnMappingAttribute");
             return false;
@@ -61,11 +67,15 @@ namespace DataTrack.Core.SQL.DataStructures
 
         public string GetPropertyName(Type type)
         {
+            if (Name == "id")
+                return "ID";
+            
             // Try to find the property with a ColumnMappingAttribute that matches the one in the method call
             foreach (PropertyInfo property in type.GetProperties())
                 foreach (Attribute attribute in property.GetCustomAttributes())
-                    if ((attribute as ColumnMappingAttribute)?.ColumnName == this.Name)
+                    if ((attribute as ColumnMappingAttribute)?.ColumnName == Name)
                         return property.Name;
+            
 
             throw new ColumnMappingException(type, this.Name);
         }
@@ -73,10 +83,14 @@ namespace DataTrack.Core.SQL.DataStructures
         public SqlDbType GetSqlDbType(Type type)
         {
             foreach (PropertyInfo property in type.GetProperties())
+            {
+                if (Name == "id" && property.Name == "ID")
+                    return Parameter.SQLDataTypes[property.PropertyType];
+
                 foreach (Attribute attribute in property.GetCustomAttributes())
                     if ((attribute as ColumnMappingAttribute)?.ColumnName == this.Name)
                         return Parameter.SQLDataTypes[property.PropertyType];
-
+            }
             // Technically the wrong exception to throw. The problem here is that the 'type' supplied
             // does not contain a property with ColumnMappingAttribute with a matching column name.
             throw new ColumnMappingException(type, this.Name);

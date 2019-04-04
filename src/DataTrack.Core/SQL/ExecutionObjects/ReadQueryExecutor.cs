@@ -9,10 +9,11 @@ using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Reflection;
 using System.Text;
+using DataTrack.Core.Interface;
 
 namespace DataTrack.Core.SQL.ExecutionObjects
 {
-    public class ReadQueryExecutor<TBase> : QueryExecutor<TBase> where TBase : Entity, new()
+    public class ReadQueryExecutor<TBase> : QueryExecutor<TBase> where TBase : IEntity, new()
     {
         internal ReadQueryExecutor(Query<TBase> query, SqlConnection connection, SqlTransaction? transaction = null)
             : base(query, connection, transaction)

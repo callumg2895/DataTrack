@@ -1,5 +1,7 @@
 ﻿using DataTrack.Core.Attributes;
+using DataTrack.Core.Enums;
 using DataTrack.Core.Exceptions;
+using DataTrack.Core.Interface;
 using DataTrack.Core.Logging;
 using DataTrack.Core.Util;
 using DataTrack.Core.Util.DataStructures;
@@ -13,7 +15,7 @@ using System.Text;
 
 namespace DataTrack.Core.SQL.DataStructures
 {
-    public class Mapping<TBase> where TBase : Entity
+    public class Mapping<TBase> where TBase : IEntity
     {
         public Type BaseType { get; set; } = typeof(TBase);
         public List<Table> Tables { get; set; } = new List<Table>();
@@ -115,15 +117,23 @@ namespace DataTrack.Core.SQL.DataStructures
                 tableAttribute = attribute as TableMappingAttribute;
 
             foreach (PropertyInfo property in type.GetProperties())
+            {
+                if (property.Name == "ID")
+                {
+                    columnAttributes.Add(new ColumnMappingAttribute(tableAttribute.TableName, "id", (byte)KeyTypes.PrimaryKey));
+                    continue;
+                }
+
                 foreach (Attribute attribute in property.GetCustomAttributes())
                 {
                     ColumnMappingAttribute? mappingAttribute = attribute as ColumnMappingAttribute;
                     if (mappingAttribute != null)
                     {
-                       columnAttributes.Add(mappingAttribute);
+                        columnAttributes.Add(mappingAttribute);
                         break;
                     }
                 }
+            }
 
             if (tableAttribute != null && columnAttributes.Count > 0)
             {

@@ -12,10 +12,11 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 using DataTrack.Core.SQL.BuilderObjects;
+using DataTrack.Core.Interface;
 
 namespace DataTrack.Core.SQL.ExecutionObjects
 {
-    public class InsertQueryExecutor<TBase> : QueryExecutor<TBase> where TBase : Entity, new()
+    public class InsertQueryExecutor<TBase> : QueryExecutor<TBase> where TBase : IEntity, new()
     {
         internal InsertQueryExecutor(Query<TBase> query, SqlConnection connection, SqlTransaction? transaction = null)
             : base(query, connection, transaction)

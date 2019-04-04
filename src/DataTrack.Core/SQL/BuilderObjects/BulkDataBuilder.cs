@@ -10,10 +10,11 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using DataTrack.Core.SQL.DataStructures;
+using DataTrack.Core.Interface;
 
 namespace DataTrack.Core.SQL.BuilderObjects
 {
-    public class BulkDataBuilder<TBase> where TBase : Entity
+    public class BulkDataBuilder<TBase> where TBase : IEntity
     {
 
         #region Members
@@ -110,26 +111,29 @@ namespace DataTrack.Core.SQL.BuilderObjects
                 List<DataColumn> primaryKeys = new List<DataColumn>();
                 ForeignKeyConstraint fk;
 
-                dataTable.Columns.Add(dataColumn);
-                ColumnMap[column] = dataColumn;
+                if (!column.IsPrimaryKey())
+                {
+                    dataTable.Columns.Add(dataColumn);
+                    ColumnMap[column] = dataColumn;
+                }
 
                 if (column.IsPrimaryKey())
                     primaryKeys.Add(dataColumn);
 
-                if (column.IsForeignKey())
-                {
-                    foreach (Table table in Tables)
-                    {
-                        if (column.ForeignKeyTableMapping == table.Name)
-                        {
-                            DataColumn parentColumn = DataMap[table].Columns.Cast<DataColumn>().Where(c => ColumnMap[c].Name == column.ForeignKeyColumnMapping).First();
-                            fk = new ForeignKeyConstraint(parentColumn, dataColumn);
-                            dataTable.Constraints.Add(fk);
-                        }
-                    }
-                }
+                //if (column.IsForeignKey())
+                //{
+                //    foreach (Table table in Tables)
+                //    {
+                //        if (column.ForeignKeyTableMapping == table.Name)
+                //        {
+                //            DataColumn parentColumn = DataMap[table].Columns.Cast<DataColumn>().Where(c => ColumnMap[c].Name == column.ForeignKeyColumnMapping).First();
+                //            fk = new ForeignKeyConstraint(parentColumn, dataColumn);
+                //            dataTable.Constraints.Add(fk);
+                //        }
+                //    }
+                //}
 
-                dataTable.PrimaryKey = primaryKeys.ToArray();
+                //dataTable.PrimaryKey = primaryKeys.ToArray();
             }
         }
 
@@ -141,7 +145,8 @@ namespace DataTrack.Core.SQL.BuilderObjects
             for (int i = 0; i < rowData.Count; i++)
             {
                 Column column = table.Columns[i];
-                dataRow[column.Name] = rowData[i];
+                if (!column.IsPrimaryKey())
+                    dataRow[column.Name] = rowData[i];
             }
 
             dataTable.Rows.Add(dataRow);

@@ -1,4 +1,5 @@
 ﻿using DataTrack.Core.Enums;
+using DataTrack.Core.Interface;
 using DataTrack.Core.SQL.BuilderObjects;
 using DataTrack.Core.SQL.DataStructures;
 using System;
@@ -7,7 +8,7 @@ using System.Reflection;
 
 namespace DataTrack.Core.Repository
 {
-    public static class Repository<TBase> where TBase : Entity, new()
+    public static class Repository<TBase> where TBase : IEntity, new()
     {
         #region Create
 

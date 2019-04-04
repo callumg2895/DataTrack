@@ -1,5 +1,6 @@
 ﻿using DataTrack.Core.Attributes;
 using DataTrack.Core.Exceptions;
+using DataTrack.Core.Interface;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -7,8 +8,10 @@ using System.Text;
 
 namespace DataTrack.Core.SQL.DataStructures
 {
-    public abstract class Entity
+    public abstract class Entity<TIdentity> : IEntity
     {
+        public TIdentity ID { get; set; } = default;
+
         public object GetPropertyValue(string propertyName)
         {
             return this.GetType()
@@ -22,9 +25,17 @@ namespace DataTrack.Core.SQL.DataStructures
             Type type = this.GetType();
 
             foreach (PropertyInfo property in type.GetProperties())
+            {
+                if (property.Name == "ID")
+                {
+                    values.Add(this.GetPropertyValue(property.Name));
+                    continue;
+                }
+
                 foreach (Attribute attribute in property.GetCustomAttributes())
                     if ((attribute as ColumnMappingAttribute) != null)
                         values.Add(this.GetPropertyValue(property.Name));
+            }
 
             return values;
         }

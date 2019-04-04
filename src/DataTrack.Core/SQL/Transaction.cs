@@ -6,10 +6,11 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Reflection;
+using DataTrack.Core.Interface;
 
 namespace DataTrack.Core.SQL
 {
-    public class Transaction<TBase> : IDisposable where TBase : Entity, new()
+    public class Transaction<TBase> : IDisposable where TBase : IEntity, new()
     {
         #region Members
 

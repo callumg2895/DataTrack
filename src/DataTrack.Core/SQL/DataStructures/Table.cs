@@ -1,5 +1,6 @@
 ﻿using DataTrack.Core.Attributes;
 using DataTrack.Core.Exceptions;
+using DataTrack.Core.Interface;
 using DataTrack.Core.Logging;
 using System;
 using System.Collections.Generic;
@@ -14,7 +15,7 @@ namespace DataTrack.Core.SQL.DataStructures
         public string StagingName { get; set; }
         public string Alias { get; set; }
         public List<Column> Columns { get; set; }
-        public List<Entity> Entities { get; set; }
+        public List<IEntity> Entities { get; set; }
 
         private TableMappingAttribute tableMappingAttribute;
         private List<ColumnMappingAttribute> columnMappingAttributes;
@@ -26,7 +27,7 @@ namespace DataTrack.Core.SQL.DataStructures
             StagingName = $"#{Name}_staging";
             Alias = type.Name;
             Columns = new List<Column>();
-            Entities = new List<Entity>();
+            Entities = new List<IEntity>();
 
             tableMappingAttribute = tableAttribute;
             columnMappingAttributes = columnAttributes;

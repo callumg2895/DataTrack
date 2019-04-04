@@ -6,11 +6,8 @@ using System.Collections.Generic;
 namespace DataTrack.Core.Tests.TestObjects
 {
     [TableMapping("authors")]
-    public class Author : Entity
+    public class Author : Entity<int>
     {
-        [ColumnMapping("authors", "id", (byte)KeyTypes.PrimaryKey)]
-        public virtual int ID { get; set; }
-
         [ColumnMapping("authors", "first_name")]
         public virtual string FirstName { get; set; }
 

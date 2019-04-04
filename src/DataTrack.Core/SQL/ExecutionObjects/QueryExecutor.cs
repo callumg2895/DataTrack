@@ -1,4 +1,5 @@
-﻿using DataTrack.Core.SQL.DataStructures;
+﻿using DataTrack.Core.Interface;
+using DataTrack.Core.SQL.DataStructures;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -7,7 +8,7 @@ using System.Text;
 
 namespace DataTrack.Core.SQL.ExecutionObjects
 {
-    public abstract class QueryExecutor<TBase> where TBase : Entity, new()
+    public abstract class QueryExecutor<TBase> where TBase : IEntity, new()
     {
         private protected Mapping<TBase> mapping;
         private protected Stopwatch stopwatch;

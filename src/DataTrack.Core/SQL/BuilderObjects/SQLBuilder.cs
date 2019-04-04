@@ -1,4 +1,5 @@
 ﻿using DataTrack.Core.Attributes;
+using DataTrack.Core.Interface;
 using DataTrack.Core.SQL.DataStructures;
 using DataTrack.Core.Util;
 using DataTrack.Core.Util.Extensions;
@@ -10,7 +11,7 @@ using System.Text;
 
 namespace DataTrack.Core.SQL.BuilderObjects
 {
-    public class SQLBuilder<TBase> where TBase : Entity
+    public class SQLBuilder<TBase> where TBase : IEntity
     {
         #region Members
 
@@ -66,7 +67,8 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
             if (columns.Count == 0) return;
 
-            string primaryKeyColumnName = string.Empty;
+            string primaryKeyColumnName = "id";
+            bool isFirstElement = true;
 
             _sql.AppendLine("create table #insertedIds (id int);")
                 .AppendLine()
@@ -75,9 +77,10 @@ namespace DataTrack.Core.SQL.BuilderObjects
             for (int i = 0; i < columns.Count; i++)
             {
                 if (!columns[i].IsPrimaryKey())
-                    _sql.Append(columns[i].Name + (i == columns.Count - 1 ? "" : ", "));
-                else
-                    primaryKeyColumnName = columns[i].Name;
+                {
+                    _sql.Append((isFirstElement ? "" : ", ") + columns[i].Name);
+                    isFirstElement = false;
+                }
             }
 
             _sql.AppendLine(")")
@@ -86,10 +89,14 @@ namespace DataTrack.Core.SQL.BuilderObjects
                 .AppendLine()
                 .Append("select ");
 
+            isFirstElement = true;
             for (int i = 0; i < columns.Count; i++)
             {
                 if (!columns[i].IsPrimaryKey())
-                    _sql.Append(columns[i].Name + (i == columns.Count - 1 ? "" : ", "));
+                {
+                    _sql.Append((isFirstElement ? "" : ", ") + columns[i].Name);
+                    isFirstElement = false;
+                }
             }
 
             _sql.AppendLine()

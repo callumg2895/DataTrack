@@ -8,10 +8,11 @@ using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Reflection;
 using System.Text;
+using DataTrack.Core.Interface;
 
 namespace DataTrack.Core.SQL.ExecutionObjects
 {
-    public class UpdateQueryExecutor<TBase> : QueryExecutor<TBase> where TBase : Entity, new()
+    public class UpdateQueryExecutor<TBase> : QueryExecutor<TBase> where TBase : IEntity, new()
     {
 
         internal UpdateQueryExecutor(Query<TBase> query, SqlConnection connection, SqlTransaction? transaction = null)
