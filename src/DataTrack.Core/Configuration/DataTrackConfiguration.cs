@@ -25,14 +25,14 @@ namespace DataTrack.Core
 
         public static void Init() => Init(false, ConfigType.Manual, null);
 
-        public static void Init(bool enableConsoleLogging, ConfigType configType, string? connection)
+        public static void Init(bool enableConsoleLogging, ConfigType configType, string connection = "")
         {
             Logger.Init(enableConsoleLogging);
 
             switch (configType)
             {
                 case ConfigType.FilePath:
-                    if (connection == null)
+                    if (string.IsNullOrEmpty(connection))
                     {
                         throw new ArgumentNullException("'FilePath' ConfigType specified but the specified filepath was null", nameof(connection));
                     }
@@ -47,7 +47,6 @@ namespace DataTrack.Core
                     Logger.Warn(MethodBase.GetCurrentMethod(), "Database connection string must be set manually");
                     break;
             }
-
         }
 
         public static SqlConnection CreateConnection()

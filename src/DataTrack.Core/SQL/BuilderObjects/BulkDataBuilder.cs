@@ -109,7 +109,6 @@ namespace DataTrack.Core.SQL.BuilderObjects
             {
                 DataColumn dataColumn = new DataColumn(column.Name);
                 List<DataColumn> primaryKeys = new List<DataColumn>();
-                ForeignKeyConstraint fk;
 
                 if (!column.IsPrimaryKey())
                 {
@@ -119,21 +118,6 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
                 if (column.IsPrimaryKey())
                     primaryKeys.Add(dataColumn);
-
-                //if (column.IsForeignKey())
-                //{
-                //    foreach (Table table in Tables)
-                //    {
-                //        if (column.ForeignKeyTableMapping == table.Name)
-                //        {
-                //            DataColumn parentColumn = DataMap[table].Columns.Cast<DataColumn>().Where(c => ColumnMap[c].Name == column.ForeignKeyColumnMapping).First();
-                //            fk = new ForeignKeyConstraint(parentColumn, dataColumn);
-                //            dataTable.Constraints.Add(fk);
-                //        }
-                //    }
-                //}
-
-                //dataTable.PrimaryKey = primaryKeys.ToArray();
             }
         }
 

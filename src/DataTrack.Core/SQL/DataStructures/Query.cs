@@ -102,23 +102,27 @@ namespace DataTrack.Core.SQL.DataStructures
             return parameters;
         }
 
-        internal void UpdateParameters(TBase item)
+        internal void UpdateParameters(IEntity item)
         {
-            foreach(Table table in Mapping.Tables)
+            Type type = item.GetType();
+            Table table = Mapping.TypeTableMapping[type];
+
+            foreach (Column column in table.Columns)
             {
-                foreach (Column column in table.Columns)
+                string propertyName = column.GetPropertyName(table.Type);
+                object propertyValue = item.GetPropertyValue(propertyName);
+
+                if (propertyValue == null || (column.IsPrimaryKey() && propertyValue == default))
+                    continue;
+
+                column.AddParameter(propertyValue);
+            }
+
+            foreach (var childTable in Mapping.ParentChildMapping[table])
+            {
+                foreach (var childItem in item.GetChildPropertyValues(childTable.Name))
                 {
-                    // For each column in the Query, find the value of the property which is decorated by that column attribute
-                    // Then update the dictionary of parameters with this value.
-                    if (column.TryGetPropertyName(baseType, out string? propertyName))
-                    {
-                        object propertyValue = item.GetPropertyValue(propertyName);
-
-                        if (propertyValue == null || (column.IsPrimaryKey() && (int)propertyValue == 0))
-                            continue;
-
-                        column.AddParameter(propertyValue);
-                    }
+                    UpdateParameters(childItem);
                 }
             }
         }
@@ -134,25 +138,19 @@ namespace DataTrack.Core.SQL.DataStructures
         private void AddPrimaryKeyRestriction(TBase item)
         {
             Column primaryKeyColumn = Mapping.TypeTableMapping[baseType].GetPrimaryKeyColumn();
+            string primaryKeyColumnPropertyName = primaryKeyColumn.GetPropertyName(baseType);
+            object primaryKeyValue = item.GetPropertyValue(primaryKeyColumnPropertyName);
 
-            // Find the name and value of the primary key property in the 'item' object
-            if (primaryKeyColumn.TryGetPropertyName(baseType, out string? primaryKeyColumnPropertyname))
-            {
-                var primaryKeyValue = item.GetPropertyValue(primaryKeyColumnPropertyname);
-                AddRestriction(primaryKeyColumn.Name, RestrictionTypes.EqualTo, primaryKeyValue);
-            }
+            AddRestriction(primaryKeyColumn.Name, RestrictionTypes.EqualTo, primaryKeyValue);        
         }
 
         private void AddPrimaryKeyDeleteRestriction(TBase item)
         {
             Column primaryKeyColumn = Mapping.TypeTableMapping[baseType].GetPrimaryKeyColumn();
+            string primaryKeyColumnPropertyName = primaryKeyColumn.GetPropertyName(baseType);
+            object primaryKeyValue = item.GetPropertyValue(primaryKeyColumnPropertyName);
 
-            // Find the name and value of the primary key property in the 'item' object
-            if (primaryKeyColumn.TryGetPropertyName(baseType, out string? primaryKeyColumnPropertyname))
-            {
-                var primaryKeyValue = item.GetPropertyValue(primaryKeyColumnPropertyname);
-                AddRestriction(primaryKeyColumn.Name, RestrictionTypes.In, primaryKeyValue);
-            }
+            AddRestriction(primaryKeyColumn.Name, RestrictionTypes.In, primaryKeyValue);         
         }
 
         public dynamic Execute()

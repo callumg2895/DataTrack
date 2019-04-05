@@ -10,7 +10,7 @@ namespace DataTrack.Core.SQL.DataStructures
 {
     public abstract class Entity<TIdentity> : IEntity
     {
-        public TIdentity ID { get; set; } = default;
+        public TIdentity ID { get; set; }
 
         public object GetPropertyValue(string propertyName)
         {

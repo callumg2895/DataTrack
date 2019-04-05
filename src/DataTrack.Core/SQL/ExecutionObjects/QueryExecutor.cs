@@ -14,7 +14,7 @@ namespace DataTrack.Core.SQL.ExecutionObjects
         private protected Stopwatch stopwatch;
         private protected Type baseType;
         private protected SqlConnection _connection;
-        private protected SqlTransaction _transaction;
+        private protected SqlTransaction? _transaction;
 
         public QueryExecutor(Query<TBase> query, SqlConnection connection, SqlTransaction? transaction)
         {

@@ -116,6 +116,9 @@ namespace DataTrack.Core.SQL.DataStructures
             foreach (Attribute attribute in type.GetCustomAttributes())
                 tableAttribute = attribute as TableMappingAttribute;
 
+            if (tableAttribute == null)
+                throw new NullReferenceException($"Could not find TableMappingAttribute for type {type.Name}");
+
             foreach (PropertyInfo property in type.GetProperties())
             {
                 if (property.Name == "ID")

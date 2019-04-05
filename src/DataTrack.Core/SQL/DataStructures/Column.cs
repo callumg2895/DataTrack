@@ -41,30 +41,6 @@ namespace DataTrack.Core.SQL.DataStructures
         public string? ForeignKeyTableMapping { get; set; }
         public string? ForeignKeyColumnMapping { get; set; }
 
-        public bool TryGetPropertyName(Type type, out string? propertyName)
-        {
-            PropertyInfo[] properties = type.GetProperties();
-            propertyName = null;
-
-            if (Name == "id")
-            {
-                propertyName = "ID";
-                return true;
-            }
-
-            // Try to find the property with a ColumnMappingAttribute that matches the one in the method call
-            foreach (PropertyInfo property in properties)
-                foreach (Attribute attribute in property.GetCustomAttributes())
-                        if ((attribute as ColumnMappingAttribute)?.ColumnName == Name)
-                        {
-                            propertyName = property.Name;
-                            return true;
-                        }
-
-            Logger.Error(MethodBase.GetCurrentMethod(), $"Could not find property '{propertyName}' in object with class '{type.Name}' with attached ColumnMappingAttribute");
-            return false;
-        }
-
         public string GetPropertyName(Type type)
         {
             if (Name == "id")
