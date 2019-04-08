@@ -21,6 +21,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
         public TBase Data { get; private set; }
         public List<Table> Tables { get; private set; }
+        public Mapping<TBase> Mapping { get; private set; }
 
         private Map<Table, DataTable> DataMap = new Map<Table, DataTable>();
         private Map<Column, DataColumn> ColumnMap = new Map<Column, DataColumn>();
@@ -33,6 +34,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
         {
             Data = data;
             Tables = mapping.Tables;
+            Mapping = mapping;
         }
 
         #endregion Constructors
@@ -41,64 +43,43 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
         public Map<Table, DataTable> YieldDataMap()
         {
-            ConstructData();
+            BuildDataFor(Data);
             return DataMap;
         }
 
-        private void ConstructData()
+        private void BuildDataFor(IEntity item)
         {
-            // For inserts, we build a list of DataTables, where each 'table' in the list corresponds to the data for a table in the Query object
-            Tables.ForEach(table => BuildDataFor(table));
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Created {DataMap.ForwardKeys.Count} DataTable{(DataMap.ForwardKeys.Count > 1 ? "s" : "")}");
-        }
+            if (item == null)
+                return;
 
-        private DataTable BuildDataFor(Table table)
-        {
-            DataTable dataTable = new DataTable(table.Name);
-            DataMap[dataTable] = table;
+            Type type = item.GetType();
+            Table table = Mapping.TypeTableMapping[type];
 
-            if (table.Type == BaseType)
+            if (!DataMap.ContainsKey(table))
             {
+                DataMap[table] = new DataTable(table.Name);
                 Logger.Info(MethodBase.GetCurrentMethod(), $"Building DataTable for: {Data?.GetType().ToString()}");
-
-                if (Data != null)
-                {
-                    List<object> items = Data.GetPropertyValues();
-
-                    SetColumns(dataTable);
-                    AddRow(dataTable, items);
-
-                    Logger.Info($"Current table row count: {dataTable.Rows.Count}");
-                    items.ForEach(item => Logger.Info(item?.ToString() ?? "NULL"));
-                }
             }
-            else
+
+            DataTable dataTable = DataMap[table];
+            List<object> items = item.GetPropertyValues();
+
+            SetColumns(dataTable);
+            AddRow(dataTable, items);
+
+            foreach (var childTable in Mapping.ParentChildMapping[table])
             {
-                if (Data != null && Data.GetChildPropertyValues(table.Name) != null)
+                var childItems = item.GetChildPropertyValues(childTable.Name);
+
+                if (childItems == null)
+                    continue;
+
+                foreach (var childItem in childItems)
                 {
-                    SetColumns(dataTable);
-
-                    dynamic childItems = Activator.CreateInstance(typeof(List<>).MakeGenericType(table.Type));
-
-                    foreach (var item in Data.GetChildPropertyValues(table.Name))
-                    {
-                        childItems.Add(item);
-                    }
-
-                    Logger.Info(MethodBase.GetCurrentMethod(), $"Building DataTable for: {table.Name}");
-
-                    foreach (var item in childItems)
-                    {
-                        List<object> values = item.GetPropertyValues();
-                        AddRow(dataTable, values);
-
-                        values.ForEach(value => Logger.Info(value?.ToString() ?? "NULL"));
-                        Logger.Info($"Current table row count: {dataTable.Rows.Count}");
-                    }
+                    BuildDataFor(childItem);
                 }
             }
-
-            return dataTable;
+            
         }
 
         private void SetColumns(DataTable dataTable)
@@ -107,6 +88,9 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
             foreach (Column column in columns)
             {
+                if (ColumnMap.ContainsKey(column))
+                    return;
+
                 DataColumn dataColumn = new DataColumn(column.Name);
                 List<DataColumn> primaryKeys = new List<DataColumn>();
 

@@ -39,11 +39,14 @@ namespace DataTrack.Core.SQL.DataStructures
             {
                 Column foreignKeyColumn = childTable.GetForeignKeyColumn(table.Name);
 
-                DataTable dataTable = DataTableMapping[childTable];
-
-                foreach (DataRow row in dataTable.Rows)
+                if (DataTableMapping.ContainsKey(childTable))
                 {
-                    row[foreignKeyColumn.Name] = primaryKeys?[0] ?? 0;
+                    DataTable dataTable = DataTableMapping[childTable];
+
+                    foreach (DataRow row in dataTable.Rows)
+                    {
+                        row[foreignKeyColumn.Name] = primaryKeys?[0] ?? 0;
+                    }
                 }
             }
         }
