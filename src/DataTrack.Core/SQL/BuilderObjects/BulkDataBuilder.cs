@@ -62,10 +62,9 @@ namespace DataTrack.Core.SQL.BuilderObjects
             }
 
             DataTable dataTable = DataMap[table];
-            List<object> items = item.GetPropertyValues();
 
             SetColumns(dataTable);
-            AddRow(dataTable, items);
+            AddRow(dataTable, item);
 
             foreach (var childTable in Mapping.ParentChildMapping[table])
             {
@@ -74,9 +73,15 @@ namespace DataTrack.Core.SQL.BuilderObjects
                 if (childItems == null)
                     continue;
 
+                if (!Mapping.ParentChildEntityMapping.ContainsKey(item))
+                {
+                    Mapping.ParentChildEntityMapping[item] = new List<IEntity>();
+                }
+
                 foreach (var childItem in childItems)
                 {
                     BuildDataFor(childItem);
+                    Mapping.ParentChildEntityMapping[item].Add(childItem);
                 }
             }
             
@@ -105,8 +110,10 @@ namespace DataTrack.Core.SQL.BuilderObjects
             }
         }
 
-        private void AddRow(DataTable dataTable, List<object> rowData)
+        private void AddRow(DataTable dataTable, IEntity item)
         {
+            List<object> rowData = item.GetPropertyValues();
+
             Table table = DataMap[dataTable];
             DataRow dataRow = dataTable.NewRow();
 
@@ -118,6 +125,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
             }
 
             dataTable.Rows.Add(dataRow);
+            Mapping.EntityDataRowMapping.Add(item, dataRow);
         }
         #endregion  
     }

@@ -21,6 +21,8 @@ namespace DataTrack.Core.SQL.DataStructures
         public List<Table> Tables { get; set; } = new List<Table>();
         internal Dictionary<Type, Table> TypeTableMapping { get; set; } = new Dictionary<Type, Table>();
         internal Dictionary<Table, List<Table>> ParentChildMapping { get; set; } = new Dictionary<Table, List<Table>>();
+        internal Dictionary<IEntity, List<IEntity>> ParentChildEntityMapping { get; set; } = new Dictionary<IEntity, List<IEntity>>();
+        internal Dictionary<IEntity, DataRow> EntityDataRowMapping { get; set; } = new Dictionary<IEntity, DataRow>();
         public Map<Table, DataTable> DataTableMapping { get; set; } = new Map<Table, DataTable>();
 
         public Mapping()
@@ -30,10 +32,31 @@ namespace DataTrack.Core.SQL.DataStructures
 
         public void UpdateDataTableMappingWithPrimaryKeys(Table table, List<int> primaryKeys)
         {
+            Type type = table.Type;
+            List<IEntity> entities = new List<IEntity>();
+            int i = 0;
+
             bool hasChildren = ParentChildMapping.TryGetValue(table, out List<Table> childTables);
 
             if (!hasChildren)
                 return;
+
+            foreach (var entity in ParentChildEntityMapping.Keys)
+            {
+                if (entity.GetType() != type)
+                    continue;
+
+                foreach( var childEntity in ParentChildEntityMapping[entity])
+                {
+                    var key = primaryKeys[i];
+                    var row = EntityDataRowMapping[childEntity];
+                    var childType = childEntity.GetType();
+                    var childTable = TypeTableMapping[childType];
+                    var foreignKeyColumn = childTable.GetForeignKeyColumn(table.Name);
+
+                    row[foreignKeyColumn.Name] = primaryKeys?[i] ?? 0;
+                }
+            }
 
             foreach(Table childTable in childTables)
             {
