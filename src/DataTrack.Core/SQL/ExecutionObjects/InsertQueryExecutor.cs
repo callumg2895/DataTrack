@@ -42,24 +42,7 @@ namespace DataTrack.Core.SQL.ExecutionObjects
 
         private void WriteToServer(Table table)
         {
-            SQLBuilder<TBase> createStagingTable = new SQLBuilder<TBase>(mapping);
-            SQLBuilder<TBase> insertFromStagingTable = new SQLBuilder<TBase>(mapping);
-            List<dynamic> ids = new List<dynamic>();
-            string primaryKeyColumnName = table.GetPrimaryKeyColumn().Name;
-
-            createStagingTable.CreateStagingTable(table);
-            insertFromStagingTable.BuildInsertFromStagingToMainWithOutputIds(table);
-            using (SqlCommand cmd = _connection.CreateCommand())
-            {
-                cmd.CommandText = createStagingTable.ToString();
-                cmd.CommandType = CommandType.Text;
-                cmd.Transaction = _transaction;
-
-                Logger.Debug($"Creating staging table {table.StagingName}");
-                Logger.Debug($"Executing SQL: {createStagingTable.ToString()}");
-
-                cmd.ExecuteNonQuery();
-            }
+            CreateStagingTable(table);
 
             Logger.Debug($"Executing Bulk Insert for {table.Name}");
 
@@ -69,14 +52,44 @@ namespace DataTrack.Core.SQL.ExecutionObjects
             bulkCopy.DestinationTableName = table.StagingName;
             bulkCopy.WriteToServer(mapping.DataTableMapping[table]);
 
+            InsertFromStagingTable(table);
+        }
+
+        private void CreateStagingTable(Table table)
+        {
+            SQLBuilder<TBase> sql = new SQLBuilder<TBase>(mapping);
+
+            sql.CreateStagingTable(table);
+
             using (SqlCommand cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = insertFromStagingTable.ToString();
+                cmd.CommandText = sql.ToString();
+                cmd.CommandType = CommandType.Text;
+                cmd.Transaction = _transaction;
+
+                Logger.Debug($"Creating staging table {table.StagingName}");
+                Logger.Debug($"Executing SQL: {sql.ToString()}");
+
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        private void InsertFromStagingTable(Table table)
+        {
+            SQLBuilder<TBase> sql = new SQLBuilder<TBase>(mapping);
+            string primaryKeyColumnName = table.GetPrimaryKeyColumn().Name;
+            List<dynamic> ids = new List<dynamic>();
+
+            sql.BuildInsertFromStagingToMainWithOutputIds(table);
+
+            using (SqlCommand cmd = _connection.CreateCommand())
+            {
+                cmd.CommandText = sql.ToString();
                 cmd.CommandType = CommandType.Text;
                 cmd.Transaction = _transaction;
 
                 Logger.Debug($"Reading primary keys inserted into {table.Name}");
-                Logger.Debug($"Executing SQL: {insertFromStagingTable.ToString()}");
+                Logger.Debug($"Executing SQL: {sql.ToString()}");
 
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
@@ -88,11 +101,9 @@ namespace DataTrack.Core.SQL.ExecutionObjects
                     }
                 }
 
+                Logger.Debug($"{(ids.Count == 0 ? "No" : ids.Count.ToString())} {table.Name} were inserted");
                 mapping.UpdateDataTableForeignKeys(table, ids);
             }
-
-            Logger.Debug($"{(ids.Count == 0 ? "No" : ids.Count.ToString())} {table.Name} were inserted");
         }
-
     }
 }
