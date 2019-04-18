@@ -1,4 +1,5 @@
-﻿using DataTrack.Core.Repository;
+﻿using DataTrack.Core.Interface;
+using DataTrack.Core.Repository;
 using DataTrack.Core.SQL.DataStructures;
 using DataTrack.Core.Tests.TestObjects;
 using DataTrack.Core.Util;
@@ -103,23 +104,43 @@ namespace DataTrack.Core.Tests
         }
 
         [TestMethod]
-        public void TestRepository_StressTestEntityCreation()
+        public void TestRepository_ShouldInsertMultipleEntitiesFromList()
         {
-            int stressTestAmount = 10;
+            int authorsToInsert = 10;
+            int booksPerAuthor = 20;
 
-            for (int i = 0; i < stressTestAmount; i++)
+            List<IEntity> authors = new List<IEntity>();
+
+            for (int i = 0; i < authorsToInsert; i++)
             {
-                Repository<Author>.Create(new Author() { FirstName = $"FirstName{i}", LastName = $"LastName{i}" });
+                authors.Add(new Author() { FirstName = $"FirstName{i}", LastName = $"LastName{i}", Books = new List<Book>() });
             }
 
+            foreach (Author author in authors)
+            {
+                for (int i = 0; i < booksPerAuthor; i++)
+                {
+                    author.Books.Add(new Book() { Title = $"Title{i}"});
+                }
+            }
+
+            Repository<Author>.Create(authors);
+
             List<Author> createdAuthors = new Query<Author>().Read().Execute();
+            List<Book> createdBooks = new Query<Book>().Read().Execute();
 
             foreach(Author author in createdAuthors)
             {
                 Repository<Author>.Delete(author);
             }
 
-            Assert.AreEqual(stressTestAmount, createdAuthors.Count);
+            foreach(Book book in createdBooks)
+            {
+                Repository<Book>.Delete(book);
+            }
+
+            Assert.AreEqual(authorsToInsert, createdAuthors.Count);
+            Assert.AreEqual(authorsToInsert * booksPerAuthor, createdBooks.Count);
         }
 
     }

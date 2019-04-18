@@ -19,7 +19,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
         #region Members
 
-        public TBase Data { get; private set; }
+        public List<IEntity> Data { get; private set; }
         public List<Table> Tables { get; private set; }
         public Mapping<TBase> Mapping { get; private set; }
 
@@ -30,7 +30,13 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
         #region Constructors
 
-        public BulkDataBuilder(TBase data, Mapping<TBase> mapping)
+        public BulkDataBuilder(IEntity data, Mapping<TBase> mapping)
+            : this(new List<IEntity>() { data }, mapping)
+        {
+
+        }
+
+        public BulkDataBuilder(List<IEntity> data, Mapping<TBase> mapping)
         {
             Data = data;
             Tables = mapping.Tables;
@@ -43,7 +49,11 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
         public Map<Table, DataTable> YieldDataMap()
         {
-            BuildDataFor(Data);
+            foreach(var item in Data)
+            {
+                BuildDataFor(item);
+            }
+
             return DataMap;
         }
 

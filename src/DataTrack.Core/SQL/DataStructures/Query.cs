@@ -50,10 +50,17 @@ namespace DataTrack.Core.SQL.DataStructures
                 throw new Exception(message);
             }
         }
-        public Query<TBase> Create(TBase item)
+        public Query<TBase> Create(IEntity item)
         {
             OperationType = CRUDOperationTypes.Create;
             Mapping.DataTableMapping = new BulkDataBuilder<TBase>(item, Mapping).YieldDataMap();
+            return this;
+        }
+
+        public Query<TBase> Create(List<IEntity> items)
+        {
+            OperationType = CRUDOperationTypes.Create;
+            Mapping.DataTableMapping = new BulkDataBuilder<TBase>(items, Mapping).YieldDataMap();
             return this;
         }
 

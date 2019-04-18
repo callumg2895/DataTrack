@@ -14,6 +14,8 @@ namespace DataTrack.Core.Repository
 
         public static void Create(TBase item) => new Query<TBase>().Create(item).Execute();
 
+        public static void Create(List<IEntity> items) => new Query<TBase>().Create(items).Execute();
+
         #endregion
 
         #region Read
