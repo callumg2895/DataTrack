@@ -57,21 +57,6 @@ namespace DataTrack.Core.SQL.DataStructures
                     row[foreignKeyColumn.Name] = primaryKeys?[i] ?? 0;
                 }
             }
-
-            foreach(Table childTable in childTables)
-            {
-                Column foreignKeyColumn = childTable.GetForeignKeyColumn(table.Name);
-
-                if (DataTableMapping.ContainsKey(childTable))
-                {
-                    DataTable dataTable = DataTableMapping[childTable];
-
-                    foreach (DataRow row in dataTable.Rows)
-                    {
-                        row[foreignKeyColumn.Name] = primaryKeys?[0] ?? 0;
-                    }
-                }
-            }
         }
 
         private void MapTable(Type type)
