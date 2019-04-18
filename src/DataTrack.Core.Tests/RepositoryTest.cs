@@ -18,23 +18,12 @@ namespace DataTrack.Core.Tests
         public void TestRepository_ShouldReturnCorrectObjectForReadWithRestriction()
         {
             // Arrange
-            Book book1 = new Book() { AuthorId = 1, Title = "The Great Gatsby" };
-            Book book2 = new Book() { AuthorId = 1, Title = "The Beautiful and Damned" };
-            Author author = new Author()
-            {
-                FirstName = "F.Scott",
-                LastName = "Fitzgerald",
-                Books = new List<Book>() { book1, book2 }
-            };
-
-            Author authorReadResult;
-            Book book1ReadResult;
+            Author author = Author.GetAuthors(1, 2)[0];
 
             //Act
             Repository<Author>.Create(author);
-
-            authorReadResult = Repository<Author>.GetByProperty("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName)[0];
-            book1ReadResult = Repository<Book>.GetByProperty("title", Enums.RestrictionTypes.EqualTo, book1.Title)[0];
+            Author authorReadResult = Repository<Author>.GetByProperty("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName)[0];
+            Book book1ReadResult = Repository<Book>.GetByProperty("title", Enums.RestrictionTypes.EqualTo, author.Books[0].Title)[0];
             Repository<Author>.Delete(authorReadResult);
 
             // Assert
@@ -45,22 +34,12 @@ namespace DataTrack.Core.Tests
         public void TestRepository_ShouldReturnCorrectObjectForGetByPropertyType()
         {
             // Arrange
-            Book book1 = new Book() { Title = "The Great Gatsby" };
-            Book book2 = new Book() { Title = "The Beautiful and Damned" };
-            Author author = new Author()
-            {
-                FirstName = "F.Scott",
-                LastName = "Fitzgerald",
-                Books = new List<Book>() { book1, book2 }
-            };
-
-            List<Book> bookReadResult;
-            List<Author> authorReadResult;
+            Author author = Author.GetAuthors(1, 5)[0];
 
             //Act
             Repository<Author>.Create(author);
-            authorReadResult = Repository<Author>.GetByProperty("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName);
-            bookReadResult = Repository<Book>.GetByProperty("title", Enums.RestrictionTypes.EqualTo, "The Great Gatsby");
+            List<Author> authorReadResult = Repository<Author>.GetByProperty("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName);
+            List<Book> bookReadResult = Repository<Book>.GetByProperty("title", Enums.RestrictionTypes.EqualTo, author.Books[0].Title);
 
             foreach( Author authorResult in authorReadResult)
             {
@@ -68,35 +47,25 @@ namespace DataTrack.Core.Tests
             }
 
             // Assert
-            Assert.IsTrue(BooksAreEqual(bookReadResult[0], book1));
+            Assert.IsTrue(BooksAreEqual(bookReadResult[0], author.Books[0]));
         }
 
         [TestMethod]
         public void TestRepository_ShouldReadCorrectNumberOfChildItemsAfterInsertingObjectWithLongListOfChildren()
         {
             // Arrange
-            Book book1 = new Book() { Title = "The Great Gatsby" };
-            Book book2 = new Book() { Title = "The Beautiful and Damned" };
-            Book book3 = new Book() { Title = "This Side of Paradise" };
-            Book book4 = new Book() { Title = "Tender is the Night" };
-            Book book5 = new Book() { Title = "The Last Tycoon" };
-            Author author = new Author()
-            {
-                FirstName = "F.Scott",
-                LastName = "Fitzgerald",
-                Books = new List<Book>() { book1, book2, book3, book4, book5 }
-            };
-
-            Author authorReadResult;
+            Author author = Author.GetAuthors(1, 5)[0];
 
             //Act
             Repository<Author>.Create(author);
-            authorReadResult = Repository<Author>.GetByProperty("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName)[0];
-            Repository<Book>.Delete(book1);
-            Repository<Book>.Delete(book2);
-            Repository<Book>.Delete(book3);
-            Repository<Book>.Delete(book4);
-            Repository<Book>.Delete(book5);
+
+            Author authorReadResult = Repository<Author>.GetByProperty("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName)[0];
+            
+            foreach(Book book in authorReadResult.Books)
+            {
+                Repository<Book>.Delete(book);
+            }
+
             Repository<Author>.Delete(authorReadResult);
 
             // Assert
@@ -110,20 +79,7 @@ namespace DataTrack.Core.Tests
             int authorsToInsert = 10;
             int booksPerAuthor = 20;
 
-            List<IEntity> authors = new List<IEntity>();
-
-            for (int i = 0; i < authorsToInsert; i++)
-            {
-                authors.Add(new Author() { FirstName = $"FirstName{i}", LastName = $"LastName{i}", Books = new List<Book>() });
-            }
-
-            foreach (Author author in authors)
-            {
-                for (int i = 0; i < booksPerAuthor; i++)
-                {
-                    author.Books.Add(new Book() { Title = $"Title{i}"});
-                }
-            }
+            List<IEntity> authors =  new List<IEntity>(Author.GetAuthors(authorsToInsert, booksPerAuthor));
 
             // Act
             Repository<Author>.Create(authors);
