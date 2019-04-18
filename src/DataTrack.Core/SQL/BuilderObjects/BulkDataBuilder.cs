@@ -14,14 +14,14 @@ using DataTrack.Core.Interface;
 
 namespace DataTrack.Core.SQL.BuilderObjects
 {
-    public class BulkDataBuilder<TBase> where TBase : IEntity
+    internal class BulkDataBuilder<TBase> where TBase : IEntity
     {
 
         #region Members
 
-        public List<IEntity> Data { get; private set; }
-        public List<Table> Tables { get; private set; }
-        public Mapping<TBase> Mapping { get; private set; }
+        internal List<IEntity> Data { get; private set; }
+        internal List<Table> Tables { get; private set; }
+        internal Mapping<TBase> Mapping { get; private set; }
 
         private Map<Table, DataTable> DataMap = new Map<Table, DataTable>();
         private Map<Column, DataColumn> ColumnMap = new Map<Column, DataColumn>();
@@ -30,13 +30,13 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
         #region Constructors
 
-        public BulkDataBuilder(IEntity data, Mapping<TBase> mapping)
+        internal BulkDataBuilder(IEntity data, Mapping<TBase> mapping)
             : this(new List<IEntity>() { data }, mapping)
         {
 
         }
 
-        public BulkDataBuilder(List<IEntity> data, Mapping<TBase> mapping)
+        internal BulkDataBuilder(List<IEntity> data, Mapping<TBase> mapping)
         {
             Data = data;
             Tables = mapping.Tables;
@@ -47,7 +47,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
         #region Methods
 
-        public Map<Table, DataTable> YieldDataMap()
+        internal Map<Table, DataTable> YieldDataMap()
         {
             foreach(var item in Data)
             {

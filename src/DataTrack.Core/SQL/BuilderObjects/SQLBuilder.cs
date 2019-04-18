@@ -11,7 +11,7 @@ using System.Text;
 
 namespace DataTrack.Core.SQL.BuilderObjects
 {
-    public class SQLBuilder<TBase> where TBase : IEntity
+    internal class SQLBuilder<TBase> where TBase : IEntity
     {
         #region Members
 
@@ -23,7 +23,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
         #region Constructors
 
-        public SQLBuilder(Mapping<TBase> mapping)
+        internal SQLBuilder(Mapping<TBase> mapping)
         {
             _baseType = typeof(TBase);
             _mapping = mapping;

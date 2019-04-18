@@ -15,26 +15,35 @@ using System.Text;
 
 namespace DataTrack.Core.SQL.DataStructures
 {
-    public class Mapping<TBase> where TBase : IEntity
+    internal class Mapping<TBase> where TBase : IEntity
     {
-        public Type BaseType { get; set; } = typeof(TBase);
-        public List<Table> Tables { get; set; } = new List<Table>();
-        internal Dictionary<Type, Table> TypeTableMapping { get; set; } = new Dictionary<Type, Table>();
-        internal Dictionary<Table, List<Table>> ParentChildMapping { get; set; } = new Dictionary<Table, List<Table>>();
-        internal Dictionary<IEntity, List<IEntity>> ParentChildEntityMapping { get; set; } = new Dictionary<IEntity, List<IEntity>>();
-        internal Dictionary<IEntity, DataRow> EntityDataRowMapping { get; set; } = new Dictionary<IEntity, DataRow>();
-        public Map<Table, DataTable> DataTableMapping { get; set; } = new Map<Table, DataTable>();
+        internal Type BaseType { get; set; }
+        internal List<Table> Tables { get; set; }
+        internal Dictionary<Type, Table> TypeTableMapping { get; set; }
+        internal Dictionary<Table, List<Table>> ParentChildMapping { get; set; }
+        internal Dictionary<IEntity, List<IEntity>> ParentChildEntityMapping { get; set; }
+        internal Dictionary<IEntity, DataRow> EntityDataRowMapping { get; set; }
+        internal Map<Table, DataTable> DataTableMapping { get; set; }
 
-        public Mapping()
+        internal Mapping()
         {
+            BaseType = typeof(TBase);
+
+            Tables = new List<Table>();
+
+            TypeTableMapping = new Dictionary<Type, Table>();
+            ParentChildMapping = new Dictionary<Table, List<Table>>();
+            ParentChildEntityMapping = new Dictionary<IEntity, List<IEntity>>();
+            EntityDataRowMapping = new Dictionary<IEntity, DataRow>();
+            DataTableMapping = new Map<Table, DataTable>();
+
             MapTable(BaseType);
         }
 
-        public void UpdateDataTableMappingWithPrimaryKeys(Table table, List<int> primaryKeys)
+        internal void UpdateDataTableForeignKeys(Table table, List<dynamic> primaryKeys)
         {
             Type type = table.Type;
-            List<IEntity> entities = new List<IEntity>();
-            int i = 0;
+            int primaryKeyIndex = 0;
 
             bool hasChildren = ParentChildMapping.TryGetValue(table, out List<Table> childTables);
 
@@ -48,15 +57,19 @@ namespace DataTrack.Core.SQL.DataStructures
 
                 foreach( var childEntity in ParentChildEntityMapping[entity])
                 {
-                    var key = primaryKeys[i];
-                    var row = EntityDataRowMapping[childEntity];
-                    var childType = childEntity.GetType();
-                    var childTable = TypeTableMapping[childType];
-                    var foreignKeyColumn = childTable.GetForeignKeyColumn(table.Name);
-
-                    row[foreignKeyColumn.Name] = primaryKeys?[i] ?? 0;
+                    SetForeignKeyValue(childEntity, table.Name, primaryKeys?[primaryKeyIndex] ?? 0);
                 }
+
+                primaryKeyIndex++;
             }
+        }
+
+        private void SetForeignKeyValue(IEntity item, string foreignTable, dynamic foreignKey)
+        {
+            Table table = TypeTableMapping[item.GetType()];
+            Column column = table.GetForeignKeyColumn(foreignTable);
+
+            EntityDataRowMapping[item][column.Name] = foreignKey;
         }
 
         private void MapTable(Type type)

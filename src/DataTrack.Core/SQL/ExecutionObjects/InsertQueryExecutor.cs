@@ -44,7 +44,8 @@ namespace DataTrack.Core.SQL.ExecutionObjects
         {
             SQLBuilder<TBase> createStagingTable = new SQLBuilder<TBase>(mapping);
             SQLBuilder<TBase> insertFromStagingTable = new SQLBuilder<TBase>(mapping);
-            List<int> ids = new List<int>();
+            List<dynamic> ids = new List<dynamic>();
+            string primaryKeyColumnName = table.GetPrimaryKeyColumn().Name;
 
             createStagingTable.CreateStagingTable(table);
             insertFromStagingTable.BuildInsertFromStagingToMainWithOutputIds(table);
@@ -81,22 +82,16 @@ namespace DataTrack.Core.SQL.ExecutionObjects
                 {
                     while (reader.Read())
                     {
-                        ids.Add((int)reader["id"]);
+                        var id = reader[primaryKeyColumnName];
+                        ids.Add(id);
+                        Logger.Trace($"Inserted {table.Name} entity with primary key {id.ToString()}");
                     }
                 }
 
-                mapping.UpdateDataTableMappingWithPrimaryKeys(table, ids);
+                mapping.UpdateDataTableForeignKeys(table, ids);
             }
 
-            if (ids.Count == 0)
-            {
-                Logger.Debug($"No {table.Name} were inserted");
-            }
-
-            foreach (int item in ids)
-            {
-                Logger.Debug($"Inserted {table.Name} item with primary key {item}");
-            }
+            Logger.Debug($"{(ids.Count == 0 ? "No" : ids.Count.ToString())} {table.Name} were inserted");
         }
 
     }
