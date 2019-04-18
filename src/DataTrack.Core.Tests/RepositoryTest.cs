@@ -106,6 +106,7 @@ namespace DataTrack.Core.Tests
         [TestMethod]
         public void TestRepository_ShouldInsertMultipleEntitiesFromList()
         {
+            // Arrange
             int authorsToInsert = 10;
             int booksPerAuthor = 20;
 
@@ -124,10 +125,11 @@ namespace DataTrack.Core.Tests
                 }
             }
 
+            // Act
             Repository<Author>.Create(authors);
 
-            List<Author> createdAuthors = new Query<Author>().Read().Execute();
-            List<Book> createdBooks = new Query<Book>().Read().Execute();
+            List<Author> createdAuthors = Repository<Author>.GetAll();
+            List<Book> createdBooks = Repository<Book>.GetAll();
 
             foreach(Author author in createdAuthors)
             {
@@ -139,9 +141,9 @@ namespace DataTrack.Core.Tests
                 Repository<Book>.Delete(book);
             }
 
+            // Assert
             Assert.AreEqual(authorsToInsert, createdAuthors.Count);
             Assert.AreEqual(authorsToInsert * booksPerAuthor, createdBooks.Count);
         }
-
     }
 }

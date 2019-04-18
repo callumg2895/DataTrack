@@ -20,6 +20,8 @@ namespace DataTrack.Core.Repository
 
         #region Read
 
+        public static List<TBase> GetAll() => new Query<TBase>().Read().Execute();
+
         public static TBase GetByID(int id) => new Query<TBase>().AddRestriction("id", RestrictionTypes.EqualTo, id).Execute()[0];
 
         public static List<TBase> GetByProperty(string propName, RestrictionTypes restriction, object propValue)
