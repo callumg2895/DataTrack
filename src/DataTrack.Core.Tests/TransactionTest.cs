@@ -39,11 +39,6 @@ namespace DataTrack.Core.Tests
 
             foreach (Author result in results)
             {
-                foreach (Book bookResult in result.Books)
-                {
-                    new Query<Book>().Delete(bookResult).Execute();
-                }
-
                 new Query<Author>().Delete(result).Execute();
             }
 

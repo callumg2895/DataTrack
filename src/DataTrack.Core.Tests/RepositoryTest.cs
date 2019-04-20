@@ -61,11 +61,6 @@ namespace DataTrack.Core.Tests
 
             Author authorReadResult = Repository<Author>.GetByProperty("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName)[0];
             
-            foreach(Book book in authorReadResult.Books)
-            {
-                Repository<Book>.Delete(book);
-            }
-
             Repository<Author>.Delete(authorReadResult);
 
             // Assert
@@ -90,11 +85,6 @@ namespace DataTrack.Core.Tests
             foreach(Author author in createdAuthors)
             {
                 Repository<Author>.Delete(author);
-            }
-
-            foreach(Book book in createdBooks)
-            {
-                Repository<Book>.Delete(book);
             }
 
             // Assert
