@@ -246,40 +246,16 @@ namespace DataTrack.Core.SQL.DataStructures
 
         private string GetDeleteString()
         {
-            if (Mapping.Tables.Any(t => t.Columns.Any(c => c.Parameters.Count > 0)))
-            {
-                SQLBuilder<TBase> sqlBuilder = new SQLBuilder<TBase>(Mapping);
-                StringBuilder restrictionsBuilder = new StringBuilder();
+            SQLBuilder<TBase> sqlBuilder = new SQLBuilder<TBase>(Mapping);
 
-                for (int i = 0; i < Mapping.Tables.Count; i++)
-                {
-                    for (int j = 0; j < Mapping.Tables[i].Columns.Count; j++)
-                    {
-                        Column column = Mapping.Tables[i].Columns[j];
+            sqlBuilder.BuildDeleteStatement();
+            sqlBuilder.SelectRowCount();     
 
-                        foreach (Restriction restriction in column.Restrictions)
-                        {
-                            restrictionsBuilder.Append(restrictionsBuilder.Length == 0 ? "where " : "and ");
-                            restrictionsBuilder.AppendLine(restriction.ToString());
-                        }
-                    }
-                }
+            string sql = sqlBuilder.ToString();
 
-                sqlBuilder.AppendLine();
-                sqlBuilder.AppendLine($"delete {Mapping.Tables[0].Alias} from {Mapping.Tables[0].Name} {Mapping.Tables[0].Alias}");
-                sqlBuilder.Append(restrictionsBuilder.ToString());
+            Logger.Info(MethodBase.GetCurrentMethod(), "Generated SQL: " + sql);
 
-                // For insert statements return the number of rows affected
-                sqlBuilder.SelectRowCount();
-
-                string sql = sqlBuilder.ToString();
-
-                Logger.Info(MethodBase.GetCurrentMethod(), "Generated SQL: " + sql);
-
-                return sql;
-            }
-
-            return string.Empty;
+            return sql;
         }
 
         #endregion
