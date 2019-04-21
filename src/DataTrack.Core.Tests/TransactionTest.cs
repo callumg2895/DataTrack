@@ -37,11 +37,8 @@ namespace DataTrack.Core.Tests
                 t1.Commit();
             }
 
-            foreach (Author result in results)
-            {
-                new Query<Author>().Delete(result).Execute();
-            }
-
+            new Query<Author>().Delete().Execute();
+            
             // Assert
             Assert.IsTrue(AuthorsAreEqual(results[0], author));
         }
@@ -110,10 +107,7 @@ namespace DataTrack.Core.Tests
 
             resultsAfterRollBack = new Query<Author>().Read().AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName).Execute();
 
-            foreach(Author result in resultsAfterRollBack)
-            {
-                new Query<Author>().Delete(result).Execute();
-            }
+            new Query<Author>().Delete().Execute();
 
             resultsAfterDelete = new Query<Author>().Read().AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName).Execute();
 
