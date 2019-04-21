@@ -106,16 +106,12 @@ namespace DataTrack.Core.Tests
             }
 
             resultsAfterRollBack = new Query<Author>().Read().AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName).Execute();
-
             new Query<Author>().Delete().Execute();
-
             resultsAfterDelete = new Query<Author>().Read().AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName).Execute();
 
             //Assert
             Assert.AreEqual(resultsAfterRollBack.Count, 1);
             Assert.AreEqual(resultsAfterDelete.Count, 0);
-
-
         }
     }
 }

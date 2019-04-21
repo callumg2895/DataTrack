@@ -54,9 +54,7 @@ namespace DataTrack.Core.Tests
 
             //Act
             Repository<Author>.Create(author);
-
-            Author authorReadResult = Repository<Author>.GetByProperty("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName)[0];
-            
+            Author authorReadResult = Repository<Author>.GetByProperty("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName)[0];    
             Repository<Author>.Delete(authorReadResult);
 
             // Assert
@@ -74,7 +72,6 @@ namespace DataTrack.Core.Tests
 
             // Act
             Repository<Author>.Create(authors);
-
             List<Author> createdAuthors = Repository<Author>.GetAll();
             List<Book> createdBooks = Repository<Book>.GetAll();
             Repository<Author>.DeleteAll();
