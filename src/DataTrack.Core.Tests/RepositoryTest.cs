@@ -67,7 +67,7 @@ namespace DataTrack.Core.Tests
         public void TestRepository_ShouldInsertMultipleEntitiesFromList()
         {
             // Arrange
-            int authorsToInsert = 10;
+            int authorsToInsert = 100;
             int booksPerAuthor = 20;
 
             List<IEntity> authors =  new List<IEntity>(Author.GetAuthors(authorsToInsert, booksPerAuthor));

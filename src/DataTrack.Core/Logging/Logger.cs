@@ -139,15 +139,16 @@ namespace DataTrack.Core.Logging
 
         private static List<LogItem> GetLogBufferForThread()
         {
-            List<LogItem> threadLogBuffer = new List<LogItem>();
+            List<LogItem> threadLogBuffer = null;
 
             lock (logBufferLock)
             {
+                threadLogBuffer = new List<LogItem>(logBuffer.Count);
                 threadLogBuffer.AddRange(logBuffer);
                 logBuffer.Clear();
             }
 
-            return threadLogBuffer;
+            return threadLogBuffer ?? new List<LogItem>();
         }
 
         private static void Output(LogItem log)
