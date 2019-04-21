@@ -40,11 +40,7 @@ namespace DataTrack.Core.Tests
             Repository<Author>.Create(author);
             List<Author> authorReadResult = Repository<Author>.GetByProperty("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName);
             List<Book> bookReadResult = Repository<Book>.GetByProperty("title", Enums.RestrictionTypes.EqualTo, author.Books[0].Title);
-
-            foreach( Author authorResult in authorReadResult)
-            {
-                Repository<Author>.Delete(authorResult);
-            }
+            Repository<Author>.DeleteAll();
 
             // Assert
             Assert.IsTrue(BooksAreEqual(bookReadResult[0], author.Books[0]));
@@ -81,11 +77,7 @@ namespace DataTrack.Core.Tests
 
             List<Author> createdAuthors = Repository<Author>.GetAll();
             List<Book> createdBooks = Repository<Book>.GetAll();
-
-            foreach(Author author in createdAuthors)
-            {
-                Repository<Author>.Delete(author);
-            }
+            Repository<Author>.DeleteAll();
 
             // Assert
             Assert.AreEqual(authorsToInsert, createdAuthors.Count);

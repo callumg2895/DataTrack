@@ -247,22 +247,22 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
         public void BuildDeleteStatement()
         {
-            if (!_mapping.Tables.Any(t => t.Columns.Any(c => c.Parameters.Count > 0)))
-                return;
-
             StringBuilder restrictionsBuilder = new StringBuilder();
             int restrictionCount = 0;
 
-            for (int i = 0; i < _mapping.Tables.Count; i++)
+            if (_mapping.Tables.Any(t => t.Columns.Any(c => c.Parameters.Count > 0)))
             {
-                for (int j = 0; j < _mapping.Tables[i].Columns.Count; j++)
+                for (int i = 0; i < _mapping.Tables.Count; i++)
                 {
-                    Column column = _mapping.Tables[i].Columns[j];
-
-                    foreach (Restriction restriction in column.Restrictions)
+                    for (int j = 0; j < _mapping.Tables[i].Columns.Count; j++)
                     {
-                        restrictionsBuilder.Append($"{GetRestrictionKeyWord(restrictionCount++)} ");
-                        restrictionsBuilder.AppendLine(restriction.ToString());
+                        Column column = _mapping.Tables[i].Columns[j];
+
+                        foreach (Restriction restriction in column.Restrictions)
+                        {
+                            restrictionsBuilder.Append($"{GetRestrictionKeyWord(restrictionCount++)} ");
+                            restrictionsBuilder.AppendLine(restriction.ToString());
+                        }
                     }
                 }
             }

@@ -50,6 +50,8 @@ namespace DataTrack.Core.Repository
 
         public static void Delete(TBase item) => new Query<TBase>().Delete(item).Execute();
 
+        public static void DeleteAll() => new Query<TBase>().Delete().Execute();
+
         #endregion
     }
 }

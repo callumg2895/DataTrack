@@ -82,6 +82,12 @@ namespace DataTrack.Core.SQL.DataStructures
             return this;
         }
 
+        public Query<TBase> Delete()
+        {
+            OperationType = CRUDOperationTypes.Delete;
+            return this;
+        }
+
         public Query<TBase> Delete(TBase item)
         {
             OperationType = CRUDOperationTypes.Delete;
