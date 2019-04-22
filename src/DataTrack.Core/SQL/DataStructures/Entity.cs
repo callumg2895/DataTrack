@@ -1,4 +1,5 @@
 ﻿using DataTrack.Core.Attributes;
+using DataTrack.Core.Enums;
 using DataTrack.Core.Exceptions;
 using DataTrack.Core.Interface;
 using System;
@@ -10,6 +11,7 @@ namespace DataTrack.Core.SQL.DataStructures
 {
     public abstract class Entity<TIdentity> : IEntity
     {
+        [Column("id", (byte)KeyTypes.PrimaryKey)]
         public TIdentity ID { get; set; }
 
         public object GetPropertyValue(string propertyName)

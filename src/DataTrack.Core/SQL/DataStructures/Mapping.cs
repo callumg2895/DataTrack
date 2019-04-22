@@ -145,12 +145,6 @@ namespace DataTrack.Core.SQL.DataStructures
 
             foreach (PropertyInfo property in type.GetProperties())
             {
-                if (property.Name == "ID")
-                {
-                    columnAttributes.Add(new ColumnAttribute("id", (byte)KeyTypes.PrimaryKey));
-                    continue;
-                }
-
                 foreach (Attribute attribute in property.GetCustomAttributes())
                 {
                     ColumnAttribute? columnAttribute = attribute as ColumnAttribute;
