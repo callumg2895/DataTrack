@@ -109,7 +109,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
                 .AppendLine();
         }
 
-        public void BuildInsertStatement(List<Column> columns, TableMappingAttribute table)
+        public void BuildInsertStatement(List<Column> columns, TableAttribute table)
         {
             if (columns.Count == 0) return;
 
@@ -165,7 +165,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
             _sql.Append(restrictionBuilder.ToString());
         }
 
-        public void BuildValuesStatement(List<Column> columns, TableMappingAttribute table)
+        public void BuildValuesStatement(List<Column> columns, TableAttribute table)
         {
             if (columns.Count == 0) return;
 

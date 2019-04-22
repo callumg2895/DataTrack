@@ -33,7 +33,7 @@ namespace DataTrack.Core.SQL.DataStructures
                 }
 
                 foreach (Attribute attribute in property.GetCustomAttributes())
-                    if ((attribute as ColumnMappingAttribute) != null)
+                    if ((attribute as ColumnAttribute) != null)
                         values.Add(this.GetPropertyValue(property.Name));
             }
 
@@ -46,7 +46,7 @@ namespace DataTrack.Core.SQL.DataStructures
 
             foreach (PropertyInfo property in type.GetProperties())
                 foreach (Attribute attribute in property.GetCustomAttributes())
-                    if ((attribute as TableMappingAttribute)?.TableName == tableName)
+                    if ((attribute as TableAttribute)?.TableName == tableName)
                         return this.GetPropertyValue(property.Name);
 
             throw new TableMappingException(type, tableName);

@@ -134,11 +134,11 @@ namespace DataTrack.Core.SQL.DataStructures
         {
             Logger.Info(MethodBase.GetCurrentMethod(), $"Loading Table object for '{type.Name}' entity");
 
-            TableMappingAttribute? tableAttribute = null;
-            List<ColumnMappingAttribute> columnAttributes = new List<ColumnMappingAttribute>();
+            TableAttribute? tableAttribute = null;
+            List<ColumnAttribute> columnAttributes = new List<ColumnAttribute>();
 
             foreach (Attribute attribute in type.GetCustomAttributes())
-                tableAttribute = attribute as TableMappingAttribute;
+                tableAttribute = attribute as TableAttribute;
 
             if (tableAttribute == null)
                 throw new NullReferenceException($"Could not find TableMappingAttribute for type {type.Name}");
@@ -147,16 +147,16 @@ namespace DataTrack.Core.SQL.DataStructures
             {
                 if (property.Name == "ID")
                 {
-                    columnAttributes.Add(new ColumnMappingAttribute(tableAttribute.TableName, "id", (byte)KeyTypes.PrimaryKey));
+                    columnAttributes.Add(new ColumnAttribute("id", (byte)KeyTypes.PrimaryKey));
                     continue;
                 }
 
                 foreach (Attribute attribute in property.GetCustomAttributes())
                 {
-                    ColumnMappingAttribute? mappingAttribute = attribute as ColumnMappingAttribute;
-                    if (mappingAttribute != null)
+                    ColumnAttribute? columnAttribute = attribute as ColumnAttribute;
+                    if (columnAttribute != null)
                     {
-                        columnAttributes.Add(mappingAttribute);
+                        columnAttributes.Add(columnAttribute);
                         break;
                     }
                 }

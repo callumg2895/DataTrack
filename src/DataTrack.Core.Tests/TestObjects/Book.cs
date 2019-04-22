@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace DataTrack.Core.Tests.TestObjects
 {
-    [TableMapping("books")]
+    [Table("books")]
     public class Book : Entity<int>
     {
         private static int totalBooks = 0;
@@ -25,10 +25,10 @@ namespace DataTrack.Core.Tests.TestObjects
             return books;
         }
 
-        [ColumnMapping("books", "author_id", (byte)KeyTypes.ForeignKey, "authors", "id")]
+        [Column("author_id", (byte)KeyTypes.ForeignKey, "authors", "id")]
         public virtual int AuthorId { get; set; }
 
-        [ColumnMapping("books", "title")]
+        [Column("title")]
         public virtual string Title { get; set; }
     }
 }

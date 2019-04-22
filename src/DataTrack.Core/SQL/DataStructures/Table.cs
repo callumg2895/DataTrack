@@ -17,10 +17,10 @@ namespace DataTrack.Core.SQL.DataStructures
         public List<Column> Columns { get; set; }
         public List<IEntity> Entities { get; set; }
 
-        private TableMappingAttribute tableMappingAttribute;
-        private List<ColumnMappingAttribute> columnMappingAttributes;
+        private TableAttribute tableMappingAttribute;
+        private List<ColumnAttribute> columnMappingAttributes;
 
-        public Table(Type type, TableMappingAttribute tableAttribute, List<ColumnMappingAttribute> columnAttributes)
+        public Table(Type type, TableAttribute tableAttribute, List<ColumnAttribute> columnAttributes)
         {
             Type = type;
             Name = tableAttribute.TableName;
@@ -32,7 +32,7 @@ namespace DataTrack.Core.SQL.DataStructures
             tableMappingAttribute = tableAttribute;
             columnMappingAttributes = columnAttributes;
 
-            foreach (ColumnMappingAttribute columnAttribute in columnAttributes)
+            foreach (ColumnAttribute columnAttribute in columnAttributes)
             {
                 Columns.Add(new Column(columnAttribute, this));
             }

@@ -13,7 +13,7 @@ namespace DataTrack.Core.SQL.DataStructures
 {
     public class Column
     {
-        public Column(ColumnMappingAttribute columnAttribute, Table table)
+        public Column(ColumnAttribute columnAttribute, Table table)
         {
             Table = table;
             Restrictions = new List<Restriction>();
@@ -49,7 +49,7 @@ namespace DataTrack.Core.SQL.DataStructures
             // Try to find the property with a ColumnMappingAttribute that matches the one in the method call
             foreach (PropertyInfo property in type.GetProperties())
                 foreach (Attribute attribute in property.GetCustomAttributes())
-                    if ((attribute as ColumnMappingAttribute)?.ColumnName == Name)
+                    if ((attribute as ColumnAttribute)?.ColumnName == Name)
                         return property.Name;
             
 
@@ -64,7 +64,7 @@ namespace DataTrack.Core.SQL.DataStructures
                     return Parameter.SQLDataTypes[property.PropertyType];
 
                 foreach (Attribute attribute in property.GetCustomAttributes())
-                    if ((attribute as ColumnMappingAttribute)?.ColumnName == this.Name)
+                    if ((attribute as ColumnAttribute)?.ColumnName == this.Name)
                         return Parameter.SQLDataTypes[property.PropertyType];
             }
             // Technically the wrong exception to throw. The problem here is that the 'type' supplied

@@ -13,7 +13,7 @@ namespace DataTrack.Core.Util.Extensions
         {
             foreach (PropertyInfo property in type.GetProperties())
                 foreach (Attribute attribute in property.GetCustomAttributes())
-                    if ((attribute as TableMappingAttribute)?.TableName == tableName)
+                    if ((attribute as TableAttribute)?.TableName == tableName)
                         return property;
 
             throw new TableMappingException(type, tableName);
