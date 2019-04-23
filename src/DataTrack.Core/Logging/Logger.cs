@@ -132,6 +132,8 @@ namespace DataTrack.Core.Logging
 
             while (ShouldExecute())
             {
+                Thread.Sleep(100);
+
                 threadLogBuffer = GetLogBufferForThread();
 
                 foreach (LogItem log in threadLogBuffer)
@@ -139,7 +141,10 @@ namespace DataTrack.Core.Logging
                     Output(log);
                 }
 
-                threadLogBuffer.Clear();
+                lock (logBufferInUseLock)
+                {
+                    logBufferInUse = threadLogBuffer.Count > 0;
+                }
             }
         }
 
@@ -152,11 +157,6 @@ namespace DataTrack.Core.Logging
                 threadLogBuffer = new List<LogItem>(logBuffer.Count);
                 threadLogBuffer.AddRange(logBuffer);
                 logBuffer.Clear();
-
-                lock (logBufferInUseLock)
-                {
-                    logBufferInUse = false;
-                }
             }
 
             return threadLogBuffer ?? new List<LogItem>();
