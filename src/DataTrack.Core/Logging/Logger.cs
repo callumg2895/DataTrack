@@ -24,11 +24,13 @@ namespace DataTrack.Core.Logging
 
         private static Thread loggingThread;
         private volatile static bool shouldExecute;
+        private volatile static bool logBufferInUse;
         private static List<LogItem> logBuffer;
         private static bool _enableConsoleLogging;
 
         private static object fullPathLock = new object();
         private static object logBufferLock = new object();
+        private static object logBufferInUseLock = new object();
         private static object shouldExecuteLock = new object();
 
         public static void Init(bool enableConsoleLogging)
@@ -36,6 +38,7 @@ namespace DataTrack.Core.Logging
             fullPath = $@"{filePath}\{fileDateString}_{fileName}{fileIndex}{fileExtension}";
             _enableConsoleLogging = enableConsoleLogging;
             logBuffer = new List<LogItem>();
+            logBufferInUse = true;
             shouldExecute = true;
 
             if (!Directory.Exists(filePath))
@@ -65,6 +68,9 @@ namespace DataTrack.Core.Logging
         {
             lock (logBuffer)
                 logBuffer.Add(new LogItem(method, message, level));
+
+            lock (logBufferInUseLock)
+                logBufferInUse = true;
         }
 
         public static void Trace(MethodBase method, string message) => Log(method, message, LogLevel.Trace);
@@ -146,6 +152,11 @@ namespace DataTrack.Core.Logging
                 threadLogBuffer = new List<LogItem>(logBuffer.Count);
                 threadLogBuffer.AddRange(logBuffer);
                 logBuffer.Clear();
+
+                lock (logBufferInUseLock)
+                {
+                    logBufferInUse = false;
+                }
             }
 
             return threadLogBuffer ?? new List<LogItem>();
@@ -189,8 +200,19 @@ namespace DataTrack.Core.Logging
             }
         }
 
+        private static bool LoggingInProgress()
+        {
+            lock (logBufferInUseLock)
+            {
+                return logBufferInUse;
+            }
+        }
+
         private static void EndExecution()
         {
+            while (LoggingInProgress())
+                continue;
+
             lock (shouldExecuteLock)
             {
                 shouldExecute = false;
