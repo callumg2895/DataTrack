@@ -18,7 +18,7 @@ namespace DataTrack.Core.Tests
         public void TestRepository_ShouldReturnCorrectObjectForReadWithRestriction()
         {
             // Arrange
-            Author author = Author.GetAuthors(1, 2)[0];
+            Author author = GetAuthors(1, 2)[0];
 
             //Act
             Repository<Author>.Create(author);
@@ -34,7 +34,7 @@ namespace DataTrack.Core.Tests
         public void TestRepository_ShouldReturnCorrectObjectForGetByPropertyType()
         {
             // Arrange
-            Author author = Author.GetAuthors(1, 5)[0];
+            Author author = GetAuthors(1, 5)[0];
 
             //Act
             Repository<Author>.Create(author);
@@ -50,7 +50,7 @@ namespace DataTrack.Core.Tests
         public void TestRepository_ShouldReadCorrectNumberOfChildItemsAfterInsertingObjectWithLongListOfChildren()
         {
             // Arrange
-            Author author = Author.GetAuthors(1, 5)[0];
+            Author author = GetAuthors(1, 5)[0];
 
             //Act
             Repository<Author>.Create(author);
@@ -68,7 +68,7 @@ namespace DataTrack.Core.Tests
             int authorsToInsert = 100;
             int booksPerAuthor = 20;
 
-            List<IEntity> authors =  new List<IEntity>(Author.GetAuthors(authorsToInsert, booksPerAuthor));
+            List<IEntity> authors =  new List<IEntity>(GetAuthors(authorsToInsert, booksPerAuthor));
 
             // Act
             Repository<Author>.Create(authors);

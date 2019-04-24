@@ -1,6 +1,7 @@
 ﻿using DataTrack.Core.Enums;
 using DataTrack.Core.Tests.TestObjects;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Collections.Generic;
 using System.Data.SqlClient;
 
 namespace DataTrack.Core.Tests
@@ -8,6 +9,9 @@ namespace DataTrack.Core.Tests
     [TestClass]
     public class BaseTest
     {
+        private static int totalAuthors = 0;
+        private static int totalBooks = 0;
+
         [AssemblyInitialize]
         public static void AssemblyInit(TestContext testContext)
         {
@@ -82,6 +86,34 @@ namespace DataTrack.Core.Tests
             }
 
             DataTrackConfiguration.Dispose();
+        }
+
+        protected List<Author> GetAuthors(int n, int m = 0)
+        {
+            List<Author> authors = new List<Author>();
+
+            for (int i = totalAuthors; i < totalAuthors + n; i++)
+            {
+                authors.Add(new Author() { FirstName = $"FirstName{i}", LastName = $"LastName{i}", Books = GetBooks(m) });
+            }
+
+            totalAuthors += n;
+
+            return authors;
+        }
+
+        protected List<Book> GetBooks(int n)
+        {
+            List<Book> books = new List<Book>();
+
+            for (int i = totalBooks; i < totalBooks + n; i++)
+            {
+                books.Add(new Book() { Title = $"Title{i}" });
+            }
+
+            totalBooks += n;
+
+            return books;
         }
 
         protected bool AuthorsAreEqual(Author author1, Author author2)
