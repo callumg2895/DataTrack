@@ -11,7 +11,8 @@ namespace DataTrack.Core.SQL.DataStructures
 {
     public abstract class Entity<TIdentity> : IEntity
     {
-        [Column("id", (byte)KeyTypes.PrimaryKey)]
+        [Column("id")]
+        [PrimaryKey]
         public TIdentity ID { get; set; }
 
         public object GetPropertyValue(string propertyName)

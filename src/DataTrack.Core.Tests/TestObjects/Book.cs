@@ -25,7 +25,8 @@ namespace DataTrack.Core.Tests.TestObjects
             return books;
         }
 
-        [Column("author_id", (byte)KeyTypes.ForeignKey, "authors", "id")]
+        [Column("author_id")]
+        [ForeignKey("authors")]
         public virtual int AuthorId { get; set; }
 
         [Column("title")]

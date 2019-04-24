@@ -21,14 +21,8 @@ namespace DataTrack.Core.SQL.DataStructures
             Name = columnAttribute.ColumnName;
             Alias = $"{table.Type.Name}.{Name}";
             PropertyName = GetPropertyName(table.Type);
-            KeyType = columnAttribute.KeyType;
-            ForeignKeyColumnMapping = columnAttribute.ForeignKeyColumnMapping;
-            ForeignKeyTableMapping = columnAttribute.ForeignKeyTableMapping;
 
             Logger.Trace($"Loaded database mapping for Property '{PropertyName}' of Entity '{Table.Type.Name}' (Column '{Name}')");
-
-            if (this.IsForeignKey() && string.IsNullOrEmpty(ForeignKeyTableMapping))
-                Logger.Warn(MethodBase.GetCurrentMethod(), $"Column '{Name}' is a foreign key but is not mapped to a table");
         }
 
         public Table Table { get; set; }
@@ -39,7 +33,6 @@ namespace DataTrack.Core.SQL.DataStructures
         public string PropertyName { get; set; }
         public byte KeyType { get; set; }
         public string? ForeignKeyTableMapping { get; set; }
-        public string? ForeignKeyColumnMapping { get; set; }
 
         public string GetPropertyName(Type type)
         {

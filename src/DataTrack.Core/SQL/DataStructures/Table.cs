@@ -1,4 +1,5 @@
 ﻿using DataTrack.Core.Attributes;
+using DataTrack.Core.Enums;
 using DataTrack.Core.Exceptions;
 using DataTrack.Core.Interface;
 using DataTrack.Core.Logging;
@@ -19,8 +20,10 @@ namespace DataTrack.Core.SQL.DataStructures
 
         private TableAttribute tableMappingAttribute;
         private List<ColumnAttribute> columnMappingAttributes;
+        private Dictionary<ColumnAttribute, ForeignKeyAttribute> _columnForeignKeys;
+        private Dictionary<ColumnAttribute, PrimaryKeyAttribute> _columnPrimaryKeys;
 
-        public Table(Type type, TableAttribute tableAttribute, List<ColumnAttribute> columnAttributes)
+        public Table(Type type, TableAttribute tableAttribute, List<ColumnAttribute> columnAttributes, Dictionary<ColumnAttribute, ForeignKeyAttribute> columnForeignKeys, Dictionary<ColumnAttribute, PrimaryKeyAttribute> columnPrimaryKeys)
         {
             Type = type;
             Name = tableAttribute.TableName;
@@ -31,10 +34,29 @@ namespace DataTrack.Core.SQL.DataStructures
 
             tableMappingAttribute = tableAttribute;
             columnMappingAttributes = columnAttributes;
+            _columnForeignKeys = columnForeignKeys;
+            _columnPrimaryKeys = columnPrimaryKeys;
 
             foreach (ColumnAttribute columnAttribute in columnAttributes)
             {
-                Columns.Add(new Column(columnAttribute, this));
+                Column column = new Column(columnAttribute, this);
+
+                if (columnForeignKeys.ContainsKey(columnAttribute))
+                {
+                    ForeignKeyAttribute key = columnForeignKeys[columnAttribute];
+
+                    column.ForeignKeyTableMapping = key.ForeignTable;
+                    column.KeyType = (byte)KeyTypes.ForeignKey;
+                }
+
+                if (columnPrimaryKeys.ContainsKey(columnAttribute))
+                {
+                    PrimaryKeyAttribute key = columnPrimaryKeys[columnAttribute];
+
+                    column.KeyType = (byte)KeyTypes.PrimaryKey;
+                }
+
+                Columns.Add(column);
             }
 
             Logger.Trace($"Loaded database mapping for Entity '{Type.Name}' (Table '{Name}')");
@@ -65,7 +87,7 @@ namespace DataTrack.Core.SQL.DataStructures
         public object Clone()
         {
             Logger.Trace($"Cloning database mapping for Entity '{Type.Name}' (Table '{Name}')");
-            return new Table(Type, tableMappingAttribute, columnMappingAttributes);
+            return new Table(Type, tableMappingAttribute, columnMappingAttributes, _columnForeignKeys, _columnPrimaryKeys);
         }
     }
 }

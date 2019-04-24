@@ -136,6 +136,8 @@ namespace DataTrack.Core.SQL.DataStructures
 
             TableAttribute? tableAttribute = null;
             List<ColumnAttribute> columnAttributes = new List<ColumnAttribute>();
+            Dictionary<ColumnAttribute, ForeignKeyAttribute> columnForeignKeys = new Dictionary<ColumnAttribute, ForeignKeyAttribute>();
+            Dictionary<ColumnAttribute, PrimaryKeyAttribute> columnPrimaryKeys = new Dictionary<ColumnAttribute, PrimaryKeyAttribute>();
 
             foreach (Attribute attribute in type.GetCustomAttributes())
                 tableAttribute = attribute as TableAttribute;
@@ -145,20 +147,37 @@ namespace DataTrack.Core.SQL.DataStructures
 
             foreach (PropertyInfo property in type.GetProperties())
             {
+                ForeignKeyAttribute? foreignKeyAttribute = null;
+                PrimaryKeyAttribute? primaryKeyAttribute = null;
+                ColumnAttribute? columnAttribute = null;
+
                 foreach (Attribute attribute in property.GetCustomAttributes())
                 {
-                    ColumnAttribute? columnAttribute = attribute as ColumnAttribute;
-                    if (columnAttribute != null)
+                    foreignKeyAttribute = attribute as ForeignKeyAttribute ?? foreignKeyAttribute;
+                    primaryKeyAttribute = attribute as PrimaryKeyAttribute ?? primaryKeyAttribute;
+                    columnAttribute = attribute as ColumnAttribute ?? columnAttribute;
+
+                    if (columnAttribute != null && !columnAttributes.Contains(columnAttribute))
                     {
                         columnAttributes.Add(columnAttribute);
-                        break;
+                        continue;
                     }
+                }
+
+                if (foreignKeyAttribute != null && columnAttribute != null)
+                {
+                    columnForeignKeys[columnAttribute] = foreignKeyAttribute;
+                }
+
+                if (primaryKeyAttribute != null && columnAttribute != null)
+                {
+                    columnPrimaryKeys[columnAttribute] = primaryKeyAttribute;
                 }
             }
 
             if (tableAttribute != null && columnAttributes.Count > 0)
             {
-                table = new Table(type, tableAttribute, columnAttributes);
+                table = new Table(type, tableAttribute, columnAttributes, columnForeignKeys, columnPrimaryKeys);
                 return true;
             }
 
