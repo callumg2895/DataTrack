@@ -132,52 +132,11 @@ namespace DataTrack.Core.SQL.DataStructures
 
         private protected bool TryGetTable(Type type, out Table? table)
         {
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Loading Table object for '{type.Name}' entity");
+            AttributeWrapper attributes = new AttributeWrapper(type);
 
-            TableAttribute? tableAttribute = null;
-            List<ColumnAttribute> columnAttributes = new List<ColumnAttribute>();
-            Dictionary<ColumnAttribute, ForeignKeyAttribute> columnForeignKeys = new Dictionary<ColumnAttribute, ForeignKeyAttribute>();
-            Dictionary<ColumnAttribute, PrimaryKeyAttribute> columnPrimaryKeys = new Dictionary<ColumnAttribute, PrimaryKeyAttribute>();
-
-            foreach (Attribute attribute in type.GetCustomAttributes())
-                tableAttribute = attribute as TableAttribute;
-
-            if (tableAttribute == null)
-                throw new NullReferenceException($"Could not find TableMappingAttribute for type {type.Name}");
-
-            foreach (PropertyInfo property in type.GetProperties())
+            if (attributes.IsValid())
             {
-                ForeignKeyAttribute? foreignKeyAttribute = null;
-                PrimaryKeyAttribute? primaryKeyAttribute = null;
-                ColumnAttribute? columnAttribute = null;
-
-                foreach (Attribute attribute in property.GetCustomAttributes())
-                {
-                    foreignKeyAttribute = attribute as ForeignKeyAttribute ?? foreignKeyAttribute;
-                    primaryKeyAttribute = attribute as PrimaryKeyAttribute ?? primaryKeyAttribute;
-                    columnAttribute = attribute as ColumnAttribute ?? columnAttribute;
-
-                    if (columnAttribute != null && !columnAttributes.Contains(columnAttribute))
-                    {
-                        columnAttributes.Add(columnAttribute);
-                        continue;
-                    }
-                }
-
-                if (foreignKeyAttribute != null && columnAttribute != null)
-                {
-                    columnForeignKeys[columnAttribute] = foreignKeyAttribute;
-                }
-
-                if (primaryKeyAttribute != null && columnAttribute != null)
-                {
-                    columnPrimaryKeys[columnAttribute] = primaryKeyAttribute;
-                }
-            }
-
-            if (tableAttribute != null && columnAttributes.Count > 0)
-            {
-                table = new Table(type, tableAttribute, columnAttributes, columnForeignKeys, columnPrimaryKeys);
+                table = new Table(type, attributes);
                 return true;
             }
 

@@ -18,40 +18,34 @@ namespace DataTrack.Core.SQL.DataStructures
         public List<Column> Columns { get; set; }
         public List<IEntity> Entities { get; set; }
 
-        private TableAttribute tableMappingAttribute;
-        private List<ColumnAttribute> columnMappingAttributes;
-        private Dictionary<ColumnAttribute, ForeignKeyAttribute> _columnForeignKeys;
-        private Dictionary<ColumnAttribute, PrimaryKeyAttribute> _columnPrimaryKeys;
+        private AttributeWrapper _attributes = null;
 
-        public Table(Type type, TableAttribute tableAttribute, List<ColumnAttribute> columnAttributes, Dictionary<ColumnAttribute, ForeignKeyAttribute> columnForeignKeys, Dictionary<ColumnAttribute, PrimaryKeyAttribute> columnPrimaryKeys)
+        internal Table(Type type, AttributeWrapper attributes)
         {
             Type = type;
-            Name = tableAttribute.TableName;
+            Name = attributes.TableAttribute.TableName;
             StagingName = $"#{Name}_staging";
             Alias = type.Name;
             Columns = new List<Column>();
             Entities = new List<IEntity>();
 
-            tableMappingAttribute = tableAttribute;
-            columnMappingAttributes = columnAttributes;
-            _columnForeignKeys = columnForeignKeys;
-            _columnPrimaryKeys = columnPrimaryKeys;
+            _attributes = attributes;
 
-            foreach (ColumnAttribute columnAttribute in columnAttributes)
+            foreach (ColumnAttribute columnAttribute in attributes.ColumnAttributes)
             {
                 Column column = new Column(columnAttribute, this);
 
-                if (columnForeignKeys.ContainsKey(columnAttribute))
+                if (attributes.ColumnForeignKeys.ContainsKey(columnAttribute))
                 {
-                    ForeignKeyAttribute key = columnForeignKeys[columnAttribute];
+                    ForeignKeyAttribute key = attributes.ColumnForeignKeys[columnAttribute];
 
                     column.ForeignKeyTableMapping = key.ForeignTable;
                     column.KeyType = (byte)KeyTypes.ForeignKey;
                 }
 
-                if (columnPrimaryKeys.ContainsKey(columnAttribute))
+                if (attributes.ColumnPrimaryKeys.ContainsKey(columnAttribute))
                 {
-                    PrimaryKeyAttribute key = columnPrimaryKeys[columnAttribute];
+                    PrimaryKeyAttribute key = attributes.ColumnPrimaryKeys[columnAttribute];
 
                     column.KeyType = (byte)KeyTypes.PrimaryKey;
                 }
@@ -87,7 +81,7 @@ namespace DataTrack.Core.SQL.DataStructures
         public object Clone()
         {
             Logger.Trace($"Cloning database mapping for Entity '{Type.Name}' (Table '{Name}')");
-            return new Table(Type, tableMappingAttribute, columnMappingAttributes, _columnForeignKeys, _columnPrimaryKeys);
+            return new Table(Type, _attributes);
         }
     }
 }
