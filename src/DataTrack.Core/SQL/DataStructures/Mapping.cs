@@ -21,6 +21,7 @@ namespace DataTrack.Core.SQL.DataStructures
         internal List<Table> Tables { get; set; }
         internal Dictionary<Type, Table> TypeTableMapping { get; set; }
         internal Dictionary<Table, List<Table>> ParentChildMapping { get; set; }
+        internal Dictionary<Table, Table> ChildParentMapping { get; set; }
         internal Dictionary<IEntity, List<IEntity>> ParentChildEntityMapping { get; set; }
         internal Dictionary<IEntity, DataRow> EntityDataRowMapping { get; set; }
         internal Map<Table, DataTable> DataTableMapping { get; set; }
@@ -33,6 +34,7 @@ namespace DataTrack.Core.SQL.DataStructures
 
             TypeTableMapping = new Dictionary<Type, Table>();
             ParentChildMapping = new Dictionary<Table, List<Table>>();
+            ChildParentMapping = new Dictionary<Table, Table>();
             ParentChildEntityMapping = new Dictionary<IEntity, List<IEntity>>();
             EntityDataRowMapping = new Dictionary<IEntity, DataRow>();
             DataTableMapping = new Map<Table, DataTable>();
@@ -99,6 +101,7 @@ namespace DataTrack.Core.SQL.DataStructures
 
                 Table mappedTable = TypeTableMapping[genericArgumentType];
 
+                ChildParentMapping[mappedTable] = parentTable;
                 ParentChildMapping[parentTable].Add(mappedTable);
             }
         }

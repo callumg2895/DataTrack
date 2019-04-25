@@ -28,6 +28,7 @@ namespace DataTrack.Core.SQL.ExecutionObjects
 
             stopwatch.Start();
 
+            // TODO rewrite
             foreach (Table table in tables)
             {
                 if (table.Type == baseType)
