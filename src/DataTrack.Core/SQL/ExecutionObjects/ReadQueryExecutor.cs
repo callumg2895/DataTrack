@@ -28,24 +28,13 @@ namespace DataTrack.Core.SQL.ExecutionObjects
 
             stopwatch.Start();
 
-            // TODO rewrite
             foreach (Table table in tables)
             {
                 if (table.Type == baseType)
                 {
                     while (reader.Read())
                     {
-                        TBase obj = new TBase();
-
-                        foreach (Column column in table.Columns)
-                        {
-                            PropertyInfo property = baseType.GetProperty(column.PropertyName);
-
-                            if (reader[column.Name] != DBNull.Value)
-                                property.SetValue(obj, Convert.ChangeType(reader[column.Name], property.PropertyType));
-                            else
-                                property.SetValue(obj, null);
-                        }
+                        TBase obj = (TBase)ReadEntity(reader, table);
 
                         results.Add(obj);
                     }
@@ -55,19 +44,13 @@ namespace DataTrack.Core.SQL.ExecutionObjects
                     reader.NextResult();
                     Type childType = table.Type;
                     dynamic childCollection = Activator.CreateInstance(typeof(List<>).MakeGenericType(childType));
-                    int i = 0;
 
                     while (reader.Read())
                     {
-                        var childItem = Activator.CreateInstance(childType);
-
-                        childType.GetProperties()
-                                 .ForEach(prop => prop.SetValue(childItem, Convert.ChangeType(reader[table.Columns[i++].Name], prop.PropertyType)));
+                        var childItem = ReadEntity(reader, table);
 
                         MethodInfo addItem = childCollection.GetType().GetMethod("Add");
                         addItem.Invoke(childCollection, new object[] { childItem });
-
-                        i = 0;
                     }
 
                     foreach (TBase obj in results)
@@ -83,6 +66,21 @@ namespace DataTrack.Core.SQL.ExecutionObjects
             Logger.Info(MethodBase.GetCurrentMethod(), $"Executed Read statement ({stopwatch.GetElapsedMicroseconds()}\u03BCs): {results.Count} result{(results.Count > 1 ? "s" : "")} retrieved");
 
             return results;
+        }
+
+        private IEntity ReadEntity(SqlDataReader reader, Table table)
+        {
+            Type type = table.Type;
+            IEntity entity = (IEntity)Activator.CreateInstance(type);
+
+            foreach(Column column in table.Columns)
+            {
+                PropertyInfo property = type.GetProperty(column.PropertyName);
+
+                property.SetValue(entity, Convert.ChangeType(reader[column.Name], property.PropertyType));
+            }
+
+            return entity;
         }
     }
 }
