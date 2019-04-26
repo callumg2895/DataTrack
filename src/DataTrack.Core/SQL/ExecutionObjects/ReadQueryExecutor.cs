@@ -34,26 +34,7 @@ namespace DataTrack.Core.SQL.ExecutionObjects
 
             foreach (Table table in tables)
             {
-                while (reader.Read())
-                {
-                    IEntity entity = ReadEntity(reader, table);
-
-                    if (!entityDictionary.ContainsKey(table))
-                    {
-                        entityDictionary.Add(table, new List<IEntity>());
-                    }
-
-                    entityDictionary[table].Add(entity);
-                    
-                    if (mapping.ChildParentMapping.ContainsKey(table))
-                    {
-                        AssociateWithParent(entity, table);
-                    }
-                    else
-                    {
-                        results.Add((TBase)entity);
-                    }
-                }
+                ReadResultsForTable(reader, table);
 
                 reader.NextResult();
             }
@@ -63,6 +44,30 @@ namespace DataTrack.Core.SQL.ExecutionObjects
             Logger.Info(MethodBase.GetCurrentMethod(), $"Executed Read statement ({stopwatch.GetElapsedMicroseconds()}\u03BCs): {results.Count} result{(results.Count > 1 ? "s" : "")} retrieved");
 
             return results;
+        }
+
+        private void ReadResultsForTable(SqlDataReader reader, Table table)
+        {
+            while (reader.Read())
+            {
+                IEntity entity = ReadEntity(reader, table);
+
+                if (!entityDictionary.ContainsKey(table))
+                {
+                    entityDictionary.Add(table, new List<IEntity>());
+                }
+
+                entityDictionary[table].Add(entity);
+
+                if (mapping.ChildParentMapping.ContainsKey(table))
+                {
+                    AssociateWithParent(entity, table);
+                }
+                else
+                {
+                    results.Add((TBase)entity);
+                }
+            }
         }
 
         private void AssociateWithParent(IEntity entity, Table table)
