@@ -16,18 +16,20 @@ namespace DataTrack.Core.SQL.ExecutionObjects
 {
     public class ReadQueryExecutor<TBase> : QueryExecutor<TBase> where TBase : IEntity, new()
     {
+        private List<TBase> results;
+        private List<Table> tables;
+        private Dictionary<Table, List<IEntity>> entityDictionary;
+
         internal ReadQueryExecutor(Query<TBase> query, SqlConnection connection, SqlTransaction? transaction = null)
             : base(query, connection, transaction)
         {
-
+            results = new List<TBase>();
+            tables = mapping.Tables;
+            entityDictionary = new Dictionary<Table, List<IEntity>>();
         }
 
         internal List<TBase> Execute(SqlDataReader reader)
         {
-            List<TBase> results = new List<TBase>();
-            List<Table> tables = mapping.Tables;
-            Dictionary<Table, List<IEntity>> entityDictionary = new Dictionary<Table, List<IEntity>>();
-
             stopwatch.Start();
 
             foreach (Table table in tables)
@@ -45,18 +47,7 @@ namespace DataTrack.Core.SQL.ExecutionObjects
                     
                     if (mapping.ChildParentMapping.ContainsKey(table))
                     {
-                        Table parentTable = mapping.ChildParentMapping[table];
-                        var foreignKey = entity.GetPropertyValue(table.GetForeignKeyColumn(parentTable.Name).PropertyName);
-
-                        foreach(IEntity parentEntity in entityDictionary[parentTable])
-                        {
-                            var parentPrimaryKey = parentEntity.GetPropertyValue(parentTable.GetPrimaryKeyColumn().PropertyName);
-                            if (parentPrimaryKey.ToString() == foreignKey.ToString())
-                            {
-                                parentEntity.AddChildPropertyValue(table.Name, entity);
-                                break;
-                            }
-                        }
+                        AssociateWithParent(entity, table);
                     }
                     else
                     {
@@ -64,10 +55,7 @@ namespace DataTrack.Core.SQL.ExecutionObjects
                     }
                 }
 
-                if (!reader.NextResult())
-                {
-                    break;
-                }
+                reader.NextResult();
             }
 
             stopwatch.Stop();
@@ -75,6 +63,23 @@ namespace DataTrack.Core.SQL.ExecutionObjects
             Logger.Info(MethodBase.GetCurrentMethod(), $"Executed Read statement ({stopwatch.GetElapsedMicroseconds()}\u03BCs): {results.Count} result{(results.Count > 1 ? "s" : "")} retrieved");
 
             return results;
+        }
+
+        private void AssociateWithParent(IEntity entity, Table table)
+        {
+            Table parentTable = mapping.ChildParentMapping[table];
+
+            foreach (IEntity parentEntity in entityDictionary[parentTable])
+            {
+                object foreignKey = entity.GetPropertyValue(table.GetForeignKeyColumn(parentTable.Name).PropertyName);
+                object parentPrimaryKey = parentEntity.GetPropertyValue(parentTable.GetPrimaryKeyColumn().PropertyName);
+
+                if (parentPrimaryKey.Equals(foreignKey))
+                {
+                    parentEntity.AddChildPropertyValue(table.Name, entity);
+                    break;
+                }
+            }
         }
 
         private IEntity ReadEntity(SqlDataReader reader, Table table)

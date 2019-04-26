@@ -90,13 +90,13 @@ namespace DataTrack.Core.Tests
             {
                 FirstName = "John",
                 LastName = "Smith",
+                Books = new List<Book>()
             };
 
             List<Author> resultsAfterRollBack;
             List<Author> resultsAfterDelete;
 
             // Act
-
             new Query<Author>().Create(author).Execute();
 
             using (Transaction<Author> t = new Transaction<Author>())
