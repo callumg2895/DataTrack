@@ -54,5 +54,35 @@ namespace DataTrack.Core.SQL.DataStructures
 
             throw new TableMappingException(type, tableName);
         }
+
+        public void InstantiateChildProperties()
+        {
+            Type type = this.GetType();
+
+            foreach (PropertyInfo property in type.GetProperties())
+                foreach (Attribute attribute in property.GetCustomAttributes())
+                    if ((attribute as TableAttribute) != null)
+                    {
+                        property.SetValue(this, Activator.CreateInstance(property.PropertyType));
+                    }
+        }
+
+        public void AddChildPropertyValue(string tableName, IEntity entity)
+        {
+            Type type = this.GetType();
+            PropertyInfo childProperty = null;
+            dynamic entityList = null;
+
+            foreach (PropertyInfo property in type.GetProperties())
+                foreach (Attribute attribute in property.GetCustomAttributes())
+                    if ((attribute as TableAttribute)?.TableName == tableName)
+                    {
+                        entityList = this.GetPropertyValue(property.Name);
+                        childProperty = property;
+                    }
+
+            MethodInfo addItem = entityList.GetType().GetMethod("Add");
+            addItem.Invoke(entityList, new object[] { entity });
+        }
     }
 }

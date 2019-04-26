@@ -11,5 +11,9 @@ namespace DataTrack.Core.Interface
         List<object> GetPropertyValues();
 
         dynamic GetChildPropertyValues(string tableName);
+
+        void InstantiateChildProperties();
+
+        void AddChildPropertyValue(string tableName, IEntity entity);
     }
 }

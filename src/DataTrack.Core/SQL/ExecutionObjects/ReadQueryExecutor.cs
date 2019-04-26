@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 using DataTrack.Core.Interface;
+using System.Linq;
 
 namespace DataTrack.Core.SQL.ExecutionObjects
 {
@@ -25,39 +26,47 @@ namespace DataTrack.Core.SQL.ExecutionObjects
         {
             List<TBase> results = new List<TBase>();
             List<Table> tables = mapping.Tables;
+            Dictionary<Table, List<IEntity>> entityDictionary = new Dictionary<Table, List<IEntity>>();
 
             stopwatch.Start();
 
             foreach (Table table in tables)
             {
-                if (table.Type == baseType)
+                while (reader.Read())
                 {
-                    while (reader.Read())
-                    {
-                        TBase obj = (TBase)ReadEntity(reader, table);
+                    IEntity entity = ReadEntity(reader, table);
 
-                        results.Add(obj);
+                    if (!entityDictionary.ContainsKey(table))
+                    {
+                        entityDictionary.Add(table, new List<IEntity>());
+                    }
+
+                    entityDictionary[table].Add(entity);
+                    
+                    if (mapping.ChildParentMapping.ContainsKey(table))
+                    {
+                        Table parentTable = mapping.ChildParentMapping[table];
+                        var foreignKey = entity.GetPropertyValue(table.GetForeignKeyColumn(parentTable.Name).PropertyName);
+
+                        foreach(IEntity parentEntity in entityDictionary[parentTable])
+                        {
+                            var parentPrimaryKey = parentEntity.GetPropertyValue(parentTable.GetPrimaryKeyColumn().PropertyName);
+                            if (parentPrimaryKey.ToString() == foreignKey.ToString())
+                            {
+                                parentEntity.AddChildPropertyValue(table.Name, entity);
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        results.Add((TBase)entity);
                     }
                 }
-                else
+
+                if (!reader.NextResult())
                 {
-                    reader.NextResult();
-                    Type childType = table.Type;
-                    dynamic childCollection = Activator.CreateInstance(typeof(List<>).MakeGenericType(childType));
-
-                    while (reader.Read())
-                    {
-                        var childItem = ReadEntity(reader, table);
-
-                        MethodInfo addItem = childCollection.GetType().GetMethod("Add");
-                        addItem.Invoke(childCollection, new object[] { childItem });
-                    }
-
-                    foreach (TBase obj in results)
-                    {
-                        PropertyInfo childProperty = baseType.GetChildProperty(table.Name);
-                        childProperty.SetValue(obj, childCollection);
-                    }
+                    break;
                 }
             }
 
@@ -79,6 +88,8 @@ namespace DataTrack.Core.SQL.ExecutionObjects
 
                 property.SetValue(entity, Convert.ChangeType(reader[column.Name], property.PropertyType));
             }
+
+            entity.InstantiateChildProperties();
 
             return entity;
         }
