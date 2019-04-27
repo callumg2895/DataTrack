@@ -114,7 +114,7 @@ namespace DataTrack.Core.Tests
             return authors;
         }
 
-        protected List<Book> GetBooks(int b, int r)
+        protected List<Book> GetBooks(int b, int r = 0)
         {
             List<Book> books = new List<Book>();
 
