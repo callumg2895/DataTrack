@@ -70,22 +70,26 @@ namespace DataTrack.Core.Tests
         public void TestRepository_ShouldInsertMultipleEntitiesFromList()
         {
             // Arrange
-            int authorsToInsert = 100;
+            int authorsToInsert = 10;
             int booksPerAuthor = 20;
+            int reviewsPerBook = 2;
             IRepository<Author> authorRepository = new Repository<Author>();
             IRepository<Book> bookRepository = new Repository<Book>();
+            IRepository<Review> reviewRepository = new Repository<Review>();
 
-            List<Author> authors =  new List<Author>(GetAuthors(authorsToInsert, booksPerAuthor));
+            List<Author> authors =  new List<Author>(GetAuthors(authorsToInsert, booksPerAuthor, reviewsPerBook));
 
             // Act
             authorRepository.Create(authors);
             List<Author> createdAuthors = authorRepository.GetAll();
             List<Book> createdBooks = bookRepository.GetAll();
+            List<Review> createdReviews = reviewRepository.GetAll();
             authorRepository.DeleteAll();
 
             // Assert
             Assert.AreEqual(authorsToInsert, createdAuthors.Count);
             Assert.AreEqual(authorsToInsert * booksPerAuthor, createdBooks.Count);
+            Assert.AreEqual(authorsToInsert * booksPerAuthor * reviewsPerBook, createdReviews.Count);
         }
     }
 }

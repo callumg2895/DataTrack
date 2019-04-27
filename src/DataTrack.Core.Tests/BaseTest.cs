@@ -1,6 +1,7 @@
 ﻿using DataTrack.Core.Enums;
 using DataTrack.Core.Tests.TestObjects;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 
@@ -11,6 +12,7 @@ namespace DataTrack.Core.Tests
     {
         private static int totalAuthors = 0;
         private static int totalBooks = 0;
+        private static int totalReviews = 0;
 
         [AssemblyInitialize]
         public static void AssemblyInit(TestContext testContext)
@@ -43,6 +45,16 @@ namespace DataTrack.Core.Tests
                             title varchar(255) not null,
                             primary key (id),
                             foreign key (author_id) references authors(id) on delete cascade
+                        )
+
+                        create table reviews
+                        (
+                            id int not null identity(1,1),
+                            book_id int not null,
+                            source varchar(255) not null,
+                            score tinyint not null,
+                            primary key (id),
+                            foreign key (book_id) references books(id) on delete cascade
                         )
                     end";
 
@@ -88,32 +100,46 @@ namespace DataTrack.Core.Tests
             DataTrackConfiguration.Dispose();
         }
 
-        protected List<Author> GetAuthors(int n, int m = 0)
+        protected List<Author> GetAuthors(int a, int b = 0, int r = 0)
         {
             List<Author> authors = new List<Author>();
 
-            for (int i = totalAuthors; i < totalAuthors + n; i++)
+            for (int i = totalAuthors; i < totalAuthors + a; i++)
             {
-                authors.Add(new Author() { FirstName = $"FirstName{i}", LastName = $"LastName{i}", Books = GetBooks(m) });
+                authors.Add(new Author() { FirstName = $"FirstName{i}", LastName = $"LastName{i}", Books = GetBooks(b, r)});
             }
 
-            totalAuthors += n;
+            totalAuthors += a;
 
             return authors;
         }
 
-        protected List<Book> GetBooks(int n)
+        protected List<Book> GetBooks(int b, int r)
         {
             List<Book> books = new List<Book>();
 
-            for (int i = totalBooks; i < totalBooks + n; i++)
+            for (int i = totalBooks; i < totalBooks + b; i++)
             {
-                books.Add(new Book() { Title = $"Title{i}" });
+                books.Add(new Book() { Title = $"Title{i}", Reviews = GetReviews(r) });
             }
 
-            totalBooks += n;
+            totalBooks += b;
 
             return books;
+        }
+
+        protected List<Review> GetReviews(int r)
+        {
+            List<Review> reviews = new List<Review>();
+
+            for (int i = totalReviews; i < totalReviews + r; i++)
+            {
+                reviews.Add(new Review() { Source = $"Source{i}", Score = (byte)new Random().Next(byte.MaxValue) });
+            }
+
+            totalReviews += r;
+
+            return reviews;
         }
 
         protected bool AuthorsAreEqual(Author author1, Author author2)

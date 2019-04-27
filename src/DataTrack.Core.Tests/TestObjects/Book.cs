@@ -15,5 +15,8 @@ namespace DataTrack.Core.Tests.TestObjects
 
         [Column("title")]
         public virtual string Title { get; set; }
+
+        [Table("reviews")]
+        public List<Review> Reviews { get; set; }
     }
 }
