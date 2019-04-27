@@ -52,21 +52,30 @@ namespace DataTrack.Core.SQL.ExecutionObjects
             {
                 IEntity entity = ReadEntity(reader, table);
 
-                if (!entityDictionary.ContainsKey(table))
-                {
-                    entityDictionary.Add(table, new List<IEntity>());
-                }
+                MapEntity(entity, table);
+                AddResult(entity, table);
+            }
+        }
 
-                entityDictionary[table].Add(entity);
+        private void MapEntity(IEntity entity, Table table)
+        {
+            if (!entityDictionary.ContainsKey(table))
+            {
+                entityDictionary.Add(table, new List<IEntity>());
+            }
 
-                if (mapping.ChildParentMapping.ContainsKey(table))
-                {
-                    AssociateWithParent(entity, table);
-                }
-                else
-                {
-                    results.Add((TBase)entity);
-                }
+            entityDictionary[table].Add(entity);
+        }
+
+        private void AddResult(IEntity entity, Table table)
+        {
+            if (mapping.ChildParentMapping.ContainsKey(table))
+            {
+                AssociateWithParent(entity, table);
+            }
+            else
+            {
+                results.Add((TBase)entity);
             }
         }
 
