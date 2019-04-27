@@ -15,6 +15,8 @@ namespace DataTrack.Core.SQL.DataStructures
         [PrimaryKey]
         public TIdentity ID { get; set; }
 
+        private static Dictionary<(Type, string), PropertyInfo> properties = new Dictionary<(Type, string), PropertyInfo>(); 
+
         public object GetID() => ID;
 
         public object GetPropertyValue(string propertyName)
@@ -47,14 +49,9 @@ namespace DataTrack.Core.SQL.DataStructures
 
         public dynamic GetChildPropertyValues(string tableName)
         {
-            Type type = this.GetType();
+            PropertyInfo property = GetChildProperty(tableName);
 
-            foreach (PropertyInfo property in type.GetProperties())
-                foreach (Attribute attribute in property.GetCustomAttributes())
-                    if ((attribute as TableAttribute)?.TableName == tableName)
-                        return this.GetPropertyValue(property.Name);
-
-            throw new TableMappingException(type, tableName);
+            return this.GetPropertyValue(property.Name);
         }
 
         public void InstantiateChildProperties()
@@ -71,20 +68,33 @@ namespace DataTrack.Core.SQL.DataStructures
 
         public void AddChildPropertyValue(string tableName, IEntity entity)
         {
-            Type type = this.GetType();
-            PropertyInfo childProperty = null;
-            dynamic entityList = null;
-
-            foreach (PropertyInfo property in type.GetProperties())
-                foreach (Attribute attribute in property.GetCustomAttributes())
-                    if ((attribute as TableAttribute)?.TableName == tableName)
-                    {
-                        entityList = this.GetPropertyValue(property.Name);
-                        childProperty = property;
-                    }
-
+            PropertyInfo property = GetChildProperty(tableName);
+            dynamic entityList = this.GetPropertyValue(property.Name);
             MethodInfo addItem = entityList.GetType().GetMethod("Add");
+
             addItem.Invoke(entityList, new object[] { entity });
+        }
+
+        private PropertyInfo GetChildProperty(string tableName)
+        {
+            Type type = this.GetType();
+
+            if (properties.ContainsKey((type, tableName)))
+            {
+                return properties[(type, tableName)];
+            }
+            else
+            {
+                foreach (PropertyInfo prop in type.GetProperties())
+                    foreach (Attribute attribute in prop.GetCustomAttributes())
+                        if ((attribute as TableAttribute)?.TableName == tableName)
+                        {
+                            properties[(type, tableName)] = prop;
+                            return prop;
+                        }
+            }
+
+            throw new TableMappingException(type, tableName);
         }
     }
 }
