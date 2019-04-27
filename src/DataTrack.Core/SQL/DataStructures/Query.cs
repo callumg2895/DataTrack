@@ -18,7 +18,7 @@ using DataTrack.Core.Interface;
 
 namespace DataTrack.Core.SQL.DataStructures
 {
-    public class Query<TBase> where TBase : IEntity, new()
+    public class Query<TBase> where TBase : IEntity
     {
         #region Members
 
@@ -50,14 +50,14 @@ namespace DataTrack.Core.SQL.DataStructures
                 throw new Exception(message);
             }
         }
-        public Query<TBase> Create(IEntity item)
+        public Query<TBase> Create(TBase item)
         {
             OperationType = CRUDOperationTypes.Create;
             Mapping.DataTableMapping = new BulkDataBuilder<TBase>(item, Mapping).YieldDataMap();
             return this;
         }
 
-        public Query<TBase> Create(List<IEntity> items)
+        public Query<TBase> Create(List<TBase> items)
         {
             OperationType = CRUDOperationTypes.Create;
             Mapping.DataTableMapping = new BulkDataBuilder<TBase>(items, Mapping).YieldDataMap();

@@ -19,7 +19,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
         #region Members
 
-        internal List<IEntity> Data { get; private set; }
+        internal List<TBase> Data { get; private set; }
         internal List<Table> Tables { get; private set; }
         internal Mapping<TBase> Mapping { get; private set; }
 
@@ -30,13 +30,13 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
         #region Constructors
 
-        internal BulkDataBuilder(IEntity data, Mapping<TBase> mapping)
-            : this(new List<IEntity>() { data }, mapping)
+        internal BulkDataBuilder(TBase data, Mapping<TBase> mapping)
+            : this(new List<TBase>() { data }, mapping)
         {
 
         }
 
-        internal BulkDataBuilder(List<IEntity> data, Mapping<TBase> mapping)
+        internal BulkDataBuilder(List<TBase> data, Mapping<TBase> mapping)
         {
             Data = data;
             Tables = mapping.Tables;

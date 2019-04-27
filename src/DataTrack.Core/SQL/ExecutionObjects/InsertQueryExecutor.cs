@@ -16,7 +16,7 @@ using DataTrack.Core.Interface;
 
 namespace DataTrack.Core.SQL.ExecutionObjects
 {
-    public class InsertQueryExecutor<TBase> : QueryExecutor<TBase> where TBase : IEntity, new()
+    public class InsertQueryExecutor<TBase> : QueryExecutor<TBase> where TBase : IEntity
     {
         internal InsertQueryExecutor(Query<TBase> query, SqlConnection connection, SqlTransaction? transaction = null)
             : base(query, connection, transaction)

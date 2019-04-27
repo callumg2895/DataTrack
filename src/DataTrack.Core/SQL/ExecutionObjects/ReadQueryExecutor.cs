@@ -14,7 +14,7 @@ using System.Linq;
 
 namespace DataTrack.Core.SQL.ExecutionObjects
 {
-    public class ReadQueryExecutor<TBase> : QueryExecutor<TBase> where TBase : IEntity, new()
+    public class ReadQueryExecutor<TBase> : QueryExecutor<TBase> where TBase : IEntity
     {
         private List<TBase> results;
         private List<Table> tables;

@@ -19,12 +19,14 @@ namespace DataTrack.Core.Tests
         {
             // Arrange
             Author author = GetAuthors(1, 2)[0];
+            IRepository<Author> authorRepository = new Repository<Author>();
+            IRepository<Book> bookRepository = new Repository<Book>();
 
             //Act
-            Repository<Author>.Create(author);
-            Author authorReadResult = Repository<Author>.GetByProperty("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName)[0];
-            Book book1ReadResult = Repository<Book>.GetByProperty("title", Enums.RestrictionTypes.EqualTo, author.Books[0].Title)[0];
-            Repository<Author>.Delete(authorReadResult);
+            authorRepository.Create(author);
+            Author authorReadResult = authorRepository.GetByProperty("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName)[0];
+            Book book1ReadResult = bookRepository.GetByProperty("title", Enums.RestrictionTypes.EqualTo, author.Books[0].Title)[0];
+            authorRepository.Delete(authorReadResult);
 
             // Assert
             Assert.IsTrue(AuthorsAreEqual(authorReadResult, author));
@@ -35,12 +37,14 @@ namespace DataTrack.Core.Tests
         {
             // Arrange
             Author author = GetAuthors(1, 5)[0];
+            IRepository<Author> authorRepository = new Repository<Author>();
+            IRepository<Book> bookRepository = new Repository<Book>();
 
             //Act
-            Repository<Author>.Create(author);
-            List<Author> authorReadResult = Repository<Author>.GetByProperty("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName);
-            List<Book> bookReadResult = Repository<Book>.GetByProperty("title", Enums.RestrictionTypes.EqualTo, author.Books[0].Title);
-            Repository<Author>.DeleteAll();
+            authorRepository.Create(author);
+            List<Author> authorReadResult = authorRepository.GetByProperty("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName);
+            List<Book> bookReadResult = bookRepository.GetByProperty("title", Enums.RestrictionTypes.EqualTo, author.Books[0].Title);
+            authorRepository.DeleteAll();
 
             // Assert
             Assert.IsTrue(BooksAreEqual(bookReadResult[0], author.Books[0]));
@@ -51,11 +55,12 @@ namespace DataTrack.Core.Tests
         {
             // Arrange
             Author author = GetAuthors(1, 5)[0];
+            IRepository<Author> authorRepository = new Repository<Author>();
 
             //Act
-            Repository<Author>.Create(author);
-            Author authorReadResult = Repository<Author>.GetByProperty("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName)[0];    
-            Repository<Author>.Delete(authorReadResult);
+            authorRepository.Create(author);
+            Author authorReadResult = authorRepository.GetByProperty("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName)[0];    
+            authorRepository.Delete(authorReadResult);
 
             // Assert
             Assert.AreEqual(authorReadResult.Books.Count, 5);
@@ -67,14 +72,16 @@ namespace DataTrack.Core.Tests
             // Arrange
             int authorsToInsert = 100;
             int booksPerAuthor = 20;
+            IRepository<Author> authorRepository = new Repository<Author>();
+            IRepository<Book> bookRepository = new Repository<Book>();
 
-            List<IEntity> authors =  new List<IEntity>(GetAuthors(authorsToInsert, booksPerAuthor));
+            List<Author> authors =  new List<Author>(GetAuthors(authorsToInsert, booksPerAuthor));
 
             // Act
-            Repository<Author>.Create(authors);
-            List<Author> createdAuthors = Repository<Author>.GetAll();
-            List<Book> createdBooks = Repository<Book>.GetAll();
-            Repository<Author>.DeleteAll();
+            authorRepository.Create(authors);
+            List<Author> createdAuthors = authorRepository.GetAll();
+            List<Book> createdBooks = bookRepository.GetAll();
+            authorRepository.DeleteAll();
 
             // Assert
             Assert.AreEqual(authorsToInsert, createdAuthors.Count);

@@ -12,7 +12,7 @@ using DataTrack.Core.Interface;
 
 namespace DataTrack.Core.SQL.ExecutionObjects
 {
-    public class DeleteQueryExecutor<TBase> : QueryExecutor<TBase> where TBase : IEntity, new()
+    public class DeleteQueryExecutor<TBase> : QueryExecutor<TBase> where TBase : IEntity
     {
         internal DeleteQueryExecutor(Query<TBase> query, SqlConnection connection, SqlTransaction? transaction = null)
             : base(query, connection, transaction)
