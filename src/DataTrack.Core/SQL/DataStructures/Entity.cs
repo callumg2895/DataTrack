@@ -2,6 +2,7 @@
 using DataTrack.Core.Enums;
 using DataTrack.Core.Exceptions;
 using DataTrack.Core.Interface;
+using DataTrack.Core.Logging;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -81,16 +82,19 @@ namespace DataTrack.Core.SQL.DataStructures
 
             if (properties.ContainsKey((type, tableName)))
             {
-                return properties[(type, tableName)];
+                PropertyInfo property = properties[(type, tableName)];
+                Logger.Trace($"Loading property '{property.Name}' for Entity '{type.Name}' from cache. ");
+                return property;
             }
             else
             {
-                foreach (PropertyInfo prop in type.GetProperties())
-                    foreach (Attribute attribute in prop.GetCustomAttributes())
+                foreach (PropertyInfo property in type.GetProperties())
+                    foreach (Attribute attribute in property.GetCustomAttributes())
                         if ((attribute as TableAttribute)?.TableName == tableName)
                         {
-                            properties[(type, tableName)] = prop;
-                            return prop;
+                            properties[(type, tableName)] = property;
+                            Logger.Trace($"Loading property '{property.Name}' for Entity '{type.Name}'. ");
+                            return property;
                         }
             }
 
