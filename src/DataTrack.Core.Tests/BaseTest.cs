@@ -53,6 +53,7 @@ namespace DataTrack.Core.Tests
                             book_id int not null,
                             source varchar(255) not null,
                             score tinyint not null,
+                            created datetime not null,
                             primary key (id),
                             foreign key (book_id) references books(id) on delete cascade
                         )
@@ -134,7 +135,7 @@ namespace DataTrack.Core.Tests
 
             for (int i = totalReviews; i < totalReviews + r; i++)
             {
-                reviews.Add(new Review() { Source = $"Source{i}", Score = (byte)new Random().Next(byte.MaxValue) });
+                reviews.Add(new Review() { Source = $"Source{i}", Score = (byte)new Random().Next(byte.MaxValue), Created = DateTime.UtcNow });
             }
 
             totalReviews += r;

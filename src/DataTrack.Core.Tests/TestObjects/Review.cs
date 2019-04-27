@@ -19,6 +19,7 @@ namespace DataTrack.Core.Tests.TestObjects
         [Column("score")]
         public byte Score { get; set; }
 
-
+        [Column("created")]
+        public DateTime Created { get; set; }
     }
 }
