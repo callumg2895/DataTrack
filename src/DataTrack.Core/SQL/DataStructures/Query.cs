@@ -182,7 +182,11 @@ namespace DataTrack.Core.SQL.DataStructures
                 command.Transaction = transaction;
 
             command.CommandType = CommandType.Text;
-            command.AddParameters(GetParameters());
+
+            foreach(Parameter parameter in GetParameters())
+            {
+                command.Parameters.Add(parameter.ToSqlParameter());
+            }
 
             if (OperationType == CRUDOperationTypes.Create)
             {
