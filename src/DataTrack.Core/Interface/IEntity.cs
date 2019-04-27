@@ -6,6 +6,8 @@ namespace DataTrack.Core.Interface
 {
     public interface IEntity
     {
+        object GetID();
+
         object GetPropertyValue(string propertyName);
 
         List<object> GetPropertyValues();

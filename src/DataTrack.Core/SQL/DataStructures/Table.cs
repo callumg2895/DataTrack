@@ -18,7 +18,9 @@ namespace DataTrack.Core.SQL.DataStructures
         public List<Column> Columns { get; set; }
         public List<IEntity> Entities { get; set; }
 
-        private AttributeWrapper _attributes = null;
+        private AttributeWrapper _attributes;
+        private Column? primaryKeyColumn;
+        private Dictionary<string, Column?> foreignKeyColumns;
 
         internal Table(Type type, AttributeWrapper attributes)
         {
@@ -30,6 +32,8 @@ namespace DataTrack.Core.SQL.DataStructures
             Entities = new List<IEntity>();
 
             _attributes = attributes;
+            primaryKeyColumn = null;
+            foreignKeyColumns = new Dictionary<string, Column?>();
 
             foreach (ColumnAttribute columnAttribute in attributes.ColumnAttributes)
             {
@@ -58,24 +62,38 @@ namespace DataTrack.Core.SQL.DataStructures
 
         public Column GetPrimaryKeyColumn()
         {
-            foreach (Column column in Columns)
+            if (primaryKeyColumn == null)
             {
-                if (column.IsPrimaryKey())
-                    return column;
+                foreach (Column column in Columns)
+                {
+                    if (column.IsPrimaryKey())
+                    {
+                        primaryKeyColumn = column;
+                        break;
+                    }
+
+                }
             }
 
-            throw new TableMappingException(Type, Name);
+            return primaryKeyColumn ?? throw new TableMappingException(Type, Name);
         }
 
         public Column GetForeignKeyColumn(string foreignTableName)
         {
-            foreach (Column column in Columns)
-            { 
-                if (column.IsForeignKey() && column.ForeignKeyTableMapping == foreignTableName)
-                    return column;
+            if (!foreignKeyColumns.ContainsKey(foreignTableName))
+            {
+                foreignKeyColumns[foreignTableName] = null;
+
+                foreach (Column column in Columns)
+                {
+                    if (column.IsForeignKey() && column.ForeignKeyTableMapping == foreignTableName)
+                    {
+                        foreignKeyColumns[foreignTableName] = column;
+                    }
+                }
             }
 
-            throw new TableMappingException(Type, Name);
+            return foreignKeyColumns[foreignTableName] ?? throw new TableMappingException(Type, Name);
         }
 
         public object Clone()

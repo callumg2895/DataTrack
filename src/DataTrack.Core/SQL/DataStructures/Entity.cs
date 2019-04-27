@@ -15,6 +15,8 @@ namespace DataTrack.Core.SQL.DataStructures
         [PrimaryKey]
         public TIdentity ID { get; set; }
 
+        public object GetID() => ID;
+
         public object GetPropertyValue(string propertyName)
         {
             return this.GetType()
