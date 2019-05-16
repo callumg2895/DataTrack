@@ -109,24 +109,6 @@ namespace DataTrack.Core.SQL.BuilderObjects
                 .AppendLine();
         }
 
-        public void BuildInsertStatement(List<Column> columns, TableAttribute table)
-        {
-            if (columns.Count == 0) return;
-
-            columns = columns.Where(c => !c.IsPrimaryKey()).ToList();
-
-            _sql.Append($"insert into {table.TableName} (");
-
-            _sql.Append(columns[0].Name);
-
-            for (int i = 1; i < columns.Count; i++)
-            {
-                _sql.Append(", " + columns[i].Name);
-            }
-
-            _sql.AppendLine(")");
-        }
-
         public void BuildUpdateStatement()
         {
             StringBuilder setBuilder = new StringBuilder();
@@ -163,37 +145,6 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
             _sql.Append(setBuilder.ToString());
             _sql.Append(restrictionBuilder.ToString());
-        }
-
-        public void BuildValuesStatement(List<Column> columns, TableAttribute table)
-        {
-            if (columns.Count == 0) return;
-
-            columns = columns.Where(c => !c.IsPrimaryKey() && c.Parameters.Count > 0).ToList();
-
-            // Assert that all colums for a given table have the same number of parameters
-            int paramCount = columns.Select(c => c.Parameters.Count).Max();
-
-            _sql.Append("values ");
-
-            // For each set of parameters, we create a seperate set of values:
-            // eg: values (set 1), (set 2), (set 3)
-            for (int j = 0; j < paramCount; j++)
-            {
-                _sql.Append($"( {columns[0].Parameters[j].Handle}");
-
-                for (int i = 1; i < columns.Count; i++)
-                {
-                    _sql.Append($", {columns[i].Parameters[j].Handle}");
-                }
-
-                _sql.Append(")");
-
-                if (j < paramCount - 1)
-                    _sql.Append(",");
-            }
-
-            _sql.AppendLine();
         }
 
         public void BuildSelectStatement()
