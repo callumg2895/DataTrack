@@ -2,7 +2,7 @@
 using DataTrack.Core.Enums;
 using DataTrack.Core.Exceptions;
 using DataTrack.Core.Interface;
-using DataTrack.Core.Logging;
+using DataTrack.Logging;
 using DataTrack.Core.Util;
 using DataTrack.Core.Util.DataStructures;
 using DataTrack.Core.Util.Extensions;

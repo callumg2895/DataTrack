@@ -1,10 +1,8 @@
-﻿using DataTrack.Core.Enums;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Reflection;
 using System.Text;
 
-namespace DataTrack.Core.Logging
+namespace DataTrack.Logging
 {
     struct LogItem
     {

@@ -1,13 +1,10 @@
-﻿using DataTrack.Core.Enums;
-using DataTrack.Core.Util.Extensions;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using System.Text;
 using System.Threading;
 
-namespace DataTrack.Core.Logging
+namespace DataTrack.Logging
 {
     public static class Logger
     {
@@ -98,7 +95,11 @@ namespace DataTrack.Core.Logging
             lock (fullPathLock)
             {
                 string[] files = Directory.GetFiles(filePath, $"{fileDateString}_{fileName}*");
-                files.ForEach(file => File.Delete(file));
+
+                foreach (string file in files)
+                {
+                    File.Delete(file);
+                }
             }
         }
 

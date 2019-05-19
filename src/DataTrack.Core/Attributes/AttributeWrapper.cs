@@ -1,8 +1,8 @@
-﻿using DataTrack.Core.Logging;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using DataTrack.Logging;
 
 namespace DataTrack.Core.Attributes
 {

@@ -1,5 +1,5 @@
 ﻿using DataTrack.Core.Util;
-using DataTrack.Core.Logging;
+using DataTrack.Logging;
 using System;
 
 namespace DataTrack.Core.Exceptions

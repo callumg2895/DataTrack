@@ -8,12 +8,4 @@
     <NullableContextOptions>enable</NullableContextOptions>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="System.Data.SqlClient" Version="4.5.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\DataTrack.Logging\DataTrack.Logging.csproj" />
-  </ItemGroup>
-
 </Project>

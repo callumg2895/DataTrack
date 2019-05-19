@@ -1,4 +1,4 @@
-﻿namespace DataTrack.Core.Enums
+﻿namespace DataTrack.Logging
 {
     public enum LogLevel
     {

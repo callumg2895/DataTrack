@@ -3,7 +3,7 @@ using DataTrack.Core.Exceptions;
 using DataTrack.Core.Util;
 using System;
 using System.Reflection;
-using DataTrack.Core.Logging;
+using DataTrack.Logging;
 using System.Data;
 
 namespace DataTrack.Core.Attributes

@@ -1,6 +1,6 @@
 ﻿using DataTrack.Core.Enums;
 using System.Reflection;
-using DataTrack.Core.Logging;
+using DataTrack.Logging;
 using System.Data;
 
 namespace DataTrack.Core.Util.Extensions

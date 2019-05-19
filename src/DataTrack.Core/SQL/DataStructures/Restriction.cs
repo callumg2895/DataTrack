@@ -1,5 +1,5 @@
 ﻿using DataTrack.Core.Enums;
-using DataTrack.Core.Logging;
+using DataTrack.Logging;
 using DataTrack.Core.Util;
 using DataTrack.Core.Util.Extensions;
 using System;
