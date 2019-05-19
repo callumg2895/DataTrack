@@ -5,6 +5,7 @@
 
 trigger:
 - master
+- trunk
 
 pool:
   vmImage: 'windows-latest'
