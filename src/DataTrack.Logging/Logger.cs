@@ -43,29 +43,17 @@ namespace DataTrack.Logging
 
         private static void Create()
         {
+            if (currentLength < maxLogLength && currentLength != 0)
+            {
+                return;
+            }
+
             lock (configLock)
             {
-                config.CreateLogDirectory();
-
-                if (currentLength < maxLogLength && currentLength != 0)
-                {
-                    return;
-                }
-
-                if (DateTime.Now.Date > config.GetFileDate())
-                {
-                    config.UpdateFileDate();
-                }
-
-                currentLength = 0;
-
-                while (File.Exists(config.GetFullPath(fileIndex)))
-                {
-                    fileIndex++;
-                }
-
-                using (StreamWriter writer = File.CreateText(config.GetFullPath(fileIndex))) { };
+                config.CreateLogFile();
             }
+
+            currentLength = 0;
         }
 
         private static void Log(MethodBase? method, string message, LogLevel level)
@@ -101,7 +89,7 @@ namespace DataTrack.Logging
         {
             lock (configLock)
             {
-                config.DeleteAllLogs();
+                config.DeleteLogFiles();
             }
         }
 
