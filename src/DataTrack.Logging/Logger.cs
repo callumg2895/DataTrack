@@ -8,15 +8,10 @@ namespace DataTrack.Logging
 {
     public static class Logger
     {
-        private const string fileName = @"DataTrackLog_";
-        private const string fileExtension = @".txt";
-        private const int maxLogLength = 10000;
+        private static LogConfiguration config;
 
+        private const int maxLogLength = 10000;
         private static int fileIndex = 0;
-        private static string fullPath;
-        private static DateTime fileDate = DateTime.Now.Date;
-        private static string fileDateString = fileDate.ToShortDateString().Replace("/", "_");
-        private static string filePath = Path.GetPathRoot(Environment.SystemDirectory) + "DataTrack";
         private static int currentLength = 0;
 
         private static Thread loggingThread;
@@ -25,21 +20,19 @@ namespace DataTrack.Logging
         private static List<LogItem> logBuffer;
         private static bool _enableConsoleLogging;
 
-        private static object fullPathLock = new object();
+        private static object configLock = new object();
         private static object logBufferLock = new object();
         private static object logBufferInUseLock = new object();
         private static object shouldExecuteLock = new object();
 
         public static void Init(bool enableConsoleLogging)
         {
-            fullPath = $@"{filePath}\{fileDateString}_{fileName}{fileIndex}{fileExtension}";
+            config = new LogConfiguration("DataTrack");
+
             _enableConsoleLogging = enableConsoleLogging;
             logBuffer = new List<LogItem>();
             logBufferInUse = true;
             shouldExecute = true;
-
-            if (!Directory.Exists(filePath))
-                Directory.CreateDirectory(filePath);
 
             Clear();
             Create();
@@ -50,14 +43,28 @@ namespace DataTrack.Logging
 
         private static void Create()
         {
-            lock (fullPath)
+            lock (configLock)
             {
+                config.CreateLogDirectory();
+
+                if (currentLength < maxLogLength && currentLength != 0)
+                {
+                    return;
+                }
+
+                if (DateTime.Now.Date > config.GetFileDate())
+                {
+                    config.UpdateFileDate();
+                }
+
                 currentLength = 0;
 
-                while (File.Exists(fullPath))
-                    fullPath = $@"{filePath}\{fileDateString}_{fileName}{++fileIndex}{fileExtension}";
+                while (File.Exists(config.GetFullPath(fileIndex)))
+                {
+                    fileIndex++;
+                }
 
-                using (StreamWriter writer = File.CreateText(fullPath)) { };
+                using (StreamWriter writer = File.CreateText(config.GetFullPath(fileIndex))) { };
             }
         }
 
@@ -92,14 +99,9 @@ namespace DataTrack.Logging
 
         private static void Clear()
         {
-            lock (fullPathLock)
+            lock (configLock)
             {
-                string[] files = Directory.GetFiles(filePath, $"{fileDateString}_{fileName}*");
-
-                foreach (string file in files)
-                {
-                    File.Delete(file);
-                }
+                config.DeleteAllLogs();
             }
         }
 
@@ -167,9 +169,9 @@ namespace DataTrack.Logging
         {
             string logOutput = log.ToString();
 
-            lock (fullPathLock)
+            lock (configLock)
             {
-                using (StreamWriter writer = new StreamWriter(fullPath, true))
+                using (StreamWriter writer = new StreamWriter(config.GetFullPath(fileIndex), true))
                 {
                     writer.WriteLine(logOutput);
                     currentLength++;
@@ -186,11 +188,7 @@ namespace DataTrack.Logging
                         break;
                 }
 
-            if (currentLength == maxLogLength || DateTime.Now.Date > fileDate)
-            {
-                fileDate = DateTime.Now.Date;
-                Create();
-            }
+            Create();
         }
 
         private static bool ShouldExecute()
