@@ -36,12 +36,12 @@ namespace DataTrack.Logging
                 fileDate = DateTime.Now.Date;
             }
 
-            while (File.Exists(GetFullPath(fileIndex)))
+            while (File.Exists(GetFullPath()))
             {
                 fileIndex++;
             }
 
-            using (StreamWriter writer = File.CreateText(GetFullPath(fileIndex))) { };
+            using (StreamWriter writer = File.CreateText(GetFullPath())) { };
         }
 
         public void DeleteLogFiles()
@@ -57,9 +57,9 @@ namespace DataTrack.Logging
             }
         }
 
-        public string GetFullPath(int index)
+        public string GetFullPath()
         {
-            return $@"{filePath}\{fileDateString}_{fileName}{index}{fileExtension}";
+            return $@"{filePath}\{fileDateString}_{fileName}{fileIndex}{fileExtension}";
         }
     }
 }

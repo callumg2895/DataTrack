@@ -11,7 +11,6 @@ namespace DataTrack.Logging
         private static LogConfiguration config;
 
         private const int maxLogLength = 10000;
-        private static int fileIndex = 0;
         private static int currentLength = 0;
 
         private static Thread loggingThread;
@@ -159,7 +158,7 @@ namespace DataTrack.Logging
 
             lock (configLock)
             {
-                using (StreamWriter writer = new StreamWriter(config.GetFullPath(fileIndex), true))
+                using (StreamWriter writer = new StreamWriter(config.GetFullPath(), true))
                 {
                     writer.WriteLine(logOutput);
                     currentLength++;
