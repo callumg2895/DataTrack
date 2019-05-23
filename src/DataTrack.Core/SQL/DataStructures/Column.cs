@@ -54,8 +54,10 @@ namespace DataTrack.Core.SQL.DataStructures
 			throw new ColumnMappingException(type, Name);
 		}
 
-		public SqlDbType GetSqlDbType(Type type)
+		public SqlDbType GetSqlDbType()
 		{
+            Type type = Table.Type;
+
 			foreach (PropertyInfo property in type.GetProperties())
 			{
 				if (Name == "id" && property.Name == "ID")

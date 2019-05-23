@@ -40,7 +40,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 			for (int i = 0; i < table.Columns.Count; i++)
 			{
 				Column column = table.Columns[i];
-				SqlDbType sqlDbType = column.GetSqlDbType(table.Type);
+				SqlDbType sqlDbType = column.GetSqlDbType();
 
 				if (column.IsPrimaryKey())
 				{
@@ -71,7 +71,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 			string primaryKeyColumnName = "id";
 			bool isFirstElement = true;
 
-			_sql.AppendLine($"create table #insertedIds (id {table.GetPrimaryKeyColumn().GetSqlDbType(table.Type).ToSqlString()});")
+			_sql.AppendLine($"create table #insertedIds (id {table.GetPrimaryKeyColumn().GetSqlDbType().ToSqlString()});")
 				.AppendLine()
 				.Append("insert into " + table.Name + " (");
 
@@ -231,7 +231,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
 		private string GetPrimaryKeyColumnDefinition(Column column)
 		{
-            SqlDbType dbType = column.GetSqlDbType(column.Table.Type);
+            SqlDbType dbType = column.GetSqlDbType();
 
             switch (dbType)
             {
