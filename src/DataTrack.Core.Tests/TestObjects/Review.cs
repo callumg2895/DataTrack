@@ -5,7 +5,7 @@ using System;
 namespace DataTrack.Core.Tests.TestObjects
 {
 	[Table("reviews")]
-	public class Review : Entity<int>
+	public class Review : Entity<Guid>
 	{
 		[Column("book_id")]
 		[ForeignKey("books")]

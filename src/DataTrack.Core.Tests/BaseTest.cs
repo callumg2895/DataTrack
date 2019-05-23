@@ -49,7 +49,7 @@ namespace DataTrack.Core.Tests
 
                         create table reviews
                         (
-                            id int not null identity(1,1),
+                            id uniqueidentifier not null default newid(),
                             book_id int not null,
                             source varchar(255) not null,
                             score tinyint not null,

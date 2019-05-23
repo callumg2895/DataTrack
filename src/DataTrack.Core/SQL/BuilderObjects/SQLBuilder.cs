@@ -44,7 +44,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
 				if (column.IsPrimaryKey())
 				{
-					_sql.AppendLine($"{column.Name} {sqlDbType.ToSqlString()} not null identity(1,1),");
+					_sql.AppendLine(GetPrimaryKeyColumnDefinition(column));
 					_sql.Append($"primary key ({column.Name})");
 				}
 				else
@@ -71,7 +71,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 			string primaryKeyColumnName = "id";
 			bool isFirstElement = true;
 
-			_sql.AppendLine("create table #insertedIds (id int);")
+			_sql.AppendLine($"create table #insertedIds (id {table.GetPrimaryKeyColumn().GetSqlDbType(table.Type).ToSqlString()});")
 				.AppendLine()
 				.Append("insert into " + table.Name + " (");
 
@@ -227,6 +227,19 @@ namespace DataTrack.Core.SQL.BuilderObjects
 		private string GetRestrictionKeyWord(int restrictionCount)
 		{
 			return restrictionCount > 0 ? "and" : "where";
+		}
+
+		private string GetPrimaryKeyColumnDefinition(Column column)
+		{
+            SqlDbType dbType = column.GetSqlDbType(column.Table.Type);
+
+            switch (dbType)
+            {
+                case SqlDbType.UniqueIdentifier:
+                    return $"{column.Name} {dbType.ToSqlString()} not null default newid(),";
+                default:
+                    return $"{column.Name} {dbType.ToSqlString()} not null identity(1,1),";
+            }
 		}
 
 		public void Append(string text)
