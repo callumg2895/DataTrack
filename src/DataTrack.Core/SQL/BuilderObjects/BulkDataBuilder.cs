@@ -1,142 +1,147 @@
-﻿using DataTrack.Core.Attributes;
-using DataTrack.Core.Util;
+﻿using DataTrack.Core.Interface;
+using DataTrack.Core.SQL.DataStructures;
 using DataTrack.Core.Util.DataStructures;
-using DataTrack.Core.Util.Extensions;
 using DataTrack.Logging;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using DataTrack.Core.SQL.DataStructures;
-using DataTrack.Core.Interface;
 
 namespace DataTrack.Core.SQL.BuilderObjects
 {
-    internal class BulkDataBuilder<TBase> where TBase : IEntity
-    {
+	internal class BulkDataBuilder<TBase> where TBase : IEntity
+	{
 
-        #region Members
+		#region Members
 
-        internal List<TBase> Data { get; private set; }
-        internal List<Table> Tables { get; private set; }
-        internal Mapping<TBase> Mapping { get; private set; }
+		internal List<TBase> Data { get; private set; }
+		internal List<Table> Tables { get; private set; }
+		internal Mapping<TBase> Mapping { get; private set; }
 
-        private Map<Table, DataTable> DataMap = new Map<Table, DataTable>();
-        private Map<Column, DataColumn> ColumnMap = new Map<Column, DataColumn>();
-        private Type BaseType = typeof(TBase);
-        #endregion
+		private readonly Map<Table, DataTable> DataMap = new Map<Table, DataTable>();
+		private readonly Map<Column, DataColumn> ColumnMap = new Map<Column, DataColumn>();
+		private readonly Type BaseType = typeof(TBase);
+		#endregion
 
-        #region Constructors
+		#region Constructors
 
-        internal BulkDataBuilder(TBase data, Mapping<TBase> mapping)
-            : this(new List<TBase>() { data }, mapping)
-        {
+		internal BulkDataBuilder(TBase data, Mapping<TBase> mapping)
+			: this(new List<TBase>() { data }, mapping)
+		{
 
-        }
+		}
 
-        internal BulkDataBuilder(List<TBase> data, Mapping<TBase> mapping)
-        {
-            Data = data;
-            Tables = mapping.Tables;
-            Mapping = mapping;
-        }
+		internal BulkDataBuilder(List<TBase> data, Mapping<TBase> mapping)
+		{
+			Data = data;
+			Tables = mapping.Tables;
+			Mapping = mapping;
+		}
 
-        #endregion Constructors
+		#endregion Constructors
 
-        #region Methods
+		#region Methods
 
-        internal Map<Table, DataTable> YieldDataMap()
-        {
-            foreach(var item in Data)
-            {
-                BuildDataFor(item);
-            }
+		internal Map<Table, DataTable> YieldDataMap()
+		{
+			foreach (TBase item in Data)
+			{
+				BuildDataFor(item);
+			}
 
-            return DataMap;
-        }
+			return DataMap;
+		}
 
-        private void BuildDataFor(IEntity item)
-        {
-            if (item == null)
-                return;
+		private void BuildDataFor(IEntity item)
+		{
+			if (item == null)
+			{
+				return;
+			}
 
-            Type type = item.GetType();
-            Table table = Mapping.TypeTableMapping[type];
+			Type type = item.GetType();
+			Table table = Mapping.TypeTableMapping[type];
 
-            if (!DataMap.ContainsKey(table))
-            {
-                DataMap[table] = new DataTable(table.Name);
-                Logger.Info(MethodBase.GetCurrentMethod(), $"Building DataTable for: {Data?.GetType().ToString()}");
-            }
+			if (!DataMap.ContainsKey(table))
+			{
+				DataMap[table] = new DataTable(table.Name);
+				Logger.Info(MethodBase.GetCurrentMethod(), $"Building DataTable for: {Data?.GetType().ToString()}");
+			}
 
-            DataTable dataTable = DataMap[table];
+			DataTable dataTable = DataMap[table];
 
-            SetColumns(dataTable);
-            AddRow(dataTable, item);
+			SetColumns(dataTable);
+			AddRow(dataTable, item);
 
-            foreach (var childTable in Mapping.ParentChildMapping[table])
-            {
-                var childItems = item.GetChildPropertyValues(childTable.Name);
+			foreach (Table childTable in Mapping.ParentChildMapping[table])
+			{
+				dynamic childItems = item.GetChildPropertyValues(childTable.Name);
 
-                if (childItems == null)
-                    continue;
+				if (childItems == null)
+				{
+					continue;
+				}
 
-                if (!Mapping.ParentChildEntityMapping.ContainsKey(item))
-                {
-                    Mapping.ParentChildEntityMapping[item] = new List<IEntity>();
-                }
+				if (!Mapping.ParentChildEntityMapping.ContainsKey(item))
+				{
+					Mapping.ParentChildEntityMapping[item] = new List<IEntity>();
+				}
 
-                foreach (var childItem in childItems)
-                {
-                    BuildDataFor(childItem);
-                    Mapping.ParentChildEntityMapping[item].Add(childItem);
-                }
-            }
-            
-        }
+				foreach (dynamic childItem in childItems)
+				{
+					BuildDataFor(childItem);
+					Mapping.ParentChildEntityMapping[item].Add(childItem);
+				}
+			}
 
-        private void SetColumns(DataTable dataTable)
-        {
-            List<Column> columns = DataMap[dataTable].Columns;
+		}
 
-            foreach (Column column in columns)
-            {
-                if (ColumnMap.ContainsKey(column))
-                    return;
+		private void SetColumns(DataTable dataTable)
+		{
+			List<Column> columns = DataMap[dataTable].Columns;
 
-                DataColumn dataColumn = new DataColumn(column.Name);
-                List<DataColumn> primaryKeys = new List<DataColumn>();
+			foreach (Column column in columns)
+			{
+				if (ColumnMap.ContainsKey(column))
+				{
+					return;
+				}
 
-                if (!column.IsPrimaryKey())
-                {
-                    dataTable.Columns.Add(dataColumn);
-                    ColumnMap[column] = dataColumn;
-                }
+				DataColumn dataColumn = new DataColumn(column.Name);
+				List<DataColumn> primaryKeys = new List<DataColumn>();
 
-                if (column.IsPrimaryKey())
-                    primaryKeys.Add(dataColumn);
-            }
-        }
+				if (!column.IsPrimaryKey())
+				{
+					dataTable.Columns.Add(dataColumn);
+					ColumnMap[column] = dataColumn;
+				}
 
-        private void AddRow(DataTable dataTable, IEntity item)
-        {
-            List<object> rowData = item.GetPropertyValues();
+				if (column.IsPrimaryKey())
+				{
+					primaryKeys.Add(dataColumn);
+				}
+			}
+		}
 
-            Table table = DataMap[dataTable];
-            DataRow dataRow = dataTable.NewRow();
+		private void AddRow(DataTable dataTable, IEntity item)
+		{
+			List<object> rowData = item.GetPropertyValues();
 
-            for (int i = 0; i < rowData.Count; i++)
-            {
-                Column column = table.Columns[i];
-                if (!column.IsPrimaryKey())
-                    dataRow[column.Name] = rowData[i];
-            }
+			Table table = DataMap[dataTable];
+			DataRow dataRow = dataTable.NewRow();
 
-            dataTable.Rows.Add(dataRow);
-            Mapping.EntityDataRowMapping.Add(item, dataRow);
-        }
-        #endregion  
-    }
+			for (int i = 0; i < rowData.Count; i++)
+			{
+				Column column = table.Columns[i];
+				if (!column.IsPrimaryKey())
+				{
+					dataRow[column.Name] = rowData[i];
+				}
+			}
+
+			dataTable.Rows.Add(dataRow);
+			Mapping.EntityDataRowMapping.Add(item, dataRow);
+		}
+		#endregion
+	}
 }

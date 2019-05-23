@@ -1,116 +1,111 @@
-﻿using DataTrack.Core.Attributes;
+﻿using DataTrack.Core.Interface;
 using DataTrack.Core.SQL.DataStructures;
-using DataTrack.Core.Util;
 using DataTrack.Core.Util.Extensions;
 using DataTrack.Logging;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Diagnostics;
 using System.Reflection;
-using System.Text;
-using DataTrack.Core.Interface;
-using System.Linq;
 
 namespace DataTrack.Core.SQL.ExecutionObjects
 {
-    public class ReadQueryExecutor<TBase> : QueryExecutor<TBase> where TBase : IEntity
-    {
-        private List<TBase> results;
-        private List<Table> tables;
-        private Dictionary<Table, List<IEntity>> entityDictionary;
+	public class ReadQueryExecutor<TBase> : QueryExecutor<TBase> where TBase : IEntity
+	{
+		private readonly List<TBase> results;
+		private readonly List<Table> tables;
+		private readonly Dictionary<Table, List<IEntity>> entityDictionary;
 
-        internal ReadQueryExecutor(Query<TBase> query, SqlConnection connection, SqlTransaction? transaction = null)
-            : base(query, connection, transaction)
-        {
-            results = new List<TBase>();
-            tables = mapping.Tables;
-            entityDictionary = new Dictionary<Table, List<IEntity>>();
-        }
+		internal ReadQueryExecutor(Query<TBase> query, SqlConnection connection, SqlTransaction? transaction = null)
+			: base(query, connection, transaction)
+		{
+			results = new List<TBase>();
+			tables = mapping.Tables;
+			entityDictionary = new Dictionary<Table, List<IEntity>>();
+		}
 
-        internal List<TBase> Execute(SqlDataReader reader)
-        {
-            stopwatch.Start();
+		internal List<TBase> Execute(SqlDataReader reader)
+		{
+			stopwatch.Start();
 
-            foreach (Table table in tables)
-            {
-                ReadResultsForTable(reader, table);
+			foreach (Table table in tables)
+			{
+				ReadResultsForTable(reader, table);
 
-                reader.NextResult();
-            }
+				reader.NextResult();
+			}
 
-            stopwatch.Stop();
+			stopwatch.Stop();
 
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Executed Read statement ({stopwatch.GetElapsedMicroseconds()}\u03BCs): {results.Count} result{(results.Count > 1 ? "s" : "")} retrieved");
+			Logger.Info(MethodBase.GetCurrentMethod(), $"Executed Read statement ({stopwatch.GetElapsedMicroseconds()}\u03BCs): {results.Count} result{(results.Count > 1 ? "s" : "")} retrieved");
 
-            return results;
-        }
+			return results;
+		}
 
-        private void ReadResultsForTable(SqlDataReader reader, Table table)
-        {
-            while (reader.Read())
-            {
-                IEntity entity = ReadEntity(reader, table);
+		private void ReadResultsForTable(SqlDataReader reader, Table table)
+		{
+			while (reader.Read())
+			{
+				IEntity entity = ReadEntity(reader, table);
 
-                MapEntity(entity, table);
-                AddResult(entity, table);
-            }
-        }
+				MapEntity(entity, table);
+				AddResult(entity, table);
+			}
+		}
 
-        private void MapEntity(IEntity entity, Table table)
-        {
-            if (!entityDictionary.ContainsKey(table))
-            {
-                entityDictionary.Add(table, new List<IEntity>());
-            }
+		private void MapEntity(IEntity entity, Table table)
+		{
+			if (!entityDictionary.ContainsKey(table))
+			{
+				entityDictionary.Add(table, new List<IEntity>());
+			}
 
-            entityDictionary[table].Add(entity);
-        }
+			entityDictionary[table].Add(entity);
+		}
 
-        private void AddResult(IEntity entity, Table table)
-        {
-            if (mapping.ChildParentMapping.ContainsKey(table))
-            {
-                AssociateWithParent(entity, table);
-            }
-            else
-            {
-                results.Add((TBase)entity);
-            }
-        }
+		private void AddResult(IEntity entity, Table table)
+		{
+			if (mapping.ChildParentMapping.ContainsKey(table))
+			{
+				AssociateWithParent(entity, table);
+			}
+			else
+			{
+				results.Add((TBase)entity);
+			}
+		}
 
-        private void AssociateWithParent(IEntity entity, Table table)
-        {
-            Table parentTable = mapping.ChildParentMapping[table];
+		private void AssociateWithParent(IEntity entity, Table table)
+		{
+			Table parentTable = mapping.ChildParentMapping[table];
 
-            foreach (IEntity parentEntity in entityDictionary[parentTable])
-            {
-                object foreignKey = entity.GetPropertyValue(table.GetForeignKeyColumn(parentTable.Name).PropertyName);
-                object parentPrimaryKey = parentEntity.GetID();
+			foreach (IEntity parentEntity in entityDictionary[parentTable])
+			{
+				object foreignKey = entity.GetPropertyValue(table.GetForeignKeyColumn(parentTable.Name).PropertyName);
+				object parentPrimaryKey = parentEntity.GetID();
 
-                if (parentPrimaryKey.Equals(foreignKey))
-                {
-                    parentEntity.AddChildPropertyValue(table.Name, entity);
-                    break;
-                }
-            }
-        }
+				if (parentPrimaryKey.Equals(foreignKey))
+				{
+					parentEntity.AddChildPropertyValue(table.Name, entity);
+					break;
+				}
+			}
+		}
 
-        private IEntity ReadEntity(SqlDataReader reader, Table table)
-        {
-            Type type = table.Type;
-            IEntity entity = (IEntity)Activator.CreateInstance(type);
+		private IEntity ReadEntity(SqlDataReader reader, Table table)
+		{
+			Type type = table.Type;
+			IEntity entity = (IEntity)Activator.CreateInstance(type);
 
-            foreach(Column column in table.Columns)
-            {
-                PropertyInfo property = type.GetProperty(column.PropertyName);
+			foreach (Column column in table.Columns)
+			{
+				PropertyInfo property = type.GetProperty(column.PropertyName);
 
-                property.SetValue(entity, Convert.ChangeType(reader[column.Name], property.PropertyType));
-            }
+				property.SetValue(entity, Convert.ChangeType(reader[column.Name], property.PropertyType));
+			}
 
-            entity.InstantiateChildProperties();
+			entity.InstantiateChildProperties();
 
-            return entity;
-        }
-    }
+			return entity;
+		}
+	}
 }

@@ -1,21 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace DataTrack.Core.Interface
 {
-    public interface IEntity
-    {
-        object GetID();
+	public interface IEntity
+	{
+		object GetID();
 
-        object GetPropertyValue(string propertyName);
+		object GetPropertyValue(string propertyName);
 
-        List<object> GetPropertyValues();
+		List<object> GetPropertyValues();
 
-        dynamic GetChildPropertyValues(string tableName);
+		dynamic GetChildPropertyValues(string tableName);
 
-        void InstantiateChildProperties();
+		void InstantiateChildProperties();
 
-        void AddChildPropertyValue(string tableName, IEntity entity);
-    }
+		void AddChildPropertyValue(string tableName, IEntity entity);
+	}
 }

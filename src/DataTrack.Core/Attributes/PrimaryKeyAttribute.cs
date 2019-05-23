@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace DataTrack.Core.Attributes
 {
-    public class PrimaryKeyAttribute : Attribute
-    {
-     
-    }
+	public class PrimaryKeyAttribute : Attribute
+	{
+
+	}
 }

@@ -1,4 +1,5 @@
-﻿using DataTrack.Core.SQL.DataStructures;
+﻿using DataTrack.Core.Interface;
+using DataTrack.Core.SQL.DataStructures;
 using DataTrack.Core.Util.Extensions;
 using DataTrack.Logging;
 using System;
@@ -6,63 +7,62 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Reflection;
-using DataTrack.Core.Interface;
 
 namespace DataTrack.Core.SQL
 {
-    public class Transaction<TBase> : IDisposable where TBase : IEntity, new()
-    {
-        #region Members
+	public class Transaction<TBase> : IDisposable where TBase : IEntity, new()
+	{
+		#region Members
 
-        private SqlTransaction transaction;
-        private SqlConnection connection;
-        private Stopwatch stopwatch;
-        private List<Object> results;
+		private readonly SqlTransaction transaction;
+		private readonly SqlConnection connection;
+		private readonly Stopwatch stopwatch;
+		private readonly List<object> results;
 
-        #endregion
+		#endregion
 
-        #region Constructors
+		#region Constructors
 
-        public Transaction()
-        {
-            connection = DataTrackConfiguration.CreateConnection();
-            transaction = connection.BeginTransaction();
-            stopwatch = new Stopwatch();
-            results = new List<object>();
-        }
+		public Transaction()
+		{
+			connection = DataTrackConfiguration.CreateConnection();
+			transaction = connection.BeginTransaction();
+			stopwatch = new Stopwatch();
+			results = new List<object>();
+		}
 
-        #endregion
+		#endregion
 
-        #region Methods
+		#region Methods
 
-        public dynamic Execute(Query<TBase> query)
-        {
-            return query.Execute(connection.CreateCommand(), connection, transaction);
-        }
+		public dynamic Execute(Query<TBase> query)
+		{
+			return query.Execute(connection.CreateCommand(), connection, transaction);
+		}
 
-        public void RollBack()
-        {
-            stopwatch.Start();
-            transaction.Rollback();
-            stopwatch.Stop();
+		public void RollBack()
+		{
+			stopwatch.Start();
+			transaction.Rollback();
+			stopwatch.Stop();
 
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Rolled back Transaction ({stopwatch.GetElapsedMicroseconds()}\u03BCs)");
-        }
+			Logger.Info(MethodBase.GetCurrentMethod(), $"Rolled back Transaction ({stopwatch.GetElapsedMicroseconds()}\u03BCs)");
+		}
 
-        public void Commit()
-        {
-            stopwatch.Start();
-            transaction.Commit();
-            stopwatch.Stop();
+		public void Commit()
+		{
+			stopwatch.Start();
+			transaction.Commit();
+			stopwatch.Stop();
 
-            Logger.Info(MethodBase.GetCurrentMethod(), $"Committed Transaction ({stopwatch.GetElapsedMicroseconds()}\u03BCs)");
-        }
+			Logger.Info(MethodBase.GetCurrentMethod(), $"Committed Transaction ({stopwatch.GetElapsedMicroseconds()}\u03BCs)");
+		}
 
-        public void Dispose()
-        {
-            transaction.Dispose();
-        }
+		public void Dispose()
+		{
+			transaction.Dispose();
+		}
 
-        #endregion
-    }
+		#endregion
+	}
 }

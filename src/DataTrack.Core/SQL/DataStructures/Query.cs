@@ -1,273 +1,274 @@
-﻿using DataTrack.Core.Attributes;
-using DataTrack.Core.Enums;
+﻿using DataTrack.Core.Enums;
+using DataTrack.Core.Interface;
+using DataTrack.Core.SQL.BuilderObjects;
 using DataTrack.Core.SQL.ExecutionObjects;
-using DataTrack.Core.Util;
-using DataTrack.Core.Util.DataStructures;
 using DataTrack.Logging;
-using DataTrack.Core.Util.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
-using System.Reflection;
 using System.Linq;
-using DataTrack.Core.SQL.BuilderObjects;
-using System.Text;
-using DataTrack.Core.Interface;
+using System.Reflection;
 
 namespace DataTrack.Core.SQL.DataStructures
 {
-    public class Query<TBase> where TBase : IEntity
-    {
-        #region Members
+	public class Query<TBase> where TBase : IEntity
+	{
+		#region Members
 
-        private Type baseType;
-        private Stopwatch stopwatch;
+		private readonly Type baseType;
+		private readonly Stopwatch stopwatch;
 
-        internal Mapping<TBase> Mapping { get; set; }
-        public CRUDOperationTypes OperationType { get; set; }
-        public string QueryString { get; set; }
+		internal Mapping<TBase> Mapping { get; set; }
+		public CRUDOperationTypes OperationType { get; set; }
+		public string QueryString { get; set; }
 
-        #endregion
+		#endregion
 
-        #region Constructors
+		#region Constructors
 
-        public Query()
-        {
-            OperationType = CRUDOperationTypes.Read;
+		public Query()
+		{
+			OperationType = CRUDOperationTypes.Read;
 
-            Mapping = new Mapping<TBase>();
-            QueryString = string.Empty;
-            baseType = typeof(TBase);
-            stopwatch = new Stopwatch();
+			Mapping = new Mapping<TBase>();
+			QueryString = string.Empty;
+			baseType = typeof(TBase);
+			stopwatch = new Stopwatch();
 
-            // Check for valid Table/Columns
-            if (Mapping.Tables.Count == 0 || Mapping.Tables.Any(t => t.Columns.Count == 0))
-            {
-                string message = $"Mapping data for class '{baseType.Name}' was incomplete/empty";
-                Logger.Error(MethodBase.GetCurrentMethod(), message);
-                throw new Exception(message);
-            }
-        }
-        public Query<TBase> Create(TBase item)
-        {
-            OperationType = CRUDOperationTypes.Create;
-            Mapping.DataTableMapping = new BulkDataBuilder<TBase>(item, Mapping).YieldDataMap();
-            return this;
-        }
+			// Check for valid Table/Columns
+			if (Mapping.Tables.Count == 0 || Mapping.Tables.Any(t => t.Columns.Count == 0))
+			{
+				string message = $"Mapping data for class '{baseType.Name}' was incomplete/empty";
+				Logger.Error(MethodBase.GetCurrentMethod(), message);
+				throw new Exception(message);
+			}
+		}
+		public Query<TBase> Create(TBase item)
+		{
+			OperationType = CRUDOperationTypes.Create;
+			Mapping.DataTableMapping = new BulkDataBuilder<TBase>(item, Mapping).YieldDataMap();
+			return this;
+		}
 
-        public Query<TBase> Create(List<TBase> items)
-        {
-            OperationType = CRUDOperationTypes.Create;
-            Mapping.DataTableMapping = new BulkDataBuilder<TBase>(items, Mapping).YieldDataMap();
-            return this;
-        }
+		public Query<TBase> Create(List<TBase> items)
+		{
+			OperationType = CRUDOperationTypes.Create;
+			Mapping.DataTableMapping = new BulkDataBuilder<TBase>(items, Mapping).YieldDataMap();
+			return this;
+		}
 
-        public Query<TBase> Read(int? id = null)
-        {
-            OperationType = CRUDOperationTypes.Read;
+		public Query<TBase> Read(int? id = null)
+		{
+			OperationType = CRUDOperationTypes.Read;
 
-            if (id.HasValue)
-                AddRestriction("id", RestrictionTypes.EqualTo, id.Value);
+			if (id.HasValue)
+			{
+				AddRestriction("id", RestrictionTypes.EqualTo, id.Value);
+			}
 
-            return this;
-        }
+			return this;
+		}
 
-        public Query<TBase> Update(TBase item)
-        {
-            OperationType = CRUDOperationTypes.Update;
-            UpdateParameters(item);
-            AddPrimaryKeyRestriction(item);
-            return this;
-        }
+		public Query<TBase> Update(TBase item)
+		{
+			OperationType = CRUDOperationTypes.Update;
+			UpdateParameters(item);
+			AddPrimaryKeyRestriction(item);
+			return this;
+		}
 
-        public Query<TBase> Delete()
-        {
-            OperationType = CRUDOperationTypes.Delete;
-            return this;
-        }
+		public Query<TBase> Delete()
+		{
+			OperationType = CRUDOperationTypes.Delete;
+			return this;
+		}
 
-        public Query<TBase> Delete(TBase item)
-        {
-            OperationType = CRUDOperationTypes.Delete;
-            AddPrimaryKeyDeleteRestriction(item);
-            return this;
-        }
+		public Query<TBase> Delete(TBase item)
+		{
+			OperationType = CRUDOperationTypes.Delete;
+			AddPrimaryKeyDeleteRestriction(item);
+			return this;
+		}
 
 
-        #endregion
+		#endregion
 
-        #region Methods
+		#region Methods
 
-        public List<Parameter> GetParameters()
-        {
-            List<Parameter> parameters = new List<Parameter>();
+		public List<Parameter> GetParameters()
+		{
+			List<Parameter> parameters = new List<Parameter>();
 
-            foreach (Table table in Mapping.Tables)
-            {
-                foreach(Column column in table.Columns)
-                {
-                    parameters.AddRange(column.Parameters);
-                }
-            }
+			foreach (Table table in Mapping.Tables)
+			{
+				foreach (Column column in table.Columns)
+				{
+					parameters.AddRange(column.Parameters);
+				}
+			}
 
-            return parameters;
-        }
+			return parameters;
+		}
 
-        internal void UpdateParameters(IEntity item)
-        {
-            Type type = item.GetType();
-            Table table = Mapping.TypeTableMapping[type];
+		internal void UpdateParameters(IEntity item)
+		{
+			Type type = item.GetType();
+			Table table = Mapping.TypeTableMapping[type];
 
-            foreach (Column column in table.Columns)
-            {
-                string propertyName = column.GetPropertyName(table.Type);
-                object propertyValue = item.GetPropertyValue(propertyName);
+			foreach (Column column in table.Columns)
+			{
+				string propertyName = column.GetPropertyName(table.Type);
+				object propertyValue = item.GetPropertyValue(propertyName);
 
-                if (propertyValue == null || (column.IsPrimaryKey() && propertyValue == default))
-                    continue;
+				if (propertyValue == null || (column.IsPrimaryKey() && propertyValue == default))
+				{
+					continue;
+				}
 
-                column.AddParameter(propertyValue);
-            }
+				column.AddParameter(propertyValue);
+			}
 
-            foreach (var childTable in Mapping.ParentChildMapping[table])
-            {
-                foreach (var childItem in item.GetChildPropertyValues(childTable.Name))
-                {
-                    UpdateParameters(childItem);
-                }
-            }
-        }
+			foreach (Table childTable in Mapping.ParentChildMapping[table])
+			{
+				foreach (dynamic childItem in item.GetChildPropertyValues(childTable.Name))
+				{
+					UpdateParameters(childItem);
+				}
+			}
+		}
 
-        public Query<TBase> AddRestriction(string property, RestrictionTypes type, object value)
-        {
-            Column column = Mapping.TypeTableMapping[baseType].Columns.Single(x => x.Name == property);
-            column.AddRestriction(type, value);
+		public Query<TBase> AddRestriction(string property, RestrictionTypes type, object value)
+		{
+			Column column = Mapping.TypeTableMapping[baseType].Columns.Single(x => x.Name == property);
+			column.AddRestriction(type, value);
 
-            return this;
-        }
+			return this;
+		}
 
-        private void AddPrimaryKeyRestriction(TBase item)
-        {
-            Column primaryKeyColumn = Mapping.TypeTableMapping[baseType].GetPrimaryKeyColumn();
-            string primaryKeyColumnPropertyName = primaryKeyColumn.GetPropertyName(baseType);
-            object primaryKeyValue = item.GetPropertyValue(primaryKeyColumnPropertyName);
+		private void AddPrimaryKeyRestriction(TBase item)
+		{
+			Column primaryKeyColumn = Mapping.TypeTableMapping[baseType].GetPrimaryKeyColumn();
+			string primaryKeyColumnPropertyName = primaryKeyColumn.GetPropertyName(baseType);
+			object primaryKeyValue = item.GetPropertyValue(primaryKeyColumnPropertyName);
 
-            AddRestriction(primaryKeyColumn.Name, RestrictionTypes.EqualTo, primaryKeyValue);        
-        }
+			AddRestriction(primaryKeyColumn.Name, RestrictionTypes.EqualTo, primaryKeyValue);
+		}
 
-        private void AddPrimaryKeyDeleteRestriction(TBase item)
-        {
-            Column primaryKeyColumn = Mapping.TypeTableMapping[baseType].GetPrimaryKeyColumn();
-            string primaryKeyColumnPropertyName = primaryKeyColumn.GetPropertyName(baseType);
-            object primaryKeyValue = item.GetPropertyValue(primaryKeyColumnPropertyName);
+		private void AddPrimaryKeyDeleteRestriction(TBase item)
+		{
+			Column primaryKeyColumn = Mapping.TypeTableMapping[baseType].GetPrimaryKeyColumn();
+			string primaryKeyColumnPropertyName = primaryKeyColumn.GetPropertyName(baseType);
+			object primaryKeyValue = item.GetPropertyValue(primaryKeyColumnPropertyName);
 
-            AddRestriction(primaryKeyColumn.Name, RestrictionTypes.In, primaryKeyValue);         
-        }
+			AddRestriction(primaryKeyColumn.Name, RestrictionTypes.In, primaryKeyValue);
+		}
 
-        public dynamic Execute()
-        {
-            using (SqlConnection connection = DataTrackConfiguration.CreateConnection())
-            {
-                SqlCommand command = connection.CreateCommand();
+		public dynamic Execute()
+		{
+			using (SqlConnection connection = DataTrackConfiguration.CreateConnection())
+			{
+				SqlCommand command = connection.CreateCommand();
 
-                return Execute(command, connection, null);
-            }
-        }
+				return Execute(command, connection, null);
+			}
+		}
 
-        internal dynamic Execute(SqlCommand command, SqlConnection connection, SqlTransaction? transaction = null)
-        {
-            if (transaction != null)
-                command.Transaction = transaction;
+		internal dynamic Execute(SqlCommand command, SqlConnection connection, SqlTransaction? transaction = null)
+		{
+			if (transaction != null)
+			{
+				command.Transaction = transaction;
+			}
 
-            command.CommandType = CommandType.Text;
+			command.CommandType = CommandType.Text;
 
-            foreach(Parameter parameter in GetParameters())
-            {
-                command.Parameters.Add(parameter.ToSqlParameter());
-            }
+			foreach (Parameter parameter in GetParameters())
+			{
+				command.Parameters.Add(parameter.ToSqlParameter());
+			}
 
-            if (OperationType == CRUDOperationTypes.Create)
-            {
-                return new InsertQueryExecutor<TBase>(this, connection, transaction).Execute();
-            }
+			if (OperationType == CRUDOperationTypes.Create)
+			{
+				return new InsertQueryExecutor<TBase>(this, connection, transaction).Execute();
+			}
 
-            command.CommandText = this.ToString();
+			command.CommandText = ToString();
 
-            using (SqlDataReader reader = command.ExecuteReader())
-            {
-                switch (OperationType)
-                {
-                    case CRUDOperationTypes.Read: return new ReadQueryExecutor<TBase>(this, connection, transaction).Execute(reader);
-                    case CRUDOperationTypes.Update: return new UpdateQueryExecutor<TBase>(this, connection, transaction).Execute(reader);
-                    case CRUDOperationTypes.Delete: return new DeleteQueryExecutor<TBase>(this, connection, transaction).Execute(reader);
-                    default:
-                        stopwatch.Stop();
-                        Logger.Error(MethodBase.GetCurrentMethod(), "No valid operation to perform.");
-                        throw new ArgumentException("No valid operation to perform.", nameof(OperationType));
-                }
-            }
-        }
+			using (SqlDataReader reader = command.ExecuteReader())
+			{
+				switch (OperationType)
+				{
+					case CRUDOperationTypes.Read: return new ReadQueryExecutor<TBase>(this, connection, transaction).Execute(reader);
+					case CRUDOperationTypes.Update: return new UpdateQueryExecutor<TBase>(this, connection, transaction).Execute(reader);
+					case CRUDOperationTypes.Delete: return new DeleteQueryExecutor<TBase>(this, connection, transaction).Execute(reader);
+					default:
+						stopwatch.Stop();
+						Logger.Error(MethodBase.GetCurrentMethod(), "No valid operation to perform.");
+						throw new ArgumentException("No valid operation to perform.", nameof(OperationType));
+				}
+			}
+		}
 
-        public override string ToString()
-        {
-            switch (OperationType)
-            {
-                case CRUDOperationTypes.Read: return GetReadString();
-                case CRUDOperationTypes.Update: return GetUpdateString();
-                case CRUDOperationTypes.Delete: return GetDeleteString();
-                default:
-                    stopwatch.Stop();
-                    Logger.Error(MethodBase.GetCurrentMethod(), "No valid operation to perform.");
-                    throw new ArgumentException("No valid operation to perform.", nameof(OperationType));
-            }
-        }
+		public override string ToString()
+		{
+			switch (OperationType)
+			{
+				case CRUDOperationTypes.Read: return GetReadString();
+				case CRUDOperationTypes.Update: return GetUpdateString();
+				case CRUDOperationTypes.Delete: return GetDeleteString();
+				default:
+					stopwatch.Stop();
+					Logger.Error(MethodBase.GetCurrentMethod(), "No valid operation to perform.");
+					throw new ArgumentException("No valid operation to perform.", nameof(OperationType));
+			}
+		}
 
-        private string GetReadString()
-        {
-            SQLBuilder<TBase> sqlBuilder = new SQLBuilder<TBase>(Mapping);
+		private string GetReadString()
+		{
+			SQLBuilder<TBase> sqlBuilder = new SQLBuilder<TBase>(Mapping);
 
-            sqlBuilder.BuildSelectStatement();
+			sqlBuilder.BuildSelectStatement();
 
-            string sql = sqlBuilder.ToString();
+			string sql = sqlBuilder.ToString();
 
-            Logger.Info(MethodBase.GetCurrentMethod(), "Generated SQL: " + sql);
+			Logger.Info(MethodBase.GetCurrentMethod(), "Generated SQL: " + sql);
 
-            return sql;
-        }
+			return sql;
+		}
 
-        private string GetUpdateString()
-        {
-            SQLBuilder<TBase> sqlBuilder = new SQLBuilder<TBase>(Mapping);
+		private string GetUpdateString()
+		{
+			SQLBuilder<TBase> sqlBuilder = new SQLBuilder<TBase>(Mapping);
 
-            sqlBuilder.AppendLine();
-            sqlBuilder.BuildUpdateStatement();
+			sqlBuilder.AppendLine();
+			sqlBuilder.BuildUpdateStatement();
 
-            // For update statements return the number of rows affected
-            sqlBuilder.SelectRowCount();
+			// For update statements return the number of rows affected
+			sqlBuilder.SelectRowCount();
 
-            string sql = sqlBuilder.ToString();
+			string sql = sqlBuilder.ToString();
 
-            Logger.Info(MethodBase.GetCurrentMethod(), "Generated SQL: " + sql);
+			Logger.Info(MethodBase.GetCurrentMethod(), "Generated SQL: " + sql);
 
-            return sql;
-        }
+			return sql;
+		}
 
-        private string GetDeleteString()
-        {
-            SQLBuilder<TBase> sqlBuilder = new SQLBuilder<TBase>(Mapping);
+		private string GetDeleteString()
+		{
+			SQLBuilder<TBase> sqlBuilder = new SQLBuilder<TBase>(Mapping);
 
-            sqlBuilder.BuildDeleteStatement();
-            sqlBuilder.SelectRowCount();     
+			sqlBuilder.BuildDeleteStatement();
+			sqlBuilder.SelectRowCount();
 
-            string sql = sqlBuilder.ToString();
+			string sql = sqlBuilder.ToString();
 
-            Logger.Info(MethodBase.GetCurrentMethod(), "Generated SQL: " + sql);
+			Logger.Info(MethodBase.GetCurrentMethod(), "Generated SQL: " + sql);
 
-            return sql;
-        }
+			return sql;
+		}
 
-        #endregion
-    }
+		#endregion
+	}
 }

@@ -3,14 +3,14 @@ using System.Collections.Generic;
 
 namespace DataTrack.Core.Util.Extensions
 {
-    public static class CollectionExtension
-    {
-        public static void ForEach<T>(this ICollection<T> collection, Action<T> action)
-        {
-            foreach (var item in collection)
-            {
-                action(item);
-            }
-        }
-    }
+	public static class CollectionExtension
+	{
+		public static void ForEach<T>(this ICollection<T> collection, Action<T> action)
+		{
+			foreach (T item in collection)
+			{
+				action(item);
+			}
+		}
+	}
 }

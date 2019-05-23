@@ -7,27 +7,27 @@ using System.Data.SqlClient;
 
 namespace DataTrack.Core.Tests
 {
-    [TestClass]
-    public class BaseTest
-    {
-        private static int totalAuthors = 0;
-        private static int totalBooks = 0;
-        private static int totalReviews = 0;
+	[TestClass]
+	public class BaseTest
+	{
+		private static int totalAuthors = 0;
+		private static int totalBooks = 0;
+		private static int totalReviews = 0;
 
-        [AssemblyInitialize]
-        public static void AssemblyInit(TestContext testContext)
-        {
-            string connectionString =
-                "Data Source=(local);" +
-                "Initial Catalog=data_track_testing;" +
-                "User id=sa;" +
-                "Password=password;";
+		[AssemblyInitialize]
+		public static void AssemblyInit(TestContext testContext)
+		{
+			string connectionString =
+				"Data Source=(local);" +
+				"Initial Catalog=data_track_testing;" +
+				"User id=sa;" +
+				"Password=password;";
 
-            DataTrackConfiguration.Init(false, ConfigType.ConnectionString, connectionString);
+			DataTrackConfiguration.Init(false, ConfigType.ConnectionString, connectionString);
 
-            using (SqlConnection connection = DataTrackConfiguration.CreateConnection())
-            {
-                string sqlInit = @"
+			using (SqlConnection connection = DataTrackConfiguration.CreateConnection())
+			{
+				string sqlInit = @"
                     if OBJECT_ID('authors','U') is null
                     begin
                         create table authors
@@ -59,29 +59,29 @@ namespace DataTrack.Core.Tests
                         )
                     end";
 
-                using (SqlCommand command = connection.CreateCommand())
-                {
-                    command.CommandText = sqlInit;
-                    command.CommandType = System.Data.CommandType.Text;
-                    command.ExecuteNonQuery();
-                }
-            }
-        }
+				using (SqlCommand command = connection.CreateCommand())
+				{
+					command.CommandText = sqlInit;
+					command.CommandType = System.Data.CommandType.Text;
+					command.ExecuteNonQuery();
+				}
+			}
+		}
 
-        [TestMethod]
-        public static void TestConfiguration_ConnectionStringShouldBePopulated()
-        {
-            Assert.IsFalse(string.IsNullOrEmpty(DataTrackConfiguration.ConnectionString));
-        }
+		[TestMethod]
+		public static void TestConfiguration_ConnectionStringShouldBePopulated()
+		{
+			Assert.IsFalse(string.IsNullOrEmpty(DataTrackConfiguration.ConnectionString));
+		}
 
-        [AssemblyCleanup]
-        public static void AssemblyCleanup()
-        {
-            using (SqlConnection connection = DataTrackConfiguration.CreateConnection())
-            {
-                using (SqlCommand command = connection.CreateCommand())
-                {
-                    command.CommandText = @"
+		[AssemblyCleanup]
+		public static void AssemblyCleanup()
+		{
+			using (SqlConnection connection = DataTrackConfiguration.CreateConnection())
+			{
+				using (SqlCommand command = connection.CreateCommand())
+				{
+					command.CommandText = @"
                         DECLARE @dropAllConstraints NVARCHAR(MAX) = N'';
 
                         SELECT @dropAllConstraints  += N'
@@ -92,84 +92,84 @@ namespace DataTrack.Core.Tests
                         EXEC sp_executesql @dropAllConstraints 
 
                         exec sp_MSforeachtable @command1 = 'DROP TABLE ?'";
-      
-                    command.CommandType = System.Data.CommandType.Text;
-                    command.ExecuteNonQuery();
-                }
-            }
 
-            DataTrackConfiguration.Dispose();
-        }
+					command.CommandType = System.Data.CommandType.Text;
+					command.ExecuteNonQuery();
+				}
+			}
 
-        protected List<Author> GetAuthors(int a, int b = 0, int r = 0)
-        {
-            List<Author> authors = new List<Author>();
+			DataTrackConfiguration.Dispose();
+		}
 
-            for (int i = totalAuthors; i < totalAuthors + a; i++)
-            {
-                authors.Add(new Author() { FirstName = $"FirstName{i}", LastName = $"LastName{i}", Books = GetBooks(b, r)});
-            }
+		protected List<Author> GetAuthors(int a, int b = 0, int r = 0)
+		{
+			List<Author> authors = new List<Author>();
 
-            totalAuthors += a;
+			for (int i = totalAuthors; i < totalAuthors + a; i++)
+			{
+				authors.Add(new Author() { FirstName = $"FirstName{i}", LastName = $"LastName{i}", Books = GetBooks(b, r) });
+			}
 
-            return authors;
-        }
+			totalAuthors += a;
 
-        protected List<Book> GetBooks(int b, int r = 0)
-        {
-            List<Book> books = new List<Book>();
+			return authors;
+		}
 
-            for (int i = totalBooks; i < totalBooks + b; i++)
-            {
-                books.Add(new Book() { Title = $"Title{i}", Reviews = GetReviews(r) });
-            }
+		protected List<Book> GetBooks(int b, int r = 0)
+		{
+			List<Book> books = new List<Book>();
 
-            totalBooks += b;
+			for (int i = totalBooks; i < totalBooks + b; i++)
+			{
+				books.Add(new Book() { Title = $"Title{i}", Reviews = GetReviews(r) });
+			}
 
-            return books;
-        }
+			totalBooks += b;
 
-        protected List<Review> GetReviews(int r)
-        {
-            List<Review> reviews = new List<Review>();
+			return books;
+		}
 
-            for (int i = totalReviews; i < totalReviews + r; i++)
-            {
-                reviews.Add(new Review() { Source = $"Source{i}", Score = (byte)new Random().Next(byte.MaxValue), Created = DateTime.UtcNow });
-            }
+		protected List<Review> GetReviews(int r)
+		{
+			List<Review> reviews = new List<Review>();
 
-            totalReviews += r;
+			for (int i = totalReviews; i < totalReviews + r; i++)
+			{
+				reviews.Add(new Review() { Source = $"Source{i}", Score = (byte)new Random().Next(byte.MaxValue), Created = DateTime.UtcNow });
+			}
 
-            return reviews;
-        }
+			totalReviews += r;
 
-        protected bool AuthorsAreEqual(Author author1, Author author2)
-        {
-            bool equal = true;
+			return reviews;
+		}
 
-            equal &= author1.FirstName == author2.FirstName;
-            equal &= author1.LastName == author2.LastName;
-            equal &= author1.Books.Count == author2.Books.Count;
+		protected bool AuthorsAreEqual(Author author1, Author author2)
+		{
+			bool equal = true;
 
-            if (equal)
-            {
-                for (int i = 0; i < author1.Books.Count; i++)
-                {
-                    equal &= BooksAreEqual(author1.Books[i], author2.Books[i]);
-                }
-            }
+			equal &= author1.FirstName == author2.FirstName;
+			equal &= author1.LastName == author2.LastName;
+			equal &= author1.Books.Count == author2.Books.Count;
 
-            return equal;
-        }
+			if (equal)
+			{
+				for (int i = 0; i < author1.Books.Count; i++)
+				{
+					equal &= BooksAreEqual(author1.Books[i], author2.Books[i]);
+				}
+			}
 
-        protected bool BooksAreEqual(Book book1, Book book2)
-        {
-            bool equal = true;
+			return equal;
+		}
 
-            equal &= book1.Title == book2.Title;
+		protected bool BooksAreEqual(Book book1, Book book2)
+		{
+			bool equal = true;
 
-            return equal;
-        }
+			equal &= book1.Title == book2.Title;
 
-    }
+			return equal;
+		}
+
+	}
 }

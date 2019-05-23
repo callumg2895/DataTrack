@@ -6,203 +6,256 @@ using System.Threading;
 
 namespace DataTrack.Logging
 {
-    public static class Logger
-    {
-        private static LogConfiguration config;
+	public static class Logger
+	{
+		private static LogConfiguration config;
 
-        private const int maxLogLength = 10000;
-        private static int currentLength = 0;
+		private const int maxLogLength = 10000;
+		private static int currentLength = 0;
 
-        private static Thread loggingThread;
-        private volatile static bool shouldExecute;
-        private volatile static bool logBufferInUse;
-        private static List<LogItem> logBuffer;
-        private static bool _enableConsoleLogging;
+		private static Thread loggingThread;
+		private static volatile bool shouldExecute;
+		private static volatile bool logBufferInUse;
+		private static List<LogItem> logBuffer;
+		private static bool _enableConsoleLogging;
 
-        private static object configLock = new object();
-        private static object logBufferLock = new object();
-        private static object logBufferInUseLock = new object();
-        private static object shouldExecuteLock = new object();
+		private static readonly object configLock = new object();
+		private static readonly object logBufferLock = new object();
+		private static readonly object logBufferInUseLock = new object();
+		private static readonly object shouldExecuteLock = new object();
 
-        public static void Init(bool enableConsoleLogging)
-        {
-            config = new LogConfiguration("DataTrack");
+		public static void Init(bool enableConsoleLogging)
+		{
+			config = new LogConfiguration("DataTrack");
 
-            _enableConsoleLogging = enableConsoleLogging;
-            logBuffer = new List<LogItem>();
-            logBufferInUse = true;
-            shouldExecute = true;
+			_enableConsoleLogging = enableConsoleLogging;
+			logBuffer = new List<LogItem>();
+			logBufferInUse = true;
+			shouldExecute = true;
 
-            Clear();
-            Create();
+			Clear();
+			Create();
 
-            loggingThread = new Thread(new ThreadStart(Logging));
-            loggingThread.Start();
-        }
+			loggingThread = new Thread(new ThreadStart(Logging));
+			loggingThread.Start();
+		}
 
-        private static void Create()
-        {
-            if (currentLength < maxLogLength && currentLength != 0)
-            {
-                return;
-            }
+		private static void Create()
+		{
+			if (currentLength < maxLogLength && currentLength != 0)
+			{
+				return;
+			}
 
-            lock (configLock)
-            {
-                config.CreateLogFile();
-            }
+			lock (configLock)
+			{
+				config.CreateLogFile();
+			}
 
-            currentLength = 0;
-        }
+			currentLength = 0;
+		}
 
-        private static void Log(MethodBase? method, string message, LogLevel level)
-        {
-            lock (logBuffer)
-                logBuffer.Add(new LogItem(method, message, level));
+		private static void Log(MethodBase? method, string message, LogLevel level)
+		{
+			lock (logBuffer)
+			{
+				logBuffer.Add(new LogItem(method, message, level));
+			}
 
-            lock (logBufferInUseLock)
-                logBufferInUse = true;
-        }
+			lock (logBufferInUseLock)
+			{
+				logBufferInUse = true;
+			}
+		}
 
-        public static void Trace(MethodBase method, string message) => Log(method, message, LogLevel.Trace);
-        public static void Trace(string message) => Log(null, message, LogLevel.Trace);
+		public static void Trace(MethodBase method, string message)
+		{
+			Log(method, message, LogLevel.Trace);
+		}
 
-        public static void Debug(MethodBase method, string message) => Log(method, message, LogLevel.Debug);
-        public static void Debug(string message) => Log(null, message, LogLevel.Debug);
+		public static void Trace(string message)
+		{
+			Log(null, message, LogLevel.Trace);
+		}
 
-        public static void Info(MethodBase method, string message) => Log(method, message, LogLevel.Info);
-        public static void Info(string message) => Log(null, message, LogLevel.Info);
+		public static void Debug(MethodBase method, string message)
+		{
+			Log(method, message, LogLevel.Debug);
+		}
 
-        public static void Warn(MethodBase method, string message) => Log(method, message, LogLevel.Warn);
-        public static void Warn(string message) => Log(null, message, LogLevel.Warn);
+		public static void Debug(string message)
+		{
+			Log(null, message, LogLevel.Debug);
+		}
 
-        public static void Error(MethodBase method, string message) => Log(method, message, LogLevel.Error);
-        public static void Error(string message) => Log(null, message, LogLevel.Error);
+		public static void Info(MethodBase method, string message)
+		{
+			Log(method, message, LogLevel.Info);
+		}
 
-        public static void ErrorFatal(MethodBase method, string message) => Log(method, message, LogLevel.ErrorFatal);
-        public static void ErrorFatal(string message) => Log(null, message, LogLevel.ErrorFatal);
+		public static void Info(string message)
+		{
+			Log(null, message, LogLevel.Info);
+		}
 
-        public static void Stop() => EndExecution();
+		public static void Warn(MethodBase method, string message)
+		{
+			Log(method, message, LogLevel.Warn);
+		}
 
-        private static void Clear()
-        {
-            lock (configLock)
-            {
-                config.DeleteLogFiles();
-            }
-        }
+		public static void Warn(string message)
+		{
+			Log(null, message, LogLevel.Warn);
+		}
 
-        private static void WriteWarningLine(string message)
-        {
-            ConsoleColor oldColor = Console.ForegroundColor;
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine(message);
-            Console.ForegroundColor = oldColor;
-        }
+		public static void Error(MethodBase method, string message)
+		{
+			Log(method, message, LogLevel.Error);
+		}
 
-        private static void WriteErrorLine(string message)
-        {
-            ConsoleColor oldColor = Console.ForegroundColor;
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine(message);
-            Console.ForegroundColor = oldColor;
-        }
+		public static void Error(string message)
+		{
+			Log(null, message, LogLevel.Error);
+		}
 
-        private static void WriteInfoLine(string message)
-        {
-            ConsoleColor oldColor = Console.ForegroundColor;
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine(message);
-            Console.ForegroundColor = oldColor;
-        }
+		public static void ErrorFatal(MethodBase method, string message)
+		{
+			Log(method, message, LogLevel.ErrorFatal);
+		}
 
-        private static void Logging()
-        {
-            List<LogItem> threadLogBuffer = new List<LogItem>();
+		public static void ErrorFatal(string message)
+		{
+			Log(null, message, LogLevel.ErrorFatal);
+		}
 
-            while (ShouldExecute())
-            {
-                Thread.Sleep(100);
+		public static void Stop()
+		{
+			EndExecution();
+		}
 
-                threadLogBuffer = GetLogBufferForThread();
+		private static void Clear()
+		{
+			lock (configLock)
+			{
+				config.DeleteLogFiles();
+			}
+		}
 
-                foreach (LogItem log in threadLogBuffer)
-                {
-                    Output(log);
-                }
+		private static void WriteWarningLine(string message)
+		{
+			ConsoleColor oldColor = Console.ForegroundColor;
+			Console.ForegroundColor = ConsoleColor.Yellow;
+			Console.WriteLine(message);
+			Console.ForegroundColor = oldColor;
+		}
 
-                lock (logBufferInUseLock)
-                {
-                    logBufferInUse = threadLogBuffer.Count > 0;
-                }
-            }
-        }
+		private static void WriteErrorLine(string message)
+		{
+			ConsoleColor oldColor = Console.ForegroundColor;
+			Console.ForegroundColor = ConsoleColor.Red;
+			Console.WriteLine(message);
+			Console.ForegroundColor = oldColor;
+		}
 
-        private static List<LogItem> GetLogBufferForThread()
-        {
-            List<LogItem> threadLogBuffer = null;
+		private static void WriteInfoLine(string message)
+		{
+			ConsoleColor oldColor = Console.ForegroundColor;
+			Console.ForegroundColor = ConsoleColor.Green;
+			Console.WriteLine(message);
+			Console.ForegroundColor = oldColor;
+		}
 
-            lock (logBufferLock)
-            {
-                threadLogBuffer = new List<LogItem>(logBuffer.Count);
-                threadLogBuffer.AddRange(logBuffer);
-                logBuffer.Clear();
-            }
+		private static void Logging()
+		{
+			List<LogItem> threadLogBuffer = new List<LogItem>();
 
-            return threadLogBuffer ?? new List<LogItem>();
-        }
+			while (ShouldExecute())
+			{
+				Thread.Sleep(100);
 
-        private static void Output(LogItem log)
-        {
-            string logOutput = log.ToString();
+				threadLogBuffer = GetLogBufferForThread();
 
-            lock (configLock)
-            {
-                using (StreamWriter writer = new StreamWriter(config.GetFullPath(), true))
-                {
-                    writer.WriteLine(logOutput);
-                    currentLength++;
-                }
-            }
+				foreach (LogItem log in threadLogBuffer)
+				{
+					Output(log);
+				}
 
-            if (_enableConsoleLogging)
-                switch (log.Level)
-                {
-                    case LogLevel.Error: WriteErrorLine(logOutput); break;
-                    case LogLevel.Warn: WriteWarningLine(logOutput); break;
-                    case LogLevel.Info: WriteInfoLine(logOutput); break;
-                    default:
-                        break;
-                }
+				lock (logBufferInUseLock)
+				{
+					logBufferInUse = threadLogBuffer.Count > 0;
+				}
+			}
+		}
 
-            Create();
-        }
+		private static List<LogItem> GetLogBufferForThread()
+		{
+			List<LogItem> threadLogBuffer = null;
 
-        private static bool ShouldExecute()
-        {
-            lock (shouldExecuteLock)
-            {
-                return shouldExecute;
-            }
-        }
+			lock (logBufferLock)
+			{
+				threadLogBuffer = new List<LogItem>(logBuffer.Count);
+				threadLogBuffer.AddRange(logBuffer);
+				logBuffer.Clear();
+			}
 
-        private static bool LoggingInProgress()
-        {
-            lock (logBufferInUseLock)
-            {
-                return logBufferInUse;
-            }
-        }
+			return threadLogBuffer ?? new List<LogItem>();
+		}
 
-        private static void EndExecution()
-        {
-            while (LoggingInProgress())
-                continue;
+		private static void Output(LogItem log)
+		{
+			string logOutput = log.ToString();
 
-            lock (shouldExecuteLock)
-            {
-                shouldExecute = false;
-            }
-        }
-    }
+			lock (configLock)
+			{
+				using (StreamWriter writer = new StreamWriter(config.GetFullPath(), true))
+				{
+					writer.WriteLine(logOutput);
+					currentLength++;
+				}
+			}
+
+			if (_enableConsoleLogging)
+			{
+				switch (log.Level)
+				{
+					case LogLevel.Error: WriteErrorLine(logOutput); break;
+					case LogLevel.Warn: WriteWarningLine(logOutput); break;
+					case LogLevel.Info: WriteInfoLine(logOutput); break;
+					default:
+						break;
+				}
+			}
+
+			Create();
+		}
+
+		private static bool ShouldExecute()
+		{
+			lock (shouldExecuteLock)
+			{
+				return shouldExecute;
+			}
+		}
+
+		private static bool LoggingInProgress()
+		{
+			lock (logBufferInUseLock)
+			{
+				return logBufferInUse;
+			}
+		}
+
+		private static void EndExecution()
+		{
+			while (LoggingInProgress())
+			{
+				continue;
+			}
+
+			lock (shouldExecuteLock)
+			{
+				shouldExecute = false;
+			}
+		}
+	}
 }
