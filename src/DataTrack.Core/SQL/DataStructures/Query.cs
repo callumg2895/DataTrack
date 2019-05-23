@@ -119,7 +119,7 @@ namespace DataTrack.Core.SQL.DataStructures
 
 			foreach (Column column in table.Columns)
 			{
-				string propertyName = column.GetPropertyName(table.Type);
+				string propertyName = column.PropertyName;
 				object propertyValue = item.GetPropertyValue(propertyName);
 
 				if (propertyValue == null || (column.IsPrimaryKey() && propertyValue == default))
@@ -150,7 +150,7 @@ namespace DataTrack.Core.SQL.DataStructures
 		private void AddPrimaryKeyRestriction(TBase item)
 		{
 			Column primaryKeyColumn = Mapping.TypeTableMapping[baseType].GetPrimaryKeyColumn();
-			string primaryKeyColumnPropertyName = primaryKeyColumn.GetPropertyName(baseType);
+			string primaryKeyColumnPropertyName = primaryKeyColumn.PropertyName;
 			object primaryKeyValue = item.GetPropertyValue(primaryKeyColumnPropertyName);
 
 			AddRestriction(primaryKeyColumn.Name, RestrictionTypes.EqualTo, primaryKeyValue);
@@ -159,7 +159,7 @@ namespace DataTrack.Core.SQL.DataStructures
 		private void AddPrimaryKeyDeleteRestriction(TBase item)
 		{
 			Column primaryKeyColumn = Mapping.TypeTableMapping[baseType].GetPrimaryKeyColumn();
-			string primaryKeyColumnPropertyName = primaryKeyColumn.GetPropertyName(baseType);
+			string primaryKeyColumnPropertyName = primaryKeyColumn.PropertyName;
 			object primaryKeyValue = item.GetPropertyValue(primaryKeyColumnPropertyName);
 
 			AddRestriction(primaryKeyColumn.Name, RestrictionTypes.In, primaryKeyValue);

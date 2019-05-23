@@ -18,7 +18,7 @@ namespace DataTrack.Core.SQL.DataStructures
 			Parameters = new List<Parameter>();
 			Name = columnAttribute.ColumnName;
 			Alias = $"{table.Type.Name}.{Name}";
-			PropertyName = GetPropertyName(table.Type);
+			PropertyName = GetPropertyName();
 
 			Logger.Trace($"Loaded database mapping for Property '{PropertyName}' of Entity '{Table.Type.Name}' (Column '{Name}')");
 		}
@@ -32,8 +32,10 @@ namespace DataTrack.Core.SQL.DataStructures
 		public byte KeyType { get; set; }
 		public string? ForeignKeyTableMapping { get; set; }
 
-		public string GetPropertyName(Type type)
+		private string GetPropertyName()
 		{
+            Type type = Table.Type;
+
 			if (Name == "id")
 			{
 				return "ID";
