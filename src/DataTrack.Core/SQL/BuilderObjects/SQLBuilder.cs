@@ -153,6 +153,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 			foreach (Table table in _mapping.Tables)
 			{
 				List<Column> columns = table.Columns;
+				List<Column> foreignKeyColumns = table.GetForeignKeyColumns();
 
 				int RestrictionCount = 0;
 
@@ -168,10 +169,8 @@ namespace DataTrack.Core.SQL.BuilderObjects
 				_sql.AppendLine()
 					.AppendLine($"into {table.StagingName} from {table.Name} as {table.Alias}");
 
-				if (table.Type != _baseType && columns.Where(c => c.IsForeignKey()).Count() > 0)
+				if (table.Type != _baseType)
 				{
-					List<Column> foreignKeyColumns = columns.Where(c => c.IsForeignKey()).ToList();
-
 					foreach (Column column in foreignKeyColumns)
 					{
 						Table foreignTable = _mapping.Tables.Where(t => t.Name == column.ForeignKeyTableMapping).First();
@@ -179,7 +178,6 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
 						_sql.Append($"{GetRestrictionKeyWord(RestrictionCount++)} ")
 						   .AppendLine($"{column.Alias} in (select {foreignColumn.Name} from {foreignTable.StagingName})");
-
 					}
 				}
 
