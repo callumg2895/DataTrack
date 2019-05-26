@@ -174,7 +174,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 					foreach (Column column in foreignKeyColumns)
 					{
 						Table foreignTable = _mapping.Tables.Where(t => t.Name == column.ForeignKeyTableMapping).First();
-						Column foreignColumn = foreignTable.Columns.Find(c => c.IsPrimaryKey());
+						Column foreignColumn = foreignTable.GetPrimaryKeyColumn();
 
 						_sql.Append($"{GetRestrictionKeyWord(RestrictionCount++)} ")
 						   .AppendLine($"{column.Alias} in (select {foreignColumn.Name} from {foreignTable.StagingName})");
