@@ -46,6 +46,9 @@ namespace DataTrack.Core.SQL.DataStructures
 
                     column.ForeignKeyTableMapping = key.ForeignTable;
                     column.KeyType = (byte)KeyTypes.ForeignKey;
+
+					foreignKeyColumns.Add(column);
+					foreignKeyColumnsDict.Add(column.ForeignKeyTableMapping, column);
                 }
 
                 if (attributes.ColumnPrimaryKeys.ContainsKey(columnAttribute))
@@ -86,19 +89,6 @@ namespace DataTrack.Core.SQL.DataStructures
 
 		public Column GetForeignKeyColumn(string foreignTableName)
 		{
-			if (!foreignKeyColumnsDict.ContainsKey(foreignTableName))
-			{
-				foreignKeyColumnsDict[foreignTableName] = null;
-
-				foreach (Column column in Columns)
-				{
-					if (column.IsForeignKey() && column.ForeignKeyTableMapping == foreignTableName)
-					{
-						foreignKeyColumnsDict[foreignTableName] = column;
-					}
-				}
-			}
-
 			return foreignKeyColumnsDict[foreignTableName] ?? throw new TableMappingException(Type, Name);
 		}
 
