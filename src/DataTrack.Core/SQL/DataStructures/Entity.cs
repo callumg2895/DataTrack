@@ -12,7 +12,7 @@ namespace DataTrack.Core.SQL.DataStructures
 	{
 		[Column("id")]
 		[PrimaryKey]
-		public TIdentity ID { get; set; }
+		public virtual TIdentity ID { get; set; }
 
 		private static readonly Dictionary<(Type, string), PropertyInfo> properties = new Dictionary<(Type, string), PropertyInfo>();
 

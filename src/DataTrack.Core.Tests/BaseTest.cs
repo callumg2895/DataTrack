@@ -49,12 +49,12 @@ namespace DataTrack.Core.Tests
 
                         create table reviews
                         (
-                            id uniqueidentifier not null default newid(),
+                            identifier uniqueidentifier not null default newid(),
                             book_id int not null,
                             source varchar(255) not null,
                             score tinyint not null,
                             created datetime not null,
-                            primary key (id),
+                            primary key (identifier),
                             foreign key (book_id) references books(id) on delete cascade
                         )
                     end";

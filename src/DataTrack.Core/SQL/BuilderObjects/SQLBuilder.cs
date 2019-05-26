@@ -44,8 +44,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
 				if (column.IsPrimaryKey())
 				{
-					_sql.AppendLine(GetPrimaryKeyColumnDefinition(column));
-					_sql.Append($"primary key ({column.Name})");
+					continue;
 				}
 				else
 				{
@@ -62,16 +61,16 @@ namespace DataTrack.Core.SQL.BuilderObjects
 		public void BuildInsertFromStagingToMainWithOutputIds(Table table)
 		{
 			List<Column> columns = table.Columns;
+			Column primarKeyColumn = table.GetPrimaryKeyColumn();
 
 			if (columns.Count == 0)
 			{
 				return;
 			}
 
-			string primaryKeyColumnName = "id";
 			bool isFirstElement = true;
 
-			_sql.AppendLine($"create table #insertedIds (id {table.GetPrimaryKeyColumn().GetSqlDbType().ToSqlString()});")
+			_sql.AppendLine($"create table #insertedIds ({primarKeyColumn.Name} {primarKeyColumn.GetSqlDbType().ToSqlString()});")
 				.AppendLine()
 				.Append("insert into " + table.Name + " (");
 
@@ -86,7 +85,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
 			_sql.AppendLine(")")
 				.AppendLine()
-				.AppendLine($"output inserted.{primaryKeyColumnName} into #insertedIds(id)")
+				.AppendLine($"output inserted.{primarKeyColumn.Name} into #insertedIds({primarKeyColumn.Name})")
 				.AppendLine()
 				.Append("select ");
 
