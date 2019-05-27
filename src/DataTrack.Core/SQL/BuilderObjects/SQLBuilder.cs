@@ -1,5 +1,6 @@
 ﻿using DataTrack.Core.Interface;
 using DataTrack.Core.SQL.DataStructures;
+using DataTrack.Core.SQL.SQLGeneration;
 using DataTrack.Core.Util.Extensions;
 using System;
 using System.Collections.Generic;
@@ -156,16 +157,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
 				int RestrictionCount = 0;
 
-				_sql.AppendLine()
-					.Append($"select {columns[0].Alias}");
-
-				for (int i = 1; i < columns.Count; i++)
-				{
-					_sql.Append(", ")
-						.Append(columns[i].Alias);
-				}
-
-				_sql.AppendLine()
+				_sql.AppendLine(new SelectStatement(table).ToString())
 					.AppendLine($"into {table.StagingName} from {table.Name} as {table.Alias}");
 
 				if (table.Type != _baseType)
