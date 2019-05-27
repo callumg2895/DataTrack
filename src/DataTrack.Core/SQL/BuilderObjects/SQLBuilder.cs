@@ -226,19 +226,6 @@ namespace DataTrack.Core.SQL.BuilderObjects
 			return restrictionCount > 0 ? "and" : "where";
 		}
 
-		private string GetPrimaryKeyColumnDefinition(Column column)
-		{
-            SqlDbType dbType = column.GetSqlDbType();
-
-            switch (dbType)
-            {
-                case SqlDbType.UniqueIdentifier:
-                    return $"{column.Name} {dbType.ToSqlString()} not null default newid(),";
-                default:
-                    return $"{column.Name} {dbType.ToSqlString()} not null identity(1,1),";
-            }
-		}
-
 		public void Append(string text)
 		{
 			_sql.Append(text);

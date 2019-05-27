@@ -36,11 +36,6 @@ namespace DataTrack.Core.SQL.DataStructures
 		{
             Type type = Table.Type;
 
-			if (Name == "id")
-			{
-				return "ID";
-			}
-
 			// Try to find the property with a ColumnMappingAttribute that matches the one in the method call
 			foreach (PropertyInfo property in type.GetProperties())
 			{
@@ -62,11 +57,6 @@ namespace DataTrack.Core.SQL.DataStructures
 
 			foreach (PropertyInfo property in type.GetProperties())
 			{
-				if (Name == "id" && property.Name == "ID")
-				{
-					return Parameter.SQLDataTypes[property.PropertyType];
-				}
-
 				foreach (Attribute attribute in property.GetCustomAttributes())
 				{
 					if ((attribute as ColumnAttribute)?.ColumnName == Name)

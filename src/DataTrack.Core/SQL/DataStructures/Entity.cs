@@ -35,12 +35,6 @@ namespace DataTrack.Core.SQL.DataStructures
 
 			foreach (PropertyInfo property in type.GetProperties())
 			{
-				if (property.Name == "ID")
-				{
-					values.Add(GetPropertyValue(property.Name));
-					continue;
-				}
-
 				foreach (Attribute attribute in property.GetCustomAttributes())
 				{
 					if ((attribute as ColumnAttribute) != null)
