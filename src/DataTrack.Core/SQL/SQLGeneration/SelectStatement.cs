@@ -17,38 +17,41 @@ namespace DataTrack.Core.SQL.SQLGeneration
 		{
 			this.selectInto = string.Empty;
 			this.fromStaging = false;
+			this.tables = new List<Table>();
+			this.columns = new List<Column>();
 		}
 
 		internal SelectStatement(Table table)
 			: this()
 		{
-			this.tables = new List<Table>() { table };
-			this.columns = table.Columns;
+			this.tables.Add(table);
+			this.columns.AddRange(table.Columns);
 		}
 
 		internal SelectStatement(List<Column> columns)
 			: this()
 		{
-			this.tables = new List<Table>();
+			HashSet<Table> visitedTables = new HashSet<Table>();
 
 			foreach(Column column in columns)
 			{
-				if (tables.Contains(column.Table))
+				if (visitedTables.Contains(column.Table))
 				{
 					continue;
 				}
 
+				visitedTables.Add(column.Table);
 				tables.Add(column.Table);
 			}
 
-			this.columns = columns;
+			this.columns.AddRange(columns);
 		}
 
 		internal SelectStatement(Column column)
 			: this()
 		{
-			this.tables = new List<Table>() { column.Table };
-			this.columns = new List<Column>() { column };
+			this.tables.Add(column.Table);
+			this.columns.Add(column);
 		}
 
 		internal SelectStatement FromStaging()
@@ -67,34 +70,47 @@ namespace DataTrack.Core.SQL.SQLGeneration
 
 		public override string ToString()
 		{
-			sql.AppendLine()
-				.Append($"select {(fromStaging ? columns[0].Name : columns[0].Alias)}");
-
-			for (int i = 1; i < columns.Count; i++)
-			{
-				sql.Append(", ")
-					.Append(fromStaging ? columns[i].Name : columns[i].Alias);
-			}
-
-			sql.AppendLine();
+			BuildSelect();
 
 			if (!string.IsNullOrEmpty(selectInto))
 			{
 				sql.AppendLine($"into {selectInto}");
 			}
 
+			BuildFrom();
+
+			return sql.ToString();
+		}
+
+		private void BuildSelect()
+		{
+			sql.AppendLine("select");
+
+			for (int i = 0; i < columns.Count; i++)
+			{
+				string columnName = fromStaging 
+					? columns[i].Name 
+					: columns[i].Alias;
+
+				sql.AppendLine($"\t{columnName}{(i == columns.Count - 1 ? "" : ",")}");
+			}
+		}
+
+		private void BuildFrom()
+		{
 			for (int i = 0; i < tables.Count; i++)
 			{
 				Table table = tables[i];
 
+				string tableName = fromStaging
+					? table.StagingName
+					: table.Name;
+
 				if (i == 0)
 				{
-					sql.Append($"from {(fromStaging ? table.StagingName : table.Name)}") 
-						.AppendLine(fromStaging ? "" : $" as {table.Alias}");
+					sql.AppendLine($"from {tableName}{(fromStaging ? "" : $" as {table.Alias}")}");
 				}
 			}
-
-			return sql.ToString();
 		}
 	}
 }
