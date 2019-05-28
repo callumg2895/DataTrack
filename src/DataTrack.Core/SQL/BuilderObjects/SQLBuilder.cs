@@ -87,27 +87,15 @@ namespace DataTrack.Core.SQL.BuilderObjects
 			_sql.AppendLine(")")
 				.AppendLine()
 				.AppendLine($"output inserted.{primarKeyColumn.Name} into #insertedIds({primarKeyColumn.Name})")
-				.AppendLine()
-				.Append("select ");
+				.AppendLine();
 
-			isFirstElement = true;
-			for (int i = 0; i < columns.Count; i++)
-			{
-				if (!columns[i].IsPrimaryKey())
-				{
-					_sql.Append((isFirstElement ? "" : ", ") + columns[i].Name);
-					isFirstElement = false;
-				}
-			}
-
-			_sql.AppendLine()
-				.AppendLine($"from {table.StagingName}")
+			_sql.AppendLine(new SelectStatement(columns.Where(c => !c.IsPrimaryKey()).ToList()).FromStaging().ToString())
 				.AppendLine()
 				.AppendLine("select * from #insertedIds")
 				.AppendLine()
 				.AppendLine("drop table #insertedIds")
 				.AppendLine($"drop table {table.StagingName}")
-				.AppendLine();
+				.AppendLine(); ;
 		}
 
 		public void BuildUpdateStatement()
@@ -157,8 +145,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
 				int RestrictionCount = 0;
 
-				_sql.AppendLine(new SelectStatement(table).ToString())
-					.AppendLine($"into {table.StagingName} from {table.Name} as {table.Alias}");
+				_sql.AppendLine(new SelectStatement(table).Into(table.StagingName).ToString());
 
 				if (table.Type != _baseType)
 				{
@@ -182,7 +169,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 				}
 
 				_sql.AppendLine();
-				_sql.AppendLine($"select * from {table.StagingName}");
+				_sql.AppendLine(new SelectStatement(table).FromStaging().ToString());
 			}
 		}
 
