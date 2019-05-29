@@ -7,19 +7,14 @@ namespace DataTrack.Core.SQL.SQLGeneration
 {
 	internal class SelectStatement : Statement
 	{
-		private readonly List<Table> tables;
-		private readonly List<Column> columns;
-		private readonly List<Restriction> restrictions;
-
 		private string selectInto;
 		private bool fromStaging;
 
 		private SelectStatement()
+			: base()
 		{
 			this.selectInto = string.Empty;
 			this.fromStaging = false;
-			this.tables = new List<Table>();
-			this.columns = new List<Column>();
 		}
 
 		internal SelectStatement(Table table)
@@ -113,20 +108,6 @@ namespace DataTrack.Core.SQL.SQLGeneration
 				{
 					sql.AppendLine($"from {tableName}{(fromStaging ? "" : $" as {table.Alias}")}");
 				}
-			}
-		}
-
-		private void BuildRestrictions()
-		{
-			foreach (Column column in columns)
-			{
-				foreach (Restriction restriction in column.Restrictions)
-				{
-					sql.Append($"{GetRestrictionKeyWord()} ")
-					   .AppendLine(restriction.ToString());
-				}
-
-				column.Restrictions.Clear();
 			}
 		}
 	}

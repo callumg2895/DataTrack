@@ -154,6 +154,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 					}
 				}
 
+				_sql.AppendLine();
 				_sql.AppendLine(new SelectStatement(table).Into(table.StagingName).ToString());
 				_sql.AppendLine();
 				_sql.AppendLine(new SelectStatement(table).FromStaging().ToString());
@@ -162,34 +163,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
 		public void BuildDeleteStatement()
 		{
-			StringBuilder restrictionsBuilder = new StringBuilder();
-			int restrictionCount = 0;
-
-			if (_mapping.Tables.Any(t => t.Columns.Any(c => c.Parameters.Count > 0)))
-			{
-				for (int i = 0; i < _mapping.Tables.Count; i++)
-				{
-					for (int j = 0; j < _mapping.Tables[i].Columns.Count; j++)
-					{
-						Column column = _mapping.Tables[i].Columns[j];
-
-						foreach (Restriction restriction in column.Restrictions)
-						{
-							restrictionsBuilder.Append($"{GetRestrictionKeyWord(restrictionCount++)} ");
-							restrictionsBuilder.AppendLine(restriction.ToString());
-						}
-					}
-				}
-			}
-
-			_sql.AppendLine();
-			_sql.AppendLine($"delete {_mapping.Tables[0].Alias} from {_mapping.Tables[0].Name} {_mapping.Tables[0].Alias}");
-			_sql.Append(restrictionsBuilder.ToString());
-		}
-
-		private string GetRestrictionKeyWord(int restrictionCount)
-		{
-			return restrictionCount > 0 ? "and" : "where";
+			_sql.AppendLine(new DeleteStatement(_mapping.Tables[0]).ToString());
 		}
 
 		public void Append(string text)
