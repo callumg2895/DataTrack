@@ -25,6 +25,13 @@ namespace DataTrack.Core.SQL.DataStructures
 			RestrictionType = rType;
 		}
 
+		public Restriction(Column column, string sql, RestrictionTypes rType)
+		{
+			Alias = column.Alias;
+			Handle = sql;
+			RestrictionType = rType;
+		}
+
 		public override string ToString()
 		{
 			StringBuilder restrictionBuilder = new StringBuilder();

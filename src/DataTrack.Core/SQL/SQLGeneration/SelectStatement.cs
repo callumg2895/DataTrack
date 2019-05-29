@@ -9,6 +9,7 @@ namespace DataTrack.Core.SQL.SQLGeneration
 	{
 		private readonly List<Table> tables;
 		private readonly List<Column> columns;
+		private readonly List<Restriction> restrictions;
 
 		private string selectInto;
 		private bool fromStaging;
@@ -41,7 +42,8 @@ namespace DataTrack.Core.SQL.SQLGeneration
 				}
 
 				visitedTables.Add(column.Table);
-				tables.Add(column.Table);
+
+				this.tables.Add(column.Table);
 			}
 
 			this.columns.AddRange(columns);
@@ -78,6 +80,7 @@ namespace DataTrack.Core.SQL.SQLGeneration
 			}
 
 			BuildFrom();
+			BuildRestrictions();
 
 			return sql.ToString();
 		}
@@ -110,6 +113,20 @@ namespace DataTrack.Core.SQL.SQLGeneration
 				{
 					sql.AppendLine($"from {tableName}{(fromStaging ? "" : $" as {table.Alias}")}");
 				}
+			}
+		}
+
+		private void BuildRestrictions()
+		{
+			foreach (Column column in columns)
+			{
+				foreach (Restriction restriction in column.Restrictions)
+				{
+					sql.Append($"{GetRestrictionKeyWord()} ")
+					   .AppendLine(restriction.ToString());
+				}
+
+				column.Restrictions.Clear();
 			}
 		}
 	}

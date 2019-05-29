@@ -143,10 +143,6 @@ namespace DataTrack.Core.SQL.BuilderObjects
 				List<Column> columns = table.Columns;
 				List<Column> foreignKeyColumns = table.GetForeignKeyColumns();
 
-				int RestrictionCount = 0;
-
-				_sql.AppendLine(new SelectStatement(table).Into(table.StagingName).ToString());
-
 				if (table.Type != _baseType)
 				{
 					foreach (Column column in foreignKeyColumns)
@@ -154,20 +150,11 @@ namespace DataTrack.Core.SQL.BuilderObjects
 						Table foreignTable = _mapping.Tables.Where(t => t.Name == column.ForeignKeyTableMapping).First();
 						Column foreignColumn = foreignTable.GetPrimaryKeyColumn();
 
-						_sql.Append($"{GetRestrictionKeyWord(RestrictionCount++)} ")
-						   .AppendLine($"{column.Alias} in (select {foreignColumn.Name} from {foreignTable.StagingName})");
+						column.Restrictions.Add(new Restriction(column, $"select {foreignColumn.Name} from {foreignTable.StagingName}", Enums.RestrictionTypes.In));
 					}
 				}
 
-				foreach (Column column in columns)
-				{
-					foreach (Restriction restriction in column.Restrictions)
-					{
-						_sql.Append($"{GetRestrictionKeyWord(RestrictionCount++)} ")
-						   .AppendLine(restriction.ToString());
-					}
-				}
-
+				_sql.AppendLine(new SelectStatement(table).Into(table.StagingName).ToString());
 				_sql.AppendLine();
 				_sql.AppendLine(new SelectStatement(table).FromStaging().ToString());
 			}
