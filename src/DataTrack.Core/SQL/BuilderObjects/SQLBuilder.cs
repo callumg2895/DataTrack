@@ -100,40 +100,10 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
 		public void BuildUpdateStatement()
 		{
-			StringBuilder setBuilder = new StringBuilder();
-			StringBuilder restrictionBuilder = new StringBuilder();
-
 			Table table = _mapping.TypeTableMapping[_baseType];
 			List<Column> columns = table.Columns.Where(c => !c.IsPrimaryKey()).ToList();
 
-			int processedRestrictions = 0;
-			int totalColumns = columns.Count;
-
-			_sql.AppendLine($"update {table.Alias}");
-			_sql.Append("set ");
-
-			setBuilder.Append($"{columns[0].Alias} = {columns[0].Parameters[0].Handle}");
-
-			for (int i = 1; i < totalColumns; i++)
-			{
-				setBuilder.Append($", {columns[i].Alias} = {columns[i].Parameters[0].Handle}");
-			}
-
-			restrictionBuilder.AppendLine($" from {table.Name} {table.Alias}");
-
-			foreach (Column column in columns)
-			{
-				foreach (Restriction restriction in column.Restrictions)
-				{
-					restrictionBuilder.Append(processedRestrictions++ == 0
-						? "where "
-						: "and ");
-					restrictionBuilder.AppendLine(restriction.ToString());
-				}
-			}
-
-			_sql.Append(setBuilder.ToString());
-			_sql.Append(restrictionBuilder.ToString());
+			_sql.AppendLine(new UpdateStatement(columns).ToString());
 		}
 
 		public void BuildSelectStatement()

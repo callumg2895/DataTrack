@@ -94,7 +94,7 @@ namespace DataTrack.Core.SQL.SQLGeneration
 			}
 		}
 
-		private void BuildFrom()
+		protected override void BuildFrom()
 		{
 			for (int i = 0; i < tables.Count; i++)
 			{

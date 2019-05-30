@@ -24,6 +24,19 @@ namespace DataTrack.Core.SQL.SQLGeneration
 
 		public abstract override string ToString();
 
+		protected virtual void BuildFrom()
+		{
+			for (int i = 0; i < tables.Count; i++)
+			{
+				Table table = tables[i];
+
+				if (i == 0)
+				{
+					sql.AppendLine($"from {table.Name} as {table.Alias}");
+				}
+			}
+		}
+
 		protected void BuildRestrictions()
 		{
 			foreach (Column column in columns)
