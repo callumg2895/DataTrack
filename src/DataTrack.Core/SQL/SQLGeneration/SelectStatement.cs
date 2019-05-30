@@ -7,48 +7,25 @@ namespace DataTrack.Core.SQL.SQLGeneration
 {
 	internal class SelectStatement : Statement
 	{
-		private string selectInto;
-		private bool fromStaging;
-
-		private SelectStatement()
-			: base()
-		{
-			this.selectInto = string.Empty;
-			this.fromStaging = false;
-		}
+		private string selectInto = string.Empty;
+		private bool fromStaging = false;
 
 		internal SelectStatement(Table table)
-			: this()
+			: base(table)
 		{
-			this.tables.Add(table);
-			this.columns.AddRange(table.Columns);
+
 		}
 
 		internal SelectStatement(List<Column> columns)
-			: this()
+			: base(columns)
 		{
-			HashSet<Table> visitedTables = new HashSet<Table>();
 
-			foreach(Column column in columns)
-			{
-				if (visitedTables.Contains(column.Table))
-				{
-					continue;
-				}
-
-				visitedTables.Add(column.Table);
-
-				this.tables.Add(column.Table);
-			}
-
-			this.columns.AddRange(columns);
 		}
 
 		internal SelectStatement(Column column)
-			: this()
+			: base(new List<Column>() { column })
 		{
-			this.tables.Add(column.Table);
-			this.columns.Add(column);
+
 		}
 
 		internal SelectStatement FromStaging()

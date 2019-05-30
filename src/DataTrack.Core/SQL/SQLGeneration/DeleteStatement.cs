@@ -7,17 +7,10 @@ namespace DataTrack.Core.SQL.SQLGeneration
 {
 	internal class DeleteStatement : Statement
 	{
-
-		private DeleteStatement()
-		{
-
-		}
-
 		internal DeleteStatement(Table table)
-			: this()
+			: base(table)
 		{
-			this.tables.Add(table);
-			this.columns.AddRange(table.Columns);
+
 		}
 
 		public override string ToString()

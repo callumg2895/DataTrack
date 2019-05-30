@@ -22,6 +22,33 @@ namespace DataTrack.Core.SQL.SQLGeneration
 			this.restrictionCount = 0;
 		}
 
+		internal Statement(Table table)
+			: this()
+		{
+			this.tables.Add(table);
+			this.columns.AddRange(table.Columns);
+		}
+
+		internal Statement(List<Column> columns)
+			: this()
+		{
+			HashSet<Table> visitedTables = new HashSet<Table>();
+
+			foreach (Column column in columns)
+			{
+				if (visitedTables.Contains(column.Table))
+				{
+					continue;
+				}
+
+				visitedTables.Add(column.Table);
+
+				this.tables.Add(column.Table);
+			}
+
+			this.columns.AddRange(columns);
+		}
+
 		public abstract override string ToString();
 
 		protected virtual void BuildFrom()

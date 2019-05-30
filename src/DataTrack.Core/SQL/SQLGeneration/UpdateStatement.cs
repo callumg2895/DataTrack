@@ -7,30 +7,10 @@ namespace DataTrack.Core.SQL.SQLGeneration
 {
 	internal class UpdateStatement : Statement
 	{
-		private UpdateStatement()
-			: base()
-		{
-
-		}
-
 		internal UpdateStatement(List<Column> columns)
-			: this()
+			: base(columns)
 		{
-			HashSet<Table> visitedTables = new HashSet<Table>();
 
-			foreach (Column column in columns)
-			{
-				if (visitedTables.Contains(column.Table))
-				{
-					continue;
-				}
-
-				visitedTables.Add(column.Table);
-
-				this.tables.Add(column.Table);
-			}
-
-			this.columns.AddRange(columns);
 		}
 
 		public override string ToString()
