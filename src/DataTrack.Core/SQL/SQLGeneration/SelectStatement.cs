@@ -10,7 +10,7 @@ namespace DataTrack.Core.SQL.SQLGeneration
 		private string selectInto = string.Empty;
 		private bool fromStaging = false;
 
-		internal SelectStatement(Table table)
+		internal SelectStatement(EntityTable table)
 			: base(table)
 		{
 
@@ -75,10 +75,10 @@ namespace DataTrack.Core.SQL.SQLGeneration
 		{
 			for (int i = 0; i < tables.Count; i++)
 			{
-				Table table = tables[i];
+				EntityTable table = tables[i];
 
 				string tableName = fromStaging
-					? table.StagingName
+					? table.StagingTable.Name
 					: table.Name;
 
 				if (i == 0)

@@ -12,7 +12,7 @@ namespace DataTrack.Core.SQL.ExecutionObjects
 	public class ReadQueryExecutor<TBase> : QueryExecutor<TBase> where TBase : IEntity
 	{
 		private readonly List<TBase> results;
-		private readonly List<Table> tables;
+		private readonly List<EntityTable> tables;
 		private readonly Dictionary<Table, List<IEntity>> entityDictionary;
 
 		internal ReadQueryExecutor(Query<TBase> query, SqlConnection connection, SqlTransaction? transaction = null)
@@ -27,7 +27,7 @@ namespace DataTrack.Core.SQL.ExecutionObjects
 		{
 			stopwatch.Start();
 
-			foreach (Table table in tables)
+			foreach (EntityTable table in tables)
 			{
 				ReadResultsForTable(reader, table);
 
@@ -41,7 +41,7 @@ namespace DataTrack.Core.SQL.ExecutionObjects
 			return results;
 		}
 
-		private void ReadResultsForTable(SqlDataReader reader, Table table)
+		private void ReadResultsForTable(SqlDataReader reader, EntityTable table)
 		{
 			while (reader.Read())
 			{
@@ -52,7 +52,7 @@ namespace DataTrack.Core.SQL.ExecutionObjects
 			}
 		}
 
-		private void MapEntity(IEntity entity, Table table)
+		private void MapEntity(IEntity entity, EntityTable table)
 		{
 			if (!entityDictionary.ContainsKey(table))
 			{
@@ -62,7 +62,7 @@ namespace DataTrack.Core.SQL.ExecutionObjects
 			entityDictionary[table].Add(entity);
 		}
 
-		private void AddResult(IEntity entity, Table table)
+		private void AddResult(IEntity entity, EntityTable table)
 		{
 			if (mapping.ChildParentMapping.ContainsKey(table))
 			{
@@ -74,9 +74,9 @@ namespace DataTrack.Core.SQL.ExecutionObjects
 			}
 		}
 
-		private void AssociateWithParent(IEntity entity, Table table)
+		private void AssociateWithParent(IEntity entity, EntityTable table)
 		{
-			Table parentTable = mapping.ChildParentMapping[table];
+			EntityTable parentTable = mapping.ChildParentMapping[table];
 
 			foreach (IEntity parentEntity in entityDictionary[parentTable])
 			{
@@ -91,7 +91,7 @@ namespace DataTrack.Core.SQL.ExecutionObjects
 			}
 		}
 
-		private IEntity ReadEntity(SqlDataReader reader, Table table)
+		private IEntity ReadEntity(SqlDataReader reader, EntityTable table)
 		{
 			Type type = table.Type;
 			IEntity entity = (IEntity)Activator.CreateInstance(type);

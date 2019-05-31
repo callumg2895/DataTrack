@@ -7,7 +7,7 @@ namespace DataTrack.Core.SQL.SQLGeneration
 {
 	internal class DeleteStatement : Statement
 	{
-		internal DeleteStatement(Table table)
+		internal DeleteStatement(EntityTable table)
 			: base(table)
 		{
 
@@ -23,7 +23,7 @@ namespace DataTrack.Core.SQL.SQLGeneration
 
 		private void BuildDelete()
 		{
-			Table table = tables[0];
+			EntityTable table = tables[0];
 
 			sql.AppendLine($"delete {table.Alias} from {table.Name} {table.Alias}");
 		}

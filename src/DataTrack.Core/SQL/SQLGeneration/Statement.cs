@@ -8,21 +8,21 @@ namespace DataTrack.Core.SQL.SQLGeneration
 	internal abstract class Statement
 	{
 		protected readonly StringBuilder sql;
-		protected readonly List<Table> tables;
+		protected readonly List<EntityTable> tables;
 		protected readonly List<Column> columns;
 
 		private int restrictionCount;
 
 		internal Statement()
 		{
-			this.tables = new List<Table>();
+			this.tables = new List<EntityTable>();
 			this.columns = new List<Column>();
 			this.sql = new StringBuilder();
 
 			this.restrictionCount = 0;
 		}
 
-		internal Statement(Table table)
+		internal Statement(EntityTable table)
 			: this()
 		{
 			this.tables.Add(table);
@@ -32,7 +32,7 @@ namespace DataTrack.Core.SQL.SQLGeneration
 		internal Statement(List<Column> columns)
 			: this()
 		{
-			HashSet<Table> visitedTables = new HashSet<Table>();
+			HashSet<EntityTable> visitedTables = new HashSet<EntityTable>();
 
 			foreach (Column column in columns)
 			{
@@ -55,7 +55,7 @@ namespace DataTrack.Core.SQL.SQLGeneration
 		{
 			for (int i = 0; i < tables.Count; i++)
 			{
-				Table table = tables[i];
+				EntityTable table = tables[i];
 
 				if (i == 0)
 				{

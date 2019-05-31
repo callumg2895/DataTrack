@@ -14,36 +14,36 @@ namespace DataTrack.Core.SQL.DataStructures
 	internal class Mapping<TBase> where TBase : IEntity
 	{
 		internal Type BaseType { get; set; }
-		internal List<Table> Tables { get; set; }
-		internal Dictionary<Type, Table> TypeTableMapping { get; set; }
-		internal Dictionary<Table, List<Table>> ParentChildMapping { get; set; }
-		internal Dictionary<Table, Table> ChildParentMapping { get; set; }
+		internal List<EntityTable> Tables { get; set; }
+		internal Dictionary<Type, EntityTable> TypeTableMapping { get; set; }
+		internal Dictionary<EntityTable, List<EntityTable>> ParentChildMapping { get; set; }
+		internal Dictionary<EntityTable, EntityTable> ChildParentMapping { get; set; }
 		internal Dictionary<IEntity, List<IEntity>> ParentChildEntityMapping { get; set; }
 		internal Dictionary<IEntity, DataRow> EntityDataRowMapping { get; set; }
-		internal Map<Table, DataTable> DataTableMapping { get; set; }
+		internal Map<EntityTable, DataTable> DataTableMapping { get; set; }
 
 		internal Mapping()
 		{
 			BaseType = typeof(TBase);
 
-			Tables = new List<Table>();
+			Tables = new List<EntityTable>();
 
-			TypeTableMapping = new Dictionary<Type, Table>();
-			ParentChildMapping = new Dictionary<Table, List<Table>>();
-			ChildParentMapping = new Dictionary<Table, Table>();
+			TypeTableMapping = new Dictionary<Type, EntityTable>();
+			ParentChildMapping = new Dictionary<EntityTable, List<EntityTable>>();
+			ChildParentMapping = new Dictionary<EntityTable, EntityTable>();
 			ParentChildEntityMapping = new Dictionary<IEntity, List<IEntity>>();
 			EntityDataRowMapping = new Dictionary<IEntity, DataRow>();
-			DataTableMapping = new Map<Table, DataTable>();
+			DataTableMapping = new Map<EntityTable, DataTable>();
 
 			MapTable(BaseType);
 		}
 
-		internal void UpdateDataTableForeignKeys(Table table, List<dynamic> primaryKeys)
+		internal void UpdateDataTableForeignKeys(EntityTable table, List<dynamic> primaryKeys)
 		{
 			Type type = table.Type;
 			int primaryKeyIndex = 0;
 
-			bool hasChildren = ParentChildMapping.TryGetValue(table, out List<Table> childTables);
+			bool hasChildren = ParentChildMapping.TryGetValue(table, out List<EntityTable> childTables);
 
 			if (!hasChildren)
 			{
@@ -68,7 +68,7 @@ namespace DataTrack.Core.SQL.DataStructures
 
 		private void SetForeignKeyValue(IEntity item, string foreignTable, dynamic foreignKey)
 		{
-			Table table = TypeTableMapping[item.GetType()];
+			EntityTable table = TypeTableMapping[item.GetType()];
 			Column column = table.GetForeignKeyColumn(foreignTable);
 
 			EntityDataRowMapping[item][column.Name] = foreignKey;
@@ -76,11 +76,11 @@ namespace DataTrack.Core.SQL.DataStructures
 
 		private void MapTable(Type type)
 		{
-			Table table = GetTableByType(type);
+			EntityTable table = GetTableByType(type);
 
 			Tables.Add(table);
 			TypeTableMapping.Add(type, table);
-			ParentChildMapping.Add(table, new List<Table>());
+			ParentChildMapping.Add(table, new List<EntityTable>());
 
 			foreach (PropertyInfo prop in type.GetProperties())
 			{
@@ -88,7 +88,7 @@ namespace DataTrack.Core.SQL.DataStructures
 			}
 		}
 
-		private void MapTablesByProperty(PropertyInfo property, Table parentTable)
+		private void MapTablesByProperty(PropertyInfo property, EntityTable parentTable)
 		{
 			Type propertyType = property.PropertyType;
 
@@ -99,47 +99,47 @@ namespace DataTrack.Core.SQL.DataStructures
 
 				MapTable(genericArgumentType);
 
-				Table mappedTable = TypeTableMapping[genericArgumentType];
+				EntityTable mappedTable = TypeTableMapping[genericArgumentType];
 
 				ChildParentMapping[mappedTable] = parentTable;
 				ParentChildMapping[parentTable].Add(mappedTable);
 			}
 		}
 
-		private Table GetTableByType(Type type)
+		private EntityTable GetTableByType(Type type)
 		{
 			return Dictionaries.TypeMappingCache.ContainsKey(type)
 				? LoadTableMappingFromCache(type)
 				: LoadTableMapping(type);
 		}
 
-		private Table LoadTableMapping(Type type)
+		private EntityTable LoadTableMapping(Type type)
 		{
-			if (TryGetTable(type, out Table? table) && table != null)
+			if (TryGetTable(type, out EntityTable? table) && table != null)
 			{
 				Logger.Trace($"Caching database mapping for Entity '{type.Name}'");
 				Dictionaries.TypeMappingCache[type] = table;
 
-				return (Table)table.Clone();
+				return (EntityTable)table.Clone();
 			}
 
 			Logger.Error(MethodBase.GetCurrentMethod(), $"Failed to load Table object for '{type.Name}' entity");
 			throw new TableMappingException(type, string.Empty);
 		}
 
-		private Table LoadTableMappingFromCache(Type type)
+		private EntityTable LoadTableMappingFromCache(Type type)
 		{
 			Logger.Info(MethodBase.GetCurrentMethod(), $"Loading Table object for '{type.Name}' entity from cache");
-			return (Table)Dictionaries.TypeMappingCache[type].Clone();
+			return (EntityTable)Dictionaries.TypeMappingCache[type].Clone();
 		}
 
-		private protected bool TryGetTable(Type type, out Table? table)
+		private protected bool TryGetTable(Type type, out EntityTable? table)
 		{
 			AttributeWrapper attributes = new AttributeWrapper(type);
 
 			if (attributes.IsValid())
 			{
-				table = new Table(type, attributes);
+				table = new EntityTable(type, attributes);
 				return true;
 			}
 

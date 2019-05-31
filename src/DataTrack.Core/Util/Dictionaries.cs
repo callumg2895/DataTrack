@@ -6,6 +6,6 @@ namespace DataTrack.Core.Util
 {
 	public static class Dictionaries
 	{
-		public static Dictionary<Type, Table> TypeMappingCache = new Dictionary<Type, Table>();
+		public static Dictionary<Type, EntityTable> TypeMappingCache = new Dictionary<Type, EntityTable>();
 	}
 }

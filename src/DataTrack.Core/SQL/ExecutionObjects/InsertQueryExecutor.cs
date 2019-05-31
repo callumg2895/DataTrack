@@ -22,7 +22,7 @@ namespace DataTrack.Core.SQL.ExecutionObjects
 		{
 			stopwatch.Start();
 
-			foreach (Table table in mapping.Tables)
+			foreach (EntityTable table in mapping.Tables)
 			{
 				if (mapping.DataTableMapping.ContainsKey(table))
 				{
@@ -36,7 +36,7 @@ namespace DataTrack.Core.SQL.ExecutionObjects
 			return true;
 		}
 
-		private void WriteToServer(Table table)
+		private void WriteToServer(EntityTable table)
 		{
 			CreateStagingTable(table);
 
@@ -45,14 +45,14 @@ namespace DataTrack.Core.SQL.ExecutionObjects
 			SqlBulkCopyOptions copyOptions = SqlBulkCopyOptions.Default;
 			SqlBulkCopy bulkCopy = new SqlBulkCopy(_connection, copyOptions, _transaction)
 			{
-				DestinationTableName = table.StagingName
+				DestinationTableName = table.StagingTable.Name
 			};
 			bulkCopy.WriteToServer(mapping.DataTableMapping[table]);
 
 			InsertFromStagingTable(table);
 		}
 
-		private void CreateStagingTable(Table table)
+		private void CreateStagingTable(EntityTable table)
 		{
 			SQLBuilder<TBase> sql = new SQLBuilder<TBase>(mapping);
 
@@ -64,14 +64,14 @@ namespace DataTrack.Core.SQL.ExecutionObjects
 				cmd.CommandType = CommandType.Text;
 				cmd.Transaction = _transaction;
 
-				Logger.Debug($"Creating staging table {table.StagingName}");
+				Logger.Debug($"Creating staging table {table.StagingTable.Name}");
 				Logger.Debug($"Executing SQL: {sql.ToString()}");
 
 				cmd.ExecuteNonQuery();
 			}
 		}
 
-		private void InsertFromStagingTable(Table table)
+		private void InsertFromStagingTable(EntityTable table)
 		{
 			SQLBuilder<TBase> sql = new SQLBuilder<TBase>(mapping);
 			string primaryKeyColumnName = table.GetPrimaryKeyColumn().Name;

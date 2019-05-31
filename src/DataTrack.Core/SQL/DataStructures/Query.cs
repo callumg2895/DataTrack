@@ -101,7 +101,7 @@ namespace DataTrack.Core.SQL.DataStructures
 		{
 			List<Parameter> parameters = new List<Parameter>();
 
-			foreach (Table table in Mapping.Tables)
+			foreach (EntityTable table in Mapping.Tables)
 			{
 				foreach (Column column in table.Columns)
 				{
@@ -115,7 +115,7 @@ namespace DataTrack.Core.SQL.DataStructures
 		internal void UpdateParameters(IEntity item)
 		{
 			Type type = item.GetType();
-			Table table = Mapping.TypeTableMapping[type];
+			EntityTable table = Mapping.TypeTableMapping[type];
 
 			foreach (Column column in table.Columns)
 			{
@@ -130,7 +130,7 @@ namespace DataTrack.Core.SQL.DataStructures
 				column.AddParameter(propertyValue);
 			}
 
-			foreach (Table childTable in Mapping.ParentChildMapping[table])
+			foreach (EntityTable childTable in Mapping.ParentChildMapping[table])
 			{
 				foreach (dynamic childItem in item.GetChildPropertyValues(childTable.Name))
 				{

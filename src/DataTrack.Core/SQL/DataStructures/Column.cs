@@ -11,7 +11,7 @@ namespace DataTrack.Core.SQL.DataStructures
 {
 	public class Column
 	{
-		public Column(ColumnAttribute columnAttribute, Table table)
+		public Column(ColumnAttribute columnAttribute, EntityTable table)
 		{
 			Table = table;
 			Restrictions = new List<Restriction>();
@@ -23,7 +23,7 @@ namespace DataTrack.Core.SQL.DataStructures
 			Logger.Trace($"Loaded database mapping for Property '{PropertyName}' of Entity '{Table.Type.Name}' (Column '{Name}')");
 		}
 
-		public Table Table { get; set; }
+		public EntityTable Table { get; set; }
 		public List<Restriction> Restrictions { get; set; }
 		public List<Parameter> Parameters { get; set; }
 		public string Name { get; set; }

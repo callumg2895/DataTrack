@@ -33,9 +33,9 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
 		#region Methods
 
-		public void CreateStagingTable(Table table)
+		public void CreateStagingTable(EntityTable table)
 		{
-			_sql.AppendLine($"create table {table.StagingName}");
+			_sql.AppendLine($"create table {table.StagingTable.Name}");
 			_sql.AppendLine("(");
 
 			for (int i = 0; i < table.Columns.Count; i++)
@@ -59,7 +59,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 				.AppendLine();
 		}
 
-		public void BuildInsertFromStagingToMainWithOutputIds(Table table)
+		public void BuildInsertFromStagingToMainWithOutputIds(EntityTable table)
 		{
 			List<Column> columns = table.Columns;
 			Column primarKeyColumn = table.GetPrimaryKeyColumn();
@@ -94,13 +94,13 @@ namespace DataTrack.Core.SQL.BuilderObjects
 				.AppendLine("select * from #insertedIds")
 				.AppendLine()
 				.AppendLine("drop table #insertedIds")
-				.AppendLine($"drop table {table.StagingName}")
+				.AppendLine($"drop table {table.StagingTable.Name}")
 				.AppendLine(); ;
 		}
 
 		public void BuildUpdateStatement()
 		{
-			Table table = _mapping.TypeTableMapping[_baseType];
+			EntityTable table = _mapping.TypeTableMapping[_baseType];
 			List<Column> columns = table.Columns.Where(c => !c.IsPrimaryKey()).ToList();
 
 			_sql.AppendLine(new UpdateStatement(columns).ToString());
@@ -108,7 +108,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
 		public void BuildSelectStatement()
 		{
-			foreach (Table table in _mapping.Tables)
+			foreach (EntityTable table in _mapping.Tables)
 			{
 				List<Column> columns = table.Columns;
 				List<Column> foreignKeyColumns = table.GetForeignKeyColumns();
@@ -117,15 +117,15 @@ namespace DataTrack.Core.SQL.BuilderObjects
 				{
 					foreach (Column column in foreignKeyColumns)
 					{
-						Table foreignTable = _mapping.Tables.Where(t => t.Name == column.ForeignKeyTableMapping).First();
+						EntityTable foreignTable = _mapping.Tables.Where(t => t.Name == column.ForeignKeyTableMapping).First();
 						Column foreignColumn = foreignTable.GetPrimaryKeyColumn();
 
-						column.Restrictions.Add(new Restriction(column, $"select {foreignColumn.Name} from {foreignTable.StagingName}", Enums.RestrictionTypes.In));
+						column.Restrictions.Add(new Restriction(column, $"select {foreignColumn.Name} from {foreignTable.StagingTable.Name}", Enums.RestrictionTypes.In));
 					}
 				}
 
 				_sql.AppendLine();
-				_sql.AppendLine(new SelectStatement(table).Into(table.StagingName).ToString());
+				_sql.AppendLine(new SelectStatement(table).Into(table.StagingTable.Name).ToString());
 				_sql.AppendLine();
 				_sql.AppendLine(new SelectStatement(table).FromStaging().ToString());
 			}

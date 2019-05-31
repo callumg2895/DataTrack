@@ -15,10 +15,10 @@ namespace DataTrack.Core.SQL.BuilderObjects
 		#region Members
 
 		internal List<TBase> Data { get; private set; }
-		internal List<Table> Tables { get; private set; }
+		internal List<EntityTable> Tables { get; private set; }
 		internal Mapping<TBase> Mapping { get; private set; }
 
-		private readonly Map<Table, DataTable> DataMap = new Map<Table, DataTable>();
+		private readonly Map<EntityTable, DataTable> DataMap = new Map<EntityTable, DataTable>();
 		private readonly Map<Column, DataColumn> ColumnMap = new Map<Column, DataColumn>();
 		private readonly Type BaseType = typeof(TBase);
 		#endregion
@@ -42,7 +42,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 
 		#region Methods
 
-		internal Map<Table, DataTable> YieldDataMap()
+		internal Map<EntityTable, DataTable> YieldDataMap()
 		{
 			foreach (TBase item in Data)
 			{
@@ -60,7 +60,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 			}
 
 			Type type = item.GetType();
-			Table table = Mapping.TypeTableMapping[type];
+			EntityTable table = Mapping.TypeTableMapping[type];
 
 			if (!DataMap.ContainsKey(table))
 			{
@@ -73,7 +73,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 			SetColumns(dataTable);
 			AddRow(dataTable, item);
 
-			foreach (Table childTable in Mapping.ParentChildMapping[table])
+			foreach (EntityTable childTable in Mapping.ParentChildMapping[table])
 			{
 				dynamic childItems = item.GetChildPropertyValues(childTable.Name);
 
@@ -127,7 +127,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 		{
 			List<object> rowData = item.GetPropertyValues();
 
-			Table table = DataMap[dataTable];
+			EntityTable table = DataMap[dataTable];
 			DataRow dataRow = dataTable.NewRow();
 
 			for (int i = 0; i < rowData.Count; i++)
