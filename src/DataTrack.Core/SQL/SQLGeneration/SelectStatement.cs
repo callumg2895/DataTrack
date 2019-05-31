@@ -1,14 +1,15 @@
 ﻿using DataTrack.Core.SQL.DataStructures;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace DataTrack.Core.SQL.SQLGeneration
 {
 	internal class SelectStatement : Statement
 	{
-		private string selectInto = string.Empty;
-		private bool fromStaging = false;
+		private StagingTable into = null;
+		private StagingTable from = null;
 
 		internal SelectStatement(EntityTable table)
 			: base(table)
@@ -28,16 +29,16 @@ namespace DataTrack.Core.SQL.SQLGeneration
 
 		}
 
-		internal SelectStatement FromStaging()
+		internal SelectStatement From(StagingTable stagingTable)
 		{
-			this.fromStaging = true;
+			this.from = stagingTable;
 
 			return this;
 		}
 
-		internal SelectStatement Into(string tableName)
+		internal SelectStatement Into(StagingTable stagingTable)
 		{
-			selectInto = tableName;
+			this.into = stagingTable;
 
 			return this;
 		}
@@ -46,9 +47,9 @@ namespace DataTrack.Core.SQL.SQLGeneration
 		{
 			BuildSelect();
 
-			if (!string.IsNullOrEmpty(selectInto))
+			if (into != null)
 			{
-				sql.AppendLine($"into {selectInto}");
+				sql.AppendLine($"into {into.Name}");
 			}
 
 			BuildFrom();
@@ -61,13 +62,13 @@ namespace DataTrack.Core.SQL.SQLGeneration
 		{
 			sql.AppendLine("select");
 
-			for (int i = 0; i < columns.Count; i++)
-			{
-				string columnName = fromStaging 
-					? columns[i].Name 
-					: columns[i].Alias;
+			List<string> fromColumns = from != null
+				? from.Columns.Where(c => columns.Select(c => c.Name).Contains(c)).ToList()
+				: columns.Select(c => c.Alias).ToList();
 
-				sql.AppendLine($"\t{columnName}{(i == columns.Count - 1 ? "" : ",")}");
+			for (int i = 0; i < fromColumns.Count; i++)
+			{
+				sql.AppendLine($"\t{fromColumns[i]}{(i == columns.Count - 1 ? "" : ",")}");
 			}
 		}
 
@@ -77,13 +78,13 @@ namespace DataTrack.Core.SQL.SQLGeneration
 			{
 				EntityTable table = tables[i];
 
-				string tableName = fromStaging
+				string tableName = from != null
 					? table.StagingTable.Name
 					: table.Name;
 
 				if (i == 0)
 				{
-					sql.AppendLine($"from {tableName}{(fromStaging ? "" : $" as {table.Alias}")}");
+					sql.AppendLine($"from {tableName}{(from != null ? "" : $" as {table.Alias}")}");
 				}
 			}
 		}

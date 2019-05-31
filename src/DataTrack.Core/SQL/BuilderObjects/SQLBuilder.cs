@@ -89,7 +89,7 @@ namespace DataTrack.Core.SQL.BuilderObjects
 				.AppendLine($"output inserted.{primarKeyColumn.Name} into #insertedIds({primarKeyColumn.Name})")
 				.AppendLine();
 
-			_sql.AppendLine(new SelectStatement(columns.Where(c => !c.IsPrimaryKey()).ToList()).FromStaging().ToString())
+			_sql.AppendLine(new SelectStatement(columns.Where(c => !c.IsPrimaryKey()).ToList()).From(table.StagingTable).ToString())
 				.AppendLine()
 				.AppendLine("select * from #insertedIds")
 				.AppendLine()
@@ -125,9 +125,9 @@ namespace DataTrack.Core.SQL.BuilderObjects
 				}
 
 				_sql.AppendLine();
-				_sql.AppendLine(new SelectStatement(table).Into(table.StagingTable.Name).ToString());
+				_sql.AppendLine(new SelectStatement(table).Into(table.StagingTable).ToString());
 				_sql.AppendLine();
-				_sql.AppendLine(new SelectStatement(table).FromStaging().ToString());
+				_sql.AppendLine(new SelectStatement(table).From(table.StagingTable).ToString());
 			}
 		}
 
