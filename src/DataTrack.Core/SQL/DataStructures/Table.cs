@@ -11,5 +11,6 @@ namespace DataTrack.Core.SQL.DataStructures
     public abstract class Table 
     {
         public string Name { get; set; }
+		public List<Column> Columns { get; set; }
 	}
 }
