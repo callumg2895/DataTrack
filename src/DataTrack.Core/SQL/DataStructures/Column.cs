@@ -9,10 +9,12 @@ using System.Reflection;
 
 namespace DataTrack.Core.SQL.DataStructures
 {
-	public class Column
+	public class Column : ICloneable
 	{
 		public Column(ColumnAttribute columnAttribute, EntityTable table)
 		{
+			ColumnAttribute = columnAttribute;
+
 			Table = table;
 			Restrictions = new List<Restriction>();
 			Parameters = new List<Parameter>();
@@ -31,6 +33,8 @@ namespace DataTrack.Core.SQL.DataStructures
 		public string PropertyName { get; set; }
 		public byte KeyType { get; set; }
 		public string? ForeignKeyTableMapping { get; set; }
+
+		private readonly ColumnAttribute ColumnAttribute;
 
 		private string GetPropertyName()
 		{
@@ -93,6 +97,29 @@ namespace DataTrack.Core.SQL.DataStructures
 		{
 			Parameter parameter = new Parameter(this, value);
 			Parameters.Add(parameter);
+		}
+
+		public object Clone()
+		{
+			Logger.Trace($"Cloning column mapping for Property '{PropertyName}' of Entity '{Table.Type.Name}' (Table '{Table.Name}')");
+			return new Column(ColumnAttribute, Table);
+		}
+
+		public override bool Equals(object obj)
+		{
+			if ((obj as Column) == null)
+			{
+				return false;
+			}
+
+			Column column = (Column)obj;
+
+			return column.Name == Name;
+		}
+
+		public override int GetHashCode()
+		{
+			return Name.GetHashCode();
 		}
 	}
 }

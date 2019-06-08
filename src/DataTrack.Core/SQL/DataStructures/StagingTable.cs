@@ -12,8 +12,17 @@ namespace DataTrack.Core.SQL.DataStructures
 		internal StagingTable(EntityTable table)
 		{
 			Name = $"#{table.Name}_staging";
-			Columns = table.Columns;
 			EntityTable = table;
+			Columns = new List<Column>();
+
+			foreach (Column column in table.Columns)
+			{
+				Column stagingColumn = (Column)column.Clone();
+
+				stagingColumn.Alias = column.Name;
+
+				Columns.Add(stagingColumn);
+			}
 		}
 
 	}

@@ -63,12 +63,12 @@ namespace DataTrack.Core.SQL.SQLGeneration
 			sql.AppendLine("select");
 
 			List<string> fromColumns = from != null
-				? columns.Select(c => c.Name).ToList()
+				? from.Columns.Where(c => columns.Contains(c)).Select(c => c.Alias).ToList()
 				: columns.Select(c => c.Alias).ToList();
 
 			for (int i = 0; i < fromColumns.Count; i++)
 			{
-				sql.AppendLine($"\t{fromColumns[i]}{(i == columns.Count - 1 ? "" : ",")}");
+				sql.AppendLine($"\t{fromColumns[i]}{(i == fromColumns.Count - 1 ? "" : ",")}");
 			}
 		}
 
