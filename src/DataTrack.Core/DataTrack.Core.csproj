@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DataTrack.Logging\DataTrack.Logging.csproj" />
+    <ProjectReference Include="..\DataTrack.Util\DataTrack.Util.csproj" />
   </ItemGroup>
 
 </Project>

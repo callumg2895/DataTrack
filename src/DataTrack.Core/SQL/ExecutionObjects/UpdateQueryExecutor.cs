@@ -1,6 +1,6 @@
 ﻿using DataTrack.Core.Interface;
 using DataTrack.Core.SQL.DataStructures;
-using DataTrack.Core.Util.Extensions;
+using DataTrack.Util.Extensions;
 using DataTrack.Logging;
 using System.Data.SqlClient;
 using System.Reflection;

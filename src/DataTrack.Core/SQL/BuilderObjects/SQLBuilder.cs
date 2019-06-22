@@ -1,7 +1,7 @@
 ﻿using DataTrack.Core.Interface;
 using DataTrack.Core.SQL.DataStructures;
 using DataTrack.Core.SQL.SQLGeneration;
-using DataTrack.Core.Util.Extensions;
+using DataTrack.Util.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Data;

@@ -2,7 +2,7 @@
 using DataTrack.Core.Exceptions;
 using DataTrack.Core.Interface;
 using DataTrack.Core.Util;
-using DataTrack.Core.Util.DataStructures;
+using DataTrack.Util.DataStructures;
 using DataTrack.Logging;
 using System;
 using System.Collections.Generic;

@@ -1,5 +1,4 @@
 ﻿using DataTrack.Core.Enums;
-using DataTrack.Core.Util.Extensions;
 using DataTrack.Logging;
 using System.Data;
 using System.Reflection;
@@ -17,7 +16,7 @@ namespace DataTrack.Core.SQL.DataStructures
 		{
 			if (parameter.DatabaseType == SqlDbType.VarChar && (rType == RestrictionTypes.LessThan || rType == RestrictionTypes.MoreThan))
 			{
-				Logger.Error(MethodBase.GetCurrentMethod(), $"Cannot apply '{rType.ToSqlString()}' operator to values of type VarChar");
+				Logger.Error(MethodBase.GetCurrentMethod(), $"Cannot apply '{GetRestrictionString(rType)}' operator to values of type VarChar");
 			}
 
 			Alias = column.Alias;
@@ -42,7 +41,7 @@ namespace DataTrack.Core.SQL.DataStructures
 				case RestrictionTypes.NotIn:
 				case RestrictionTypes.In:
 					restrictionBuilder.Append(Alias + " ");
-					restrictionBuilder.Append(RestrictionType.ToSqlString() + " (");
+					restrictionBuilder.Append(GetRestrictionString(RestrictionType) + " (");
 					restrictionBuilder.Append(Handle);
 					restrictionBuilder.Append(")");
 					break;
@@ -50,7 +49,7 @@ namespace DataTrack.Core.SQL.DataStructures
 				case RestrictionTypes.LessThan:
 				case RestrictionTypes.MoreThan:
 					restrictionBuilder.Append(Alias + " ");
-					restrictionBuilder.Append(RestrictionType.ToSqlString() + " ");
+					restrictionBuilder.Append(GetRestrictionString(RestrictionType) + " ");
 					restrictionBuilder.Append(Handle);
 					break;
 
@@ -59,12 +58,28 @@ namespace DataTrack.Core.SQL.DataStructures
 				case RestrictionTypes.NotEqualTo:
 				default:
 					restrictionBuilder.Append(Alias + " ");
-					restrictionBuilder.Append(RestrictionType.ToSqlString() + " ");
+					restrictionBuilder.Append(GetRestrictionString(RestrictionType) + " ");
 					restrictionBuilder.Append(Handle);
 					break;
 			}
 
 			return restrictionBuilder.ToString();
+		}
+
+		private static string GetRestrictionString(RestrictionTypes type)
+		{
+			switch (type)
+			{
+				case RestrictionTypes.EqualTo: return "=";
+				case RestrictionTypes.NotEqualTo: return "<>";
+				case RestrictionTypes.LessThan: return "<";
+				case RestrictionTypes.MoreThan: return ">";
+				case RestrictionTypes.In: return "in";
+				case RestrictionTypes.NotIn: return "not in";
+				default:
+					Logger.Error(MethodBase.GetCurrentMethod(), $"Invalid restriction '{type}'");
+					return "";
+			}
 		}
 	}
 }
