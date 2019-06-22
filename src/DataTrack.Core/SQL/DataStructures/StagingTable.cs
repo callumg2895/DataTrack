@@ -10,10 +10,10 @@ namespace DataTrack.Core.SQL.DataStructures
 		public EntityTable EntityTable { get; set; }
 		
 		internal StagingTable(EntityTable table)
+			: base()
 		{
 			Name = $"#{table.Name}_staging";
 			EntityTable = table;
-			Columns = new List<Column>();
 
 			foreach (Column column in table.Columns)
 			{

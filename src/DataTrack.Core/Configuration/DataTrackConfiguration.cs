@@ -21,7 +21,7 @@ namespace DataTrack.Core
 
 		public static void Init()
 		{
-			Init(false, ConfigType.Manual, null);
+			Init(false, ConfigType.Manual);
 		}
 
 		public static void Init(bool enableConsoleLogging, ConfigType configType, string connection = "")

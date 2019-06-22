@@ -13,7 +13,6 @@ namespace DataTrack.Core.SQL.DataStructures
 		public Type Type { get; set; }
 		public string Alias { get; set; }
 		public List<IEntity> Entities { get; set; }
-		public List<Column> Columns { get; set; }
 		public StagingTable StagingTable { get; set; }
 
 		private readonly AttributeWrapper _attributes;
@@ -22,11 +21,11 @@ namespace DataTrack.Core.SQL.DataStructures
 		private readonly List<Column> foreignKeyColumns;
 
 		internal EntityTable(Type type, AttributeWrapper attributes)
-		{
+			: base()
+		{ 
 			Type = type;
 			Name = attributes.TableAttribute.TableName;
 			Alias = type.Name;
-			Columns = new List<Column>();
 			Entities = new List<IEntity>();
 
 			_attributes = attributes;

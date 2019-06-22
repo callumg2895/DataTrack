@@ -8,8 +8,8 @@ namespace DataTrack.Core.SQL.SQLGeneration
 {
 	internal class SelectStatement : Statement
 	{
-		private StagingTable into = null;
-		private StagingTable from = null;
+		private StagingTable? into = null;
+		private StagingTable? from = null;
 
 		internal SelectStatement(EntityTable table)
 			: base(table)
