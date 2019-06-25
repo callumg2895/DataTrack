@@ -2,6 +2,7 @@
 using DataTrack.Core.Exceptions;
 using DataTrack.Core.Interface;
 using DataTrack.Logging;
+using DataTrack.Util.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -23,9 +24,7 @@ namespace DataTrack.Core.SQL.DataStructures
 
 		public object GetPropertyValue(string propertyName)
 		{
-			return GetType()
-					  .GetProperty(propertyName)
-					  .GetValue(this);
+			return ReflectionUtil.GetPropertyValue(this, propertyName);
 		}
 
 		public List<object> GetPropertyValues()
