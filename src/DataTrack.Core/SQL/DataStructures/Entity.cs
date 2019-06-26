@@ -30,17 +30,10 @@ namespace DataTrack.Core.SQL.DataStructures
 		public List<object> GetPropertyValues()
 		{
 			List<object> values = new List<object>();
-			Type type = GetType();
 
-			foreach (PropertyInfo property in type.GetProperties())
+			foreach (PropertyInfo property in ReflectionUtil.GetProperties(this, typeof(ColumnAttribute)))
 			{
-				foreach (Attribute attribute in property.GetCustomAttributes())
-				{
-					if ((attribute as ColumnAttribute) != null)
-					{
-						values.Add(GetPropertyValue(property.Name));
-					}
-				}
+				values.Add(GetPropertyValue(property.Name));
 			}
 
 			return values;
@@ -55,17 +48,9 @@ namespace DataTrack.Core.SQL.DataStructures
 
 		public void InstantiateChildProperties()
 		{
-			Type type = GetType();
-
-			foreach (PropertyInfo property in type.GetProperties())
+			foreach (PropertyInfo property in ReflectionUtil.GetProperties(this, typeof(TableAttribute)))
 			{
-				foreach (Attribute attribute in property.GetCustomAttributes())
-				{
-					if ((attribute as TableAttribute) != null)
-					{
-						property.SetValue(this, Activator.CreateInstance(property.PropertyType));
-					}
-				}
+				property.SetValue(this, Activator.CreateInstance(property.PropertyType));
 			}
 		}
 
@@ -90,17 +75,11 @@ namespace DataTrack.Core.SQL.DataStructures
 			}
 			else
 			{
-				foreach (PropertyInfo property in type.GetProperties())
+				foreach (PropertyInfo property in ReflectionUtil.GetProperties(this, typeof(TableAttribute)))
 				{
-					foreach (Attribute attribute in property.GetCustomAttributes())
-					{
-						if ((attribute as TableAttribute)?.TableName == tableName)
-						{
-							properties[(type, tableName)] = property;
-							Logger.Trace($"Loading property '{property.Name}' for Entity '{type.Name}'. ");
-							return property;
-						}
-					}
+					properties[(type, tableName)] = property;
+					Logger.Trace($"Loading property '{property.Name}' for Entity '{type.Name}'. ");
+					return property;
 				}
 			}
 
