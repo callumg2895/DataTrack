@@ -9,11 +9,11 @@ using System.Reflection;
 
 namespace DataTrack.Core.SQL.DataStructures
 {
-	public abstract class Entity<TIdentity> : IEntity
+	public abstract class Entity<TIdentity> : IEntity where TIdentity : struct
 	{
 		[Column("id")]
 		[PrimaryKey]
-		public virtual TIdentity ID { get; set; }
+		public virtual TIdentity ID { get; set; } = default;
 
 		private static readonly Dictionary<(Type, string), PropertyInfo> properties = new Dictionary<(Type, string), PropertyInfo>();
 
@@ -33,7 +33,7 @@ namespace DataTrack.Core.SQL.DataStructures
 
 			foreach (PropertyInfo property in ReflectionUtil.GetProperties(this, typeof(ColumnAttribute)))
 			{
-				values.Add(GetPropertyValue(property.Name));
+				values.Add(ReflectionUtil.GetPropertyValue(this, property.Name));
 			}
 
 			return values;

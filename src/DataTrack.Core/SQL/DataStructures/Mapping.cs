@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Reflection;
+using DataTrack.Util.Helpers;
 
 namespace DataTrack.Core.SQL.DataStructures
 {
@@ -93,7 +94,7 @@ namespace DataTrack.Core.SQL.DataStructures
 			Type propertyType = property.PropertyType;
 
 			// If the property is a generic list, then it fits the profile of a child object
-			if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(List<>))
+			if (ReflectionUtil.IsGenericList(propertyType))
 			{
 				Type genericArgumentType = propertyType.GetGenericArguments()[0];
 

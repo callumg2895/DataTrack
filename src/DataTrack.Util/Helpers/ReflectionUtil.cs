@@ -32,5 +32,10 @@ namespace DataTrack.Util.Helpers
 				}
 			}
 		}
+
+		public static bool IsGenericList(Type type)
+		{
+			return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>);
+		}
 	}
 }

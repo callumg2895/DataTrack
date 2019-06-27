@@ -24,7 +24,7 @@ namespace DataTrack.Core.SQL.DataStructures
 			: base()
 		{ 
 			Type = type;
-			Name = attributes.TableAttribute.TableName;
+			Name = attributes.TableAttribute?.TableName ?? throw new TableMappingException(type, "Unknown");
 			Alias = type.Name;
 			Entities = new List<IEntity>();
 
