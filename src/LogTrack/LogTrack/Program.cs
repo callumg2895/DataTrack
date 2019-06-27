@@ -21,7 +21,9 @@ namespace LogTrack
 				{
 					while (true)
 					{
-						Console.WriteLine(reader.ReadLine());
+						LogStatement statement = new LogStatement(reader.ReadLine());
+
+						statement.Write();
 
 						if (reader.EndOfStream)
 						{
