@@ -17,32 +17,9 @@ namespace LogTrack
 			string fileDateString = fileDate.ToShortDateString().Replace("/", "_");
 			int fileIndex = 0;
 
-			List<LogStatement> logBuffer = new List<LogStatement>();
+			LogReader reader = new LogReader(filePath, $"{fileDateString}_{fileName}{fileIndex}{fileExtension}");
 
-			if (Directory.Exists(filePath))
-			{
-				using (StreamReader reader = File.OpenText($@"{filePath}\{fileDateString}_{fileName}{fileIndex}{fileExtension}"))
-				{
-					while (true)
-					{
-						LogStatement statement = new LogStatement(reader.ReadLine());
-
-						if (statement.LogLevel == LogLevel.Unknown)
-						{
-							logBuffer.Last().Append(statement);
-						}
-						else
-						{
-							logBuffer.Add(statement);
-						}
-
-						if (reader.EndOfStream)
-						{
-							break;
-						}
-					}
-				}
-			}
+			List<LogStatement> logBuffer = reader.Read();
 
 			foreach (LogStatement statement in logBuffer)
 			{
