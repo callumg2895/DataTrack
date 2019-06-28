@@ -19,7 +19,7 @@ namespace LogTrack
 	public class LogStatement
 	{
 		private StringBuilder text;
-		private LogLevel logLevel;
+		public LogLevel LogLevel;
 
 		private static Regex Trace = new Regex("TRC");
 		private static Regex Debug = new Regex("DBG");
@@ -31,14 +31,14 @@ namespace LogTrack
 		public LogStatement(string statement)
 		{
 			text = new StringBuilder();
-			logLevel = GetLogLevel(statement);
+			LogLevel = GetLogLevel(statement);
 
 			text.Append(statement);
 		}
 
 		public void Write()
 		{
-			switch (logLevel)
+			switch (LogLevel)
 			{
 				case LogLevel.Trace:
 					Console.ForegroundColor = ConsoleColor.Cyan;
@@ -67,6 +67,16 @@ namespace LogTrack
 			Console.WriteLine(text.ToString());
 			Console.ForegroundColor = ConsoleColor.White;
 			Console.BackgroundColor = ConsoleColor.Black;
+		}
+
+		public void Append(LogStatement statement)
+		{
+			text.AppendLine(statement.ToString());
+		}
+
+		public override string ToString()
+		{
+			return text.ToString();
 		}
 
 		private LogLevel GetLogLevel(string statement)
@@ -103,6 +113,5 @@ namespace LogTrack
 
 			return LogLevel.Unknown;
 		}
-
 	}
 }

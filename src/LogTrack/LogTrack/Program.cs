@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace LogTrack
 {
@@ -15,6 +17,8 @@ namespace LogTrack
 			string fileDateString = fileDate.ToShortDateString().Replace("/", "_");
 			int fileIndex = 0;
 
+			List<LogStatement> logBuffer = new List<LogStatement>();
+
 			if (Directory.Exists(filePath))
 			{
 				using (StreamReader reader = File.OpenText($@"{filePath}\{fileDateString}_{fileName}{fileIndex}{fileExtension}"))
@@ -23,15 +27,26 @@ namespace LogTrack
 					{
 						LogStatement statement = new LogStatement(reader.ReadLine());
 
-						statement.Write();
+						if (statement.LogLevel == LogLevel.Unknown)
+						{
+							logBuffer.Last().Append(statement);
+						}
+						else
+						{
+							logBuffer.Add(statement);
+						}
 
 						if (reader.EndOfStream)
 						{
 							break;
 						}
-
 					}
 				}
+			}
+
+			foreach (LogStatement statement in logBuffer)
+			{
+				statement.Write();
 			}
 		}
 	}
