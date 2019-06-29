@@ -25,6 +25,14 @@ namespace LogTrack
 			{
 				statement.Write();
 			}
+
+			Console.WriteLine();
+			Console.WriteLine($"Total TRC: {reader.totalTRC}");
+			Console.WriteLine($"Total DBG: {reader.totalDBG}");
+			Console.WriteLine($"Total INF: {reader.totalINF}");
+			Console.WriteLine($"Total WRN: {reader.totalWRN}");
+			Console.WriteLine($"Total ERR: {reader.totalERR}");
+			Console.WriteLine($"Total ERF: {reader.totalERF}");
 		}
 	}
 }
