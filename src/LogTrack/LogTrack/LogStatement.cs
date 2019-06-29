@@ -28,6 +28,17 @@ namespace LogTrack
 		private static Regex Error = new Regex("ERR");
 		private static Regex Fatal = new Regex("ERF");
 
+		Dictionary<LogLevel, TextFormat> LogTextFormat = new Dictionary<LogLevel, TextFormat>()
+		{
+			{ LogLevel.Trace, new TextFormat(ConsoleColor.Cyan) },
+			{ LogLevel.Debug, new TextFormat(ConsoleColor.Blue) },
+			{ LogLevel.Info, new TextFormat(ConsoleColor.Green) },
+			{ LogLevel.Warning, new TextFormat(ConsoleColor.Yellow) },
+			{ LogLevel.Error, new TextFormat(ConsoleColor.Red) },
+			{ LogLevel.Fatal, new TextFormat(ConsoleColor.Red, ConsoleColor.Yellow) },
+			{ LogLevel.Unknown, new TextFormat(ConsoleColor.Magenta) },
+		};
+
 		public LogStatement(string statement)
 		{
 			text = new StringBuilder();
@@ -38,35 +49,14 @@ namespace LogTrack
 
 		public void Write()
 		{
-			switch (LogLevel)
-			{
-				case LogLevel.Trace:
-					Console.ForegroundColor = ConsoleColor.Cyan;
-					break;
-				case LogLevel.Debug:
-					Console.ForegroundColor = ConsoleColor.Blue;
-					break;
-				case LogLevel.Info:
-					Console.ForegroundColor = ConsoleColor.Green;
-					break;
-				case LogLevel.Warning:
-					Console.ForegroundColor = ConsoleColor.Yellow;
-					break;
-				case LogLevel.Error:
-					Console.ForegroundColor = ConsoleColor.Red;
-					break;
-				case LogLevel.Fatal:
-					Console.BackgroundColor = ConsoleColor.Yellow;
-					Console.ForegroundColor = ConsoleColor.Red;
-					break;
-				case LogLevel.Unknown:
-					Console.ForegroundColor = ConsoleColor.Magenta;
-					break;
-			}
+			TextFormat format = LogTextFormat[LogLevel];
+
+			format.Apply();
 
 			Console.WriteLine(text.ToString());
-			Console.ForegroundColor = ConsoleColor.White;
-			Console.BackgroundColor = ConsoleColor.Black;
+
+			format.Reset();
+
 		}
 
 		public void Append(LogStatement statement)
