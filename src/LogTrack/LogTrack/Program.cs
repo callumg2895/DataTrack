@@ -26,13 +26,15 @@ namespace LogTrack
 				statement.Write();
 			}
 
+			LogStats stats = reader.ReadStats();
+
 			Console.WriteLine();
-			Console.WriteLine($"Total TRC: {reader.totalTRC}");
-			Console.WriteLine($"Total DBG: {reader.totalDBG}");
-			Console.WriteLine($"Total INF: {reader.totalINF}");
-			Console.WriteLine($"Total WRN: {reader.totalWRN}");
-			Console.WriteLine($"Total ERR: {reader.totalERR}");
-			Console.WriteLine($"Total ERF: {reader.totalERF}");
+			Console.WriteLine($"Total TRC: {stats.totalTRC}");
+			Console.WriteLine($"Total DBG: {stats.totalDBG}");
+			Console.WriteLine($"Total INF: {stats.totalINF}");
+			Console.WriteLine($"Total WRN: {stats.totalWRN}");
+			Console.WriteLine($"Total ERR: {stats.totalERR}");
+			Console.WriteLine($"Total ERF: {stats.totalERF}");
 		}
 	}
 }

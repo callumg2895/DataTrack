@@ -9,28 +9,16 @@ namespace LogTrack
 	public class LogReader
 	{
 		private List<LogStatement> logBuffer;
+		private LogStats logStats;
 		private string filePath;
 		private string fileName;
-
-		public int totalTRC { get; private set;}
-		public int totalDBG {get; private set;}
-		public int totalINF {get; private set;}
-		public int totalWRN {get; private set;}
-		public int totalERR {get; private set;}
-		public int totalERF {get; private set;}
 
 		public LogReader(string path, string name)
 		{
 			filePath = path;
 			fileName = name;
 			logBuffer = new List<LogStatement>();
-
-			totalTRC = 0;
-			totalDBG = 0;
-			totalINF = 0;
-			totalWRN = 0;
-			totalERR = 0;
-			totalERF = 0;
+			logStats = new LogStats();
 		}
 
 		public List<LogStatement> Read()
@@ -52,36 +40,7 @@ namespace LogTrack
 					}
 					else
 					{
-						if (statement.LogLevel == LogLevel.Trace)
-						{
-							totalTRC++;
-						}
-
-						if (statement.LogLevel == LogLevel.Debug)
-						{
-							totalDBG++;
-						}
-
-						if (statement.LogLevel == LogLevel.Info)
-						{
-							totalINF++;
-						}
-
-						if (statement.LogLevel == LogLevel.Warning)
-						{
-							totalWRN++;
-						}
-
-						if (statement.LogLevel == LogLevel.Error)
-						{
-							totalERR++;
-						}
-
-						if (statement.LogLevel == LogLevel.Fatal)
-						{
-							totalERF++;
-						}
-
+						logStats.Update(statement);
 						logBuffer.Add(statement);
 					}
 
@@ -93,6 +52,11 @@ namespace LogTrack
 			}
 
 			return logBuffer;
+		}
+
+		public LogStats ReadStats()
+		{
+			return logStats;
 		}
 	}
 }
