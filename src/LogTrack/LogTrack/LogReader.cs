@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 
 namespace LogTrack
@@ -10,24 +11,34 @@ namespace LogTrack
 	public class LogReader
 	{
 		private volatile List<LogStatement> logBuffer;
+		private volatile int maxLogSize;
+		private volatile int maxLoadingBarSize;
+		private volatile bool parsing;
+
 		private LogStats logStats;
 		private string filePath;
 		private string fileName;
-		private bool parsing;
-		private object parsingLock;
+		private string fileExtension;
+		private int fileIndex;
 
-		public LogReader(string path, string name)
+		private object parsingLock = new object();
+
+		public LogReader(string path, string name, string extension)
 		{
-			filePath = path;
-			fileName = name;
 			logBuffer = new List<LogStatement>();
-			logStats = new LogStats();
-			parsingLock = new object();
+			maxLogSize = 10000;
+			maxLoadingBarSize = 10;
 
 			lock (parsingLock)
 			{
 				parsing = false;
 			}
+
+			logStats = new LogStats();
+			filePath = path;
+			fileName = name;
+			fileExtension = extension;
+			fileIndex = 0;
 		}
 
 		public List<LogStatement> Read()
@@ -37,7 +48,23 @@ namespace LogTrack
 				return logBuffer;
 			}
 
-			using (StreamReader reader = File.OpenText($"{filePath}/{fileName}"))
+			while (File.Exists(GetFileName()))
+			{
+				ReadCurrentFile();
+				fileIndex++;
+			}
+
+			return logBuffer;
+		}
+
+		public LogStats ReadStats()
+		{
+			return logStats;
+		}
+
+		private void ReadCurrentFile()
+		{
+			using (StreamReader reader = File.OpenText(GetFileName()))
 			{
 				lock (parsingLock)
 				{
@@ -45,9 +72,11 @@ namespace LogTrack
 				}
 
 				Thread loadingBarThread = new Thread(new ThreadStart(LoadingBar));
+				bool running = true;
+
 				loadingBarThread.Start();
 
-				while (true)
+				while (running)
 				{
 					LogStatement statement = new LogStatement(reader.ReadLine());
 
@@ -66,53 +95,69 @@ namespace LogTrack
 						lock (parsingLock)
 						{
 							parsing = false;
+							running = false;
+							DisplayProgress();
 						}
-
-						break;
 					}
 				}
 			}
-
-			return logBuffer;
 		}
 
-		public LogStats ReadStats()
+		private string GetFileName()
 		{
-			return logStats;
+			return $"{filePath}/{fileName}{fileIndex}{fileExtension}";
 		}
 
 		private void LoadingBar()
 		{
-			int maxLogSize = 10000;
-			int maxLoadingBarSize = 50;
+			bool running = true;
 
-			while (true)
+			while (running)
 			{
 				lock (parsingLock)
 				{
 					if (parsing)
 					{
-						Console.SetCursorPosition(1, 1);
-						Console.Write("Parsing log file: ");
-
-						int currentLogsParsed = Math.Max(logBuffer.Count(), 1);
-						int percentComplete = (int)Math.Round((currentLogsParsed / (decimal)maxLogSize) * maxLoadingBarSize);
-
-						for (int i = 0; i < percentComplete; i++)
-						{
-							Console.BackgroundColor = ConsoleColor.White;
-							Console.Write(" ");
-						}
-
-						Console.BackgroundColor = ConsoleColor.Black;
-						Console.WriteLine();
+						DisplayProgress();
 					}
 					else
 					{
-						break;
+						running = false;
 					}
 				}
 			}
+		}
+
+		private void DisplayProgress()
+		{
+			TextFormat format = new TextFormat(ConsoleColor.Black, ConsoleColor.White);
+			format.Reset();
+
+			Console.SetCursorPosition(1, fileIndex);
+			Console.Write($"Parsing log file {fileIndex}: [");
+
+			format.Apply();
+
+			int currentLogsParsed = Math.Max(logBuffer.Count(), 1) - (fileIndex * maxLogSize);
+			int percentComplete = (int)Math.Round((currentLogsParsed / (decimal)maxLogSize) * maxLoadingBarSize);
+
+			for (int i = 0; i < maxLoadingBarSize; i++)
+			{
+				if (i < percentComplete)
+				{
+					format.Apply();
+					Console.Write(" ");
+				}
+				else
+				{
+					format.Reset();
+					Console.Write(" ");
+				}
+			}
+
+			format.Reset();
+			Console.Write($"] {currentLogsParsed} entries loaded");
+			Console.WriteLine();
 		}
 	}
 }

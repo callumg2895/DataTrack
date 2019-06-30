@@ -17,7 +17,7 @@ namespace LogTrack
 			string fileDateString = fileDate.ToShortDateString().Replace("/", "_");
 			int fileIndex = 0;
 
-			LogReader reader = new LogReader(filePath, $"{fileDateString}_{fileName}{fileIndex}{fileExtension}");
+			LogReader reader = new LogReader(filePath, $"{fileDateString}_{fileName}", fileExtension);
 
 			List<LogStatement> logBuffer = reader.Read();
 
