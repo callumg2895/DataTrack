@@ -189,7 +189,7 @@ namespace DataTrack.Logging
 
 		private static List<LogItem> GetLogBufferForThread()
 		{
-			List<LogItem> threadLogBuffer = null;
+			List<LogItem>? threadLogBuffer = null;
 
 			lock (logBufferLock)
 			{
