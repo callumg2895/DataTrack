@@ -1,9 +1,9 @@
-﻿using DataTrack.Core.SQL.DataStructures;
-using System;
+﻿using DataTrack.Core.Components.Mapping;
+using DataTrack.Core.Components.Query;
 using System.Collections.Generic;
 using System.Text;
 
-namespace DataTrack.Core.SQL.SQLGeneration
+namespace DataTrack.Core.Components.SQL
 {
 	internal abstract class Statement
 	{
@@ -15,18 +15,18 @@ namespace DataTrack.Core.SQL.SQLGeneration
 
 		internal Statement()
 		{
-			this.tables = new List<EntityTable>();
-			this.columns = new List<Column>();
-			this.sql = new StringBuilder();
+			tables = new List<EntityTable>();
+			columns = new List<Column>();
+			sql = new StringBuilder();
 
-			this.restrictionCount = 0;
+			restrictionCount = 0;
 		}
 
 		internal Statement(EntityTable table)
 			: this()
 		{
-			this.tables.Add(table);
-			this.columns.AddRange(table.Columns);
+			tables.Add(table);
+			columns.AddRange(table.Columns);
 		}
 
 		internal Statement(List<Column> columns)
@@ -43,7 +43,7 @@ namespace DataTrack.Core.SQL.SQLGeneration
 
 				visitedTables.Add(column.Table);
 
-				this.tables.Add(column.Table);
+				tables.Add(column.Table);
 			}
 
 			this.columns.AddRange(columns);

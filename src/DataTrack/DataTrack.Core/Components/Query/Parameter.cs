@@ -1,9 +1,10 @@
-﻿using System;
+﻿using DataTrack.Core.Components.Mapping;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 
-namespace DataTrack.Core.SQL.DataStructures
+namespace DataTrack.Core.Components.Query
 {
 	public struct Parameter
 	{

@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace DataTrack.Core.SQL.DataStructures
+﻿namespace DataTrack.Core.Components.Mapping
 {
 	public class StagingTable : Table
 	{
 		public EntityTable EntityTable { get; set; }
-		
+
 		internal StagingTable(EntityTable table)
 			: base()
 		{

@@ -1,10 +1,11 @@
-﻿using DataTrack.Core.Enums;
+﻿using DataTrack.Core.Components.Mapping;
+using DataTrack.Core.Enums;
 using DataTrack.Logging;
 using System.Data;
 using System.Reflection;
 using System.Text;
 
-namespace DataTrack.Core.SQL.DataStructures
+namespace DataTrack.Core.Components.Query
 {
 	public struct Restriction
 	{

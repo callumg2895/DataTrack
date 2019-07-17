@@ -1,7 +1,9 @@
-﻿using DataTrack.Core.Enums;
+﻿using DataTrack.Core.Components.Builders;
+using DataTrack.Core.Components.Execution;
+using DataTrack.Core.Components.Mapping;
+using DataTrack.Core.Components.SQL;
+using DataTrack.Core.Enums;
 using DataTrack.Core.Interface;
-using DataTrack.Core.SQL.BuilderObjects;
-using DataTrack.Core.SQL.ExecutionObjects;
 using DataTrack.Logging;
 using System;
 using System.Collections.Generic;
@@ -11,7 +13,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
-namespace DataTrack.Core.SQL.DataStructures
+namespace DataTrack.Core.Components.Query
 {
 	public class Query<TBase> where TBase : IEntity
 	{

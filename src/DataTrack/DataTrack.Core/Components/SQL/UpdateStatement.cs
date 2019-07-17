@@ -1,9 +1,7 @@
-﻿using DataTrack.Core.SQL.DataStructures;
-using System;
+﻿using DataTrack.Core.Components.Mapping;
 using System.Collections.Generic;
-using System.Text;
 
-namespace DataTrack.Core.SQL.SQLGeneration
+namespace DataTrack.Core.Components.SQL
 {
 	internal class UpdateStatement : Statement
 	{

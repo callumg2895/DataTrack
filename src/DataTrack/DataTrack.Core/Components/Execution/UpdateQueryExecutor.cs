@@ -1,11 +1,11 @@
-﻿using DataTrack.Core.Interface;
-using DataTrack.Core.SQL.DataStructures;
-using DataTrack.Util.Extensions;
+﻿using DataTrack.Core.Components.Query;
+using DataTrack.Core.Interface;
 using DataTrack.Logging;
+using DataTrack.Util.Extensions;
 using System.Data.SqlClient;
 using System.Reflection;
 
-namespace DataTrack.Core.SQL.ExecutionObjects
+namespace DataTrack.Core.Components.Execution
 {
 	public class UpdateQueryExecutor<TBase> : QueryExecutor<TBase> where TBase : IEntity
 	{

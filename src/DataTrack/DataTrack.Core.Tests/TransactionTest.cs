@@ -1,7 +1,6 @@
-﻿using DataTrack.Core.SQL;
-using DataTrack.Core.SQL.DataStructures;
-using DataTrack.Core.Tests.TestObjects;
+﻿using DataTrack.Core.Tests.TestObjects;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using DataTrack.Core.Components.Query;
 using System.Collections.Generic;
 
 namespace DataTrack.Core.Tests

@@ -1,6 +1,6 @@
 ﻿using DataTrack.Core.Attributes;
-using DataTrack.Core.SQL.DataStructures;
 using System;
+using DataTrack.Core.Components.Mapping;
 
 namespace DataTrack.Core.Tests.TestObjects
 {

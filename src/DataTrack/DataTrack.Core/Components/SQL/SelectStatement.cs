@@ -1,10 +1,8 @@
-﻿using DataTrack.Core.SQL.DataStructures;
-using System;
+﻿using DataTrack.Core.Components.Mapping;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
-namespace DataTrack.Core.SQL.SQLGeneration
+namespace DataTrack.Core.Components.SQL
 {
 	internal class SelectStatement : Statement
 	{
@@ -31,14 +29,14 @@ namespace DataTrack.Core.SQL.SQLGeneration
 
 		internal SelectStatement From(StagingTable stagingTable)
 		{
-			this.from = stagingTable;
+			from = stagingTable;
 
 			return this;
 		}
 
 		internal SelectStatement Into(StagingTable stagingTable)
 		{
-			this.into = stagingTable;
+			into = stagingTable;
 
 			return this;
 		}

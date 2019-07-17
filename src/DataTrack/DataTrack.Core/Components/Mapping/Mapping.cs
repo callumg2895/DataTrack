@@ -2,15 +2,15 @@
 using DataTrack.Core.Exceptions;
 using DataTrack.Core.Interface;
 using DataTrack.Core.Util;
-using DataTrack.Util.DataStructures;
 using DataTrack.Logging;
+using DataTrack.Util.DataStructures;
+using DataTrack.Util.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Reflection;
-using DataTrack.Util.Helpers;
 
-namespace DataTrack.Core.SQL.DataStructures
+namespace DataTrack.Core.Components.Mapping
 {
 	internal class Mapping<TBase> where TBase : IEntity
 	{

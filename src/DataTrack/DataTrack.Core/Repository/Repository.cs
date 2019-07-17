@@ -1,6 +1,6 @@
-﻿using DataTrack.Core.Enums;
+﻿using DataTrack.Core.Components.Query;
+using DataTrack.Core.Enums;
 using DataTrack.Core.Interface;
-using DataTrack.Core.SQL.DataStructures;
 using System;
 using System.Collections.Generic;
 using System.Reflection;

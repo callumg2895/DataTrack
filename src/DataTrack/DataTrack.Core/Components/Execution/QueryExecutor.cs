@@ -1,10 +1,11 @@
-﻿using DataTrack.Core.Interface;
-using DataTrack.Core.SQL.DataStructures;
+﻿using DataTrack.Core.Components.Mapping;
+using DataTrack.Core.Components.Query;
+using DataTrack.Core.Interface;
 using System;
 using System.Data.SqlClient;
 using System.Diagnostics;
 
-namespace DataTrack.Core.SQL.ExecutionObjects
+namespace DataTrack.Core.Components.Execution
 {
 	public abstract class QueryExecutor<TBase> where TBase : IEntity
 	{

@@ -1,13 +1,13 @@
-﻿using DataTrack.Core.Interface;
-using DataTrack.Core.SQL.DataStructures;
-using DataTrack.Util.DataStructures;
+﻿using DataTrack.Core.Components.Mapping;
+using DataTrack.Core.Interface;
 using DataTrack.Logging;
+using DataTrack.Util.DataStructures;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Reflection;
 
-namespace DataTrack.Core.SQL.BuilderObjects
+namespace DataTrack.Core.Components.Builders
 {
 	internal class BulkDataBuilder<TBase> where TBase : IEntity
 	{

@@ -6,7 +6,7 @@ using DataTrack.Logging;
 using System;
 using System.Collections.Generic;
 
-namespace DataTrack.Core.SQL.DataStructures
+namespace DataTrack.Core.Components.Mapping
 {
 	public class EntityTable : Table, ICloneable
 	{
@@ -22,7 +22,7 @@ namespace DataTrack.Core.SQL.DataStructures
 
 		internal EntityTable(Type type, AttributeWrapper attributes)
 			: base()
-		{ 
+		{
 			Type = type;
 			Name = attributes.TableAttribute?.TableName ?? throw new TableMappingException(type, "Unknown");
 			Alias = type.Name;

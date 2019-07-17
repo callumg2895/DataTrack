@@ -1,6 +1,6 @@
-﻿using DataTrack.Core.Interface;
-using DataTrack.Core.SQL.DataStructures;
-using DataTrack.Core.SQL.SQLGeneration;
+﻿using DataTrack.Core.Components.Mapping;
+using DataTrack.Core.Components.Query;
+using DataTrack.Core.Interface;
 using DataTrack.Util.Extensions;
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 
-namespace DataTrack.Core.SQL.BuilderObjects
+namespace DataTrack.Core.Components.SQL
 {
 	internal class SQLBuilder<TBase> where TBase : IEntity
 	{

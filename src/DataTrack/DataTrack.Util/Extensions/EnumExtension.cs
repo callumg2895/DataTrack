@@ -1,6 +1,4 @@
-﻿using DataTrack.Logging;
-using System.Data;
-using System.Reflection;
+﻿using System.Data;
 
 namespace DataTrack.Util.Extensions
 {

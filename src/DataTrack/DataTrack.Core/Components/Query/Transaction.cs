@@ -1,14 +1,13 @@
 ﻿using DataTrack.Core.Interface;
-using DataTrack.Core.SQL.DataStructures;
-using DataTrack.Util.Extensions;
 using DataTrack.Logging;
+using DataTrack.Util.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Reflection;
 
-namespace DataTrack.Core.SQL
+namespace DataTrack.Core.Components.Query
 {
 	public class Transaction<TBase> : IDisposable where TBase : IEntity, new()
 	{

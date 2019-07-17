@@ -1,4 +1,4 @@
-﻿using DataTrack.Core.SQL.DataStructures;
+﻿using DataTrack.Core.Components.Mapping;
 using System;
 using System.Collections.Generic;
 

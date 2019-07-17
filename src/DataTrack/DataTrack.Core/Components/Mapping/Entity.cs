@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace DataTrack.Core.SQL.DataStructures
+namespace DataTrack.Core.Components.Mapping
 {
 	public abstract class Entity<TIdentity> : IEntity where TIdentity : struct
 	{

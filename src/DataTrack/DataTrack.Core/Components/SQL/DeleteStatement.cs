@@ -1,9 +1,6 @@
-﻿using DataTrack.Core.SQL.DataStructures;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using DataTrack.Core.Components.Mapping;
 
-namespace DataTrack.Core.SQL.SQLGeneration
+namespace DataTrack.Core.Components.SQL
 {
 	internal class DeleteStatement : Statement
 	{
