@@ -2,7 +2,7 @@
 using System;
 using DataTrack.Core.Components.Mapping;
 
-namespace DataTrack.Core.Tests.TestObjects
+namespace DataTrack.Core.Tests.TestEntities
 {
 	[Table("reviews")]
 	public class Review : Entity<Guid>

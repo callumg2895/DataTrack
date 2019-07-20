@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using DataTrack.Core.Components.Mapping;
 
-namespace DataTrack.Core.Tests.TestObjects
+namespace DataTrack.Core.Tests.TestEntities
 {
 	[Table("authors")]
 	public class Author : Entity<int>
