@@ -5,14 +5,14 @@ using System.Reflection;
 
 namespace DataTrack.Core.Attributes
 {
-	internal class AttributeWrapper
+	public class AttributeWrapper
 	{
-		internal TableAttribute? TableAttribute { get; private set; }
-		internal List<ColumnAttribute> ColumnAttributes { get; private set; }
-		internal Dictionary<ColumnAttribute, ForeignKeyAttribute> ColumnForeignKeys { get; private set; }
-		internal Dictionary<ColumnAttribute, PrimaryKeyAttribute> ColumnPrimaryKeys { get; private set; }
+		public TableAttribute? TableAttribute { get; private set; }
+		public List<ColumnAttribute> ColumnAttributes { get; private set; }
+		public Dictionary<ColumnAttribute, ForeignKeyAttribute> ColumnForeignKeys { get; private set; }
+		public Dictionary<ColumnAttribute, PrimaryKeyAttribute> ColumnPrimaryKeys { get; private set; }
 
-		internal AttributeWrapper(Type type)
+		public AttributeWrapper(Type type)
 		{
 			TableAttribute = null;
 			ColumnAttributes = new List<ColumnAttribute>();
@@ -44,20 +44,24 @@ namespace DataTrack.Core.Attributes
 					columnAttribute = attribute as ColumnAttribute ?? columnAttribute;
 				}
 
-				if (columnAttribute != null && !ColumnAttributes.Contains(columnAttribute))
+				if (columnAttribute != null)
 				{
-					ColumnAttributes.Add(columnAttribute);
+					if (!ColumnAttributes.Contains(columnAttribute))
+					{
+						ColumnAttributes.Add(columnAttribute);
+					}
+
+					if (foreignKeyAttribute != null)
+					{
+						ColumnForeignKeys[columnAttribute] = foreignKeyAttribute;
+					}
+
+					if (primaryKeyAttribute != null)
+					{
+						ColumnPrimaryKeys[columnAttribute] = primaryKeyAttribute;
+					}
 				}
 
-				if (foreignKeyAttribute != null && columnAttribute != null)
-				{
-					ColumnForeignKeys[columnAttribute] = foreignKeyAttribute;
-				}
-
-				if (primaryKeyAttribute != null && columnAttribute != null)
-				{
-					ColumnPrimaryKeys[columnAttribute] = primaryKeyAttribute;
-				}
 			}
 		}
 
