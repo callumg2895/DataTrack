@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace DataTrack.Util.Helpers
@@ -15,6 +16,14 @@ namespace DataTrack.Util.Helpers
 		{
 			Type type = instance.GetType();
 
+			foreach (PropertyInfo property in GetProperties(type, attributeFilter))
+			{
+				yield return property;
+			}
+		}
+
+		public static IEnumerable<PropertyInfo> GetProperties(Type type, Type? attributeFilter)
+		{
 			foreach (PropertyInfo property in type.GetProperties())
 			{
 				if (attributeFilter == null)
