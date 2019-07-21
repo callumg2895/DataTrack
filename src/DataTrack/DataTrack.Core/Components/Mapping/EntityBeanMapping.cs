@@ -20,51 +20,36 @@ namespace DataTrack.Core.Components.Mapping
 		internal EntityBeanMapping()
 			: base(typeof(TBase))
 		{
-			AttributeWrapper wrapper = new AttributeWrapper(BaseType);
-
 			Columns = new List<Column>();
 			PropertyMapping = new Dictionary<string, List<Column>>();
+
+			MapBean();
+		}
+
+		private void MapBean()
+		{
+			AttributeWrapper wrapper = new AttributeWrapper(BaseType);
 
 			foreach (EntityAttribute entityAttribute in wrapper.EntityAttributes)
 			{
 				MapEntity(entityAttribute.EntityType);
+				MapToBean(entityAttribute);
+			}
+		}
 
-				List<string> entityProperties = entityAttribute.EntityProperty.Replace(" ", "").Split(',').ToList();
-				PropertyInfo? beanProperty = null;
+		private void MapToBean(EntityAttribute entityAttribute)
+		{
+			List<string> entityProperties = entityAttribute.EntityProperty.Replace(" ", "").Split(',').ToList();
+			PropertyInfo beanProperty = ReflectionUtil.GetProperty(BaseType, entityAttribute) ?? throw new NullReferenceException();
 
-				foreach (PropertyInfo property in BaseType.GetProperties())
-				{
-					foreach(Attribute attribute in property.GetCustomAttributes())
-					{
-						EntityAttribute? a = attribute as EntityAttribute;
+			PropertyMapping.Add(beanProperty.Name, new List<Column>());
 
-						if (a == null)
-						{
-							continue;
-						}
+			foreach (string entityProperty in entityProperties)
+			{
+				List<Column> columns = TypeTableMapping[entityAttribute.EntityType].Columns.Where(c => c.PropertyName == entityProperty).ToList();
 
-						if (a.EntityType == entityAttribute.EntityType && a.EntityProperty == entityAttribute.EntityProperty)
-						{
-							beanProperty = property;
-							break;
-						}
-					}
-				}
-
-				if (beanProperty == null)
-				{
-					throw new NullReferenceException();
-				}
-
-				PropertyMapping.Add(beanProperty.Name, new List<Column>());
-
-				foreach (string entityProperty in entityProperties)
-				{
-					List<Column> columns = TypeTableMapping[entityAttribute.EntityType].Columns.Where(c => c.PropertyName == entityProperty).ToList();
-
-					Columns.AddRange(columns);
-					PropertyMapping[beanProperty.Name].AddRange(columns);
-				}
+				Columns.AddRange(columns);
+				PropertyMapping[beanProperty.Name].AddRange(columns);
 			}
 		}
 	}

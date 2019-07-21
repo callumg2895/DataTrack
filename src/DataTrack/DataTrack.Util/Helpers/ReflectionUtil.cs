@@ -41,6 +41,24 @@ namespace DataTrack.Util.Helpers
 			}
 		}
 
+		public static PropertyInfo? GetProperty(Type type, Attribute attributeFilter)
+		{
+			foreach (PropertyInfo property in type.GetProperties())
+			{
+				foreach (Attribute attribute in property.GetCustomAttributes())
+				{
+					var a = Convert.ChangeType(attribute, attributeFilter.GetType());
+
+					if (a.Equals(attributeFilter))
+					{
+						return property;
+					}
+				}
+			}
+
+			return null;
+		}
+
 		public static bool IsGenericList(Type type)
 		{
 			return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>);

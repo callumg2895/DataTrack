@@ -15,5 +15,17 @@ namespace DataTrack.Core.Attributes
 			EntityType = entityType;
 			EntityProperty = entityProperty;
 		}
+
+		public override bool Equals(object obj)
+		{
+			EntityAttribute? attribute = obj as EntityAttribute;
+
+			if (attribute == null)
+			{
+				return false;
+			}
+
+			return attribute.EntityType == EntityType && attribute.EntityProperty == EntityProperty;
+		}
 	}
 }
