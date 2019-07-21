@@ -1,4 +1,5 @@
-﻿using DataTrack.Core.Components.Execution;
+﻿using DataTrack.Core.Components.Builders;
+using DataTrack.Core.Components.Execution;
 using DataTrack.Core.Components.Mapping;
 using DataTrack.Core.Enums;
 using DataTrack.Core.Interface;
@@ -52,7 +53,14 @@ namespace DataTrack.Core.Components.Query
 
 		public override string ToString()
 		{
+			EntityBeanSQLBuilder<TBase> sqlBuilder = new EntityBeanSQLBuilder<TBase>(GetMapping());
+
 			return string.Empty;
+		}
+
+		internal EntityBeanMapping<TBase> GetMapping()
+		{
+			return Mapping as EntityBeanMapping<TBase> ?? throw new NullReferenceException();
 		}
 	}
 }

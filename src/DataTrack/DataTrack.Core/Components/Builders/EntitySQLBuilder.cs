@@ -1,5 +1,6 @@
 ﻿using DataTrack.Core.Components.Mapping;
 using DataTrack.Core.Components.Query;
+using DataTrack.Core.Components.SQL;
 using DataTrack.Core.Interface;
 using DataTrack.Util.Extensions;
 using System;
@@ -8,25 +9,17 @@ using System.Data;
 using System.Linq;
 using System.Text;
 
-namespace DataTrack.Core.Components.SQL
+namespace DataTrack.Core.Components.Builders
 {
-	internal class SQLBuilder<TBase> where TBase : IEntity
+	internal class EntitySQLBuilder<TBase> : SQLBuilder where TBase : IEntity
 	{
-		#region Members
-
-		private readonly Type _baseType;
-		private readonly EntityMapping<TBase> _mapping;
-		private readonly StringBuilder _sql;
-
-		#endregion
 
 		#region Constructors
 
-		internal SQLBuilder(EntityMapping<TBase> mapping)
+		internal EntitySQLBuilder(EntityMapping<TBase> mapping)
+			: base (typeof(TBase), mapping)
 		{
-			_baseType = typeof(TBase);
-			_mapping = mapping;
-			_sql = new StringBuilder();
+
 		}
 
 		#endregion
@@ -134,31 +127,6 @@ namespace DataTrack.Core.Components.SQL
 		public void BuildDeleteStatement()
 		{
 			_sql.AppendLine(new DeleteStatement(_mapping.Tables[0]).ToString());
-		}
-
-		public void Append(string text)
-		{
-			_sql.Append(text);
-		}
-
-		public void AppendLine()
-		{
-			_sql.AppendLine();
-		}
-
-		public void AppendLine(string text)
-		{
-			_sql.AppendLine(text);
-		}
-
-		public override string ToString()
-		{
-			return _sql.ToString();
-		}
-
-		public void SelectRowCount()
-		{
-			_sql.AppendLine("select @@rowcount as affected_rows");
 		}
 
 		#endregion

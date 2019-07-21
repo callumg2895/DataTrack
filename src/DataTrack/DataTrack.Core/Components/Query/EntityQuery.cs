@@ -215,7 +215,7 @@ namespace DataTrack.Core.Components.Query
 
 		private string GetReadString()
 		{
-			SQLBuilder<TBase> sqlBuilder = new SQLBuilder<TBase>(GetMapping());
+			EntitySQLBuilder<TBase> sqlBuilder = new EntitySQLBuilder<TBase>(GetMapping());
 
 			sqlBuilder.BuildSelectStatement();
 
@@ -228,7 +228,7 @@ namespace DataTrack.Core.Components.Query
 
 		private string GetUpdateString()
 		{
-			SQLBuilder<TBase> sqlBuilder = new SQLBuilder<TBase>(GetMapping());
+			EntitySQLBuilder<TBase> sqlBuilder = new EntitySQLBuilder<TBase>(GetMapping());
 
 			sqlBuilder.AppendLine();
 			sqlBuilder.BuildUpdateStatement();
@@ -245,7 +245,7 @@ namespace DataTrack.Core.Components.Query
 
 		private string GetDeleteString()
 		{
-			SQLBuilder<TBase> sqlBuilder = new SQLBuilder<TBase>(GetMapping());
+			EntitySQLBuilder<TBase> sqlBuilder = new EntitySQLBuilder<TBase>(GetMapping());
 
 			sqlBuilder.BuildDeleteStatement();
 			sqlBuilder.SelectRowCount();

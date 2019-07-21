@@ -1,4 +1,5 @@
-﻿using DataTrack.Core.Components.Mapping;
+﻿using DataTrack.Core.Components.Builders;
+using DataTrack.Core.Components.Mapping;
 using DataTrack.Core.Components.Query;
 using DataTrack.Core.Components.SQL;
 using DataTrack.Core.Interface;
@@ -55,7 +56,7 @@ namespace DataTrack.Core.Components.Execution
 
 		private void CreateStagingTable(EntityTable table)
 		{
-			SQLBuilder<TBase> sql = new SQLBuilder<TBase>(mapping);
+			EntitySQLBuilder<TBase> sql = new EntitySQLBuilder<TBase>(mapping);
 
 			sql.CreateStagingTable(table);
 
@@ -74,7 +75,7 @@ namespace DataTrack.Core.Components.Execution
 
 		private void InsertFromStagingTable(EntityTable table)
 		{
-			SQLBuilder<TBase> sql = new SQLBuilder<TBase>(mapping);
+			EntitySQLBuilder<TBase> sql = new EntitySQLBuilder<TBase>(mapping);
 			string primaryKeyColumnName = table.GetPrimaryKeyColumn().Name;
 			List<dynamic> ids = new List<dynamic>();
 
