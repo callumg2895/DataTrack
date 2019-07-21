@@ -21,7 +21,7 @@ namespace DataTrack.Core.Tests
 			AttributeWrapper wrapper = new AttributeWrapper(typeof(Author));
 
 			// Assert
-			Assert.AreEqual(wrapper.MappingType, MappingType.TableBased);
+			Assert.AreEqual(wrapper.MappingType, MappingTypes.TableBased);
 			Assert.AreEqual(wrapper.TableAttribute.TableName, "authors");
 
 			Assert.IsNotNull(wrapper.ColumnAttributes.Where(c => c.ColumnName == "id").FirstOrDefault());
@@ -41,7 +41,7 @@ namespace DataTrack.Core.Tests
 			AttributeWrapper wrapper = new AttributeWrapper(typeof(Book));
 
 			// Assert
-			Assert.AreEqual(wrapper.MappingType, MappingType.TableBased);
+			Assert.AreEqual(wrapper.MappingType, MappingTypes.TableBased);
 			Assert.AreEqual(wrapper.TableAttribute.TableName, "books");
 
 			Assert.IsNotNull(wrapper.ColumnAttributes.Where(c => c.ColumnName == "id").FirstOrDefault());
@@ -62,7 +62,7 @@ namespace DataTrack.Core.Tests
 			AttributeWrapper wrapper = new AttributeWrapper(typeof(BookInfo));
 
 			// Assert
-			Assert.AreEqual(wrapper.MappingType, MappingType.EntityBased);
+			Assert.AreEqual(wrapper.MappingType, MappingTypes.EntityBased);
 
 			Assert.IsNotNull(wrapper.EntityAttributes.Where(e => e.EntityType == typeof(Author) && e.EntityProperty == "FirstName, LastName").FirstOrDefault());
 			Assert.IsNotNull(wrapper.EntityAttributes.Where(e => e.EntityType == typeof(Book) && e.EntityProperty == "Title").FirstOrDefault());

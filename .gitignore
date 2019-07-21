@@ -1,3 +1,4 @@
 bin/
 obj/
 .vs/
+/src/DataTrack/DataTrack.Core.Tests/DataTrack.Core.Tests.csproj.user
