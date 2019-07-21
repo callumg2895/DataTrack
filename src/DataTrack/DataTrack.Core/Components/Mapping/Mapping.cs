@@ -32,15 +32,18 @@ namespace DataTrack.Core.Components.Mapping
 
 		protected void MapEntity(Type type)
 		{
-			EntityTable table = GetTableByType(type);
-
-			Tables.Add(table);
-			TypeTableMapping.Add(type, table);
-			ParentChildMapping.Add(table, new List<EntityTable>());
-
-			foreach (PropertyInfo prop in type.GetProperties())
+			if (!TypeTableMapping.ContainsKey(type))
 			{
-				MapTablesByProperty(prop, table);
+				EntityTable table = GetTableByType(type);
+
+				Tables.Add(table);
+				TypeTableMapping.Add(type, table);
+				ParentChildMapping.Add(table, new List<EntityTable>());
+
+				foreach (PropertyInfo prop in type.GetProperties())
+				{
+					MapTablesByProperty(prop, table);
+				}
 			}
 		}
 

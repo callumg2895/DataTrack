@@ -18,7 +18,7 @@ namespace DataTrack.Core.Components.Execution
 		public QueryExecutor(EntityQuery<TBase> query, SqlConnection connection, SqlTransaction? transaction)
 		{
 			stopwatch = new Stopwatch();
-			mapping = query.Mapping;
+			mapping = query.GetMapping();
 			baseType = typeof(TBase);
 			_connection = connection;
 

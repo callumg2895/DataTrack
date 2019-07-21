@@ -19,16 +19,16 @@ namespace DataTrack.Core.Components.Query
 	{
 		#region Members
 
-		internal EntityMapping<TBase> Mapping { get; set; }
+		//internal EntityMapping<TBase> Mapping { get; set; }
 
 		#endregion
 
 		#region Constructors
 
 		public EntityQuery() 
-			: base(typeof(TBase))
+			: base(typeof(TBase), new EntityMapping<TBase>())
 		{
-			Mapping = new EntityMapping<TBase>();
+			//Mapping = new EntityMapping<TBase>();
 
 			ValidateMapping(Mapping);
 		}
@@ -36,14 +36,14 @@ namespace DataTrack.Core.Components.Query
 		public EntityQuery<TBase> Create(TBase item)
 		{
 			OperationType = CRUDOperationTypes.Create;
-			Mapping.DataTableMapping = new BulkDataBuilder<TBase>(item, Mapping).YieldDataMap();
+			GetMapping().DataTableMapping = new BulkDataBuilder<TBase>(item, GetMapping()).YieldDataMap();
 			return this;
 		}
 
 		public EntityQuery<TBase> Create(List<TBase> items)
 		{
 			OperationType = CRUDOperationTypes.Create;
-			Mapping.DataTableMapping = new BulkDataBuilder<TBase>(items, Mapping).YieldDataMap();
+			GetMapping().DataTableMapping = new BulkDataBuilder<TBase>(items, GetMapping()).YieldDataMap();
 			return this;
 		}
 
@@ -153,7 +153,7 @@ namespace DataTrack.Core.Components.Query
 			AddRestriction(primaryKeyColumn.Name, RestrictionTypes.In, primaryKeyValue);
 		}
 
-		public dynamic Execute()
+		public override dynamic Execute()
 		{
 			using (SqlConnection connection = DataTrackConfiguration.CreateConnection())
 			{
@@ -163,7 +163,7 @@ namespace DataTrack.Core.Components.Query
 			}
 		}
 
-		internal dynamic Execute(SqlCommand command, SqlConnection connection, SqlTransaction? transaction = null)
+		internal override dynamic Execute(SqlCommand command, SqlConnection connection, SqlTransaction? transaction = null)
 		{
 			if (transaction != null)
 			{
@@ -215,7 +215,7 @@ namespace DataTrack.Core.Components.Query
 
 		private string GetReadString()
 		{
-			SQLBuilder<TBase> sqlBuilder = new SQLBuilder<TBase>(Mapping);
+			SQLBuilder<TBase> sqlBuilder = new SQLBuilder<TBase>(GetMapping());
 
 			sqlBuilder.BuildSelectStatement();
 
@@ -228,7 +228,7 @@ namespace DataTrack.Core.Components.Query
 
 		private string GetUpdateString()
 		{
-			SQLBuilder<TBase> sqlBuilder = new SQLBuilder<TBase>(Mapping);
+			SQLBuilder<TBase> sqlBuilder = new SQLBuilder<TBase>(GetMapping());
 
 			sqlBuilder.AppendLine();
 			sqlBuilder.BuildUpdateStatement();
@@ -245,7 +245,7 @@ namespace DataTrack.Core.Components.Query
 
 		private string GetDeleteString()
 		{
-			SQLBuilder<TBase> sqlBuilder = new SQLBuilder<TBase>(Mapping);
+			SQLBuilder<TBase> sqlBuilder = new SQLBuilder<TBase>(GetMapping());
 
 			sqlBuilder.BuildDeleteStatement();
 			sqlBuilder.SelectRowCount();
@@ -255,6 +255,11 @@ namespace DataTrack.Core.Components.Query
 			Logger.Info(MethodBase.GetCurrentMethod(), "Generated SQL: " + sql);
 
 			return sql;
+		}
+
+		internal EntityMapping<TBase> GetMapping()
+		{
+			return Mapping as EntityMapping<TBase> ?? throw new NullReferenceException();
 		}
 
 		#endregion
