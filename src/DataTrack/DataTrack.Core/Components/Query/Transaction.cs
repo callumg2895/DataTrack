@@ -34,7 +34,7 @@ namespace DataTrack.Core.Components.Query
 
 		#region Methods
 
-		public dynamic Execute(Query<TBase> query)
+		public dynamic Execute(EntityQuery<TBase> query)
 		{
 			return query.Execute(connection.CreateCommand(), connection, transaction);
 		}

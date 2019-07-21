@@ -13,12 +13,12 @@ namespace DataTrack.Core.Repository
 
 		public void Create(TBase item)
 		{
-			new Query<TBase>().Create(item).Execute();
+			new EntityQuery<TBase>().Create(item).Execute();
 		}
 
 		public void Create(List<TBase> items)
 		{
-			new Query<TBase>().Create(items).Execute();
+			new EntityQuery<TBase>().Create(items).Execute();
 		}
 
 		#endregion
@@ -27,19 +27,19 @@ namespace DataTrack.Core.Repository
 
 		public List<TBase> GetAll()
 		{
-			return new Query<TBase>().Read().Execute();
+			return new EntityQuery<TBase>().Read().Execute();
 		}
 
 		public TBase GetByID(int id)
 		{
-			return new Query<TBase>().AddRestriction("id", RestrictionTypes.EqualTo, id).Execute()[0];
+			return new EntityQuery<TBase>().AddRestriction("id", RestrictionTypes.EqualTo, id).Execute()[0];
 		}
 
 		public List<TBase> GetByProperty(string propName, RestrictionTypes restriction, object propValue)
 		{
 			Type propType = propValue.GetType();
 
-			Query<TBase> query = new Query<TBase>().Read();
+			EntityQuery<TBase> query = new EntityQuery<TBase>().Read();
 
 			MethodInfo addRestriction;
 			addRestriction = query.GetType().GetMethod("AddRestriction", BindingFlags.Instance | BindingFlags.Public);
@@ -54,7 +54,7 @@ namespace DataTrack.Core.Repository
 
 		public int Update(TBase item)
 		{
-			return new Query<TBase>().Update(item).Execute();
+			return new EntityQuery<TBase>().Update(item).Execute();
 		}
 
 
@@ -64,12 +64,12 @@ namespace DataTrack.Core.Repository
 
 		public void Delete(TBase item)
 		{
-			new Query<TBase>().Delete(item).Execute();
+			new EntityQuery<TBase>().Delete(item).Execute();
 		}
 
 		public void DeleteAll()
 		{
-			new Query<TBase>().Delete().Execute();
+			new EntityQuery<TBase>().Delete().Execute();
 		}
 
 		#endregion

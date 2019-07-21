@@ -10,7 +10,7 @@ namespace DataTrack.Core.Components.Execution
 	public class UpdateQueryExecutor<TBase> : QueryExecutor<TBase> where TBase : IEntity
 	{
 
-		internal UpdateQueryExecutor(Query<TBase> query, SqlConnection connection, SqlTransaction? transaction = null)
+		internal UpdateQueryExecutor(EntityQuery<TBase> query, SqlConnection connection, SqlTransaction? transaction = null)
 			: base(query, connection, transaction)
 		{
 

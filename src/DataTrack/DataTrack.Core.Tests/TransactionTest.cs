@@ -27,12 +27,12 @@ namespace DataTrack.Core.Tests
 			//Act
 			using (Transaction<Author> t1 = new Transaction<Author>())
 			{
-				t1.Execute(new Query<Author>().Create(author));
-				results = t1.Execute(new Query<Author>().Read().AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName));
+				t1.Execute(new EntityQuery<Author>().Create(author));
+				results = t1.Execute(new EntityQuery<Author>().Read().AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName));
 				t1.Commit();
 			}
 
-			new Query<Author>().Delete().Execute();
+			new EntityQuery<Author>().Delete().Execute();
 
 			// Assert
 			Assert.IsTrue(AuthorsAreEqual(results[0], author));
@@ -51,8 +51,8 @@ namespace DataTrack.Core.Tests
 
 			using (Transaction<Author> t1 = new Transaction<Author>())
 			{
-				t1.Execute(new Query<Author>().Create(authorBefore));
-				results1 = t1.Execute(new Query<Author>().AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, authorBefore.FirstName));
+				t1.Execute(new EntityQuery<Author>().Create(authorBefore));
+				results1 = t1.Execute(new EntityQuery<Author>().AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, authorBefore.FirstName));
 				t1.Commit();
 			}
 
@@ -61,16 +61,16 @@ namespace DataTrack.Core.Tests
 
 			using (Transaction<Author> t2 = new Transaction<Author>())
 			{
-				t2.Execute(new Query<Author>().Update(authorAfter));
-				results2 = t2.Execute(new Query<Author>().Read(authorAfter.ID).AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, authorAfter.FirstName));
+				t2.Execute(new EntityQuery<Author>().Update(authorAfter));
+				results2 = t2.Execute(new EntityQuery<Author>().Read(authorAfter.ID).AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, authorAfter.FirstName));
 				t2.Commit();
 			}
 
 
 			Author afterUpdate = results2[0];
 
-			new Query<Author>().Delete(beforeUpdate).Execute();
-			new Query<Author>().Delete(afterUpdate).Execute();
+			new EntityQuery<Author>().Delete(beforeUpdate).Execute();
+			new EntityQuery<Author>().Delete(afterUpdate).Execute();
 
 			// Assert
 			Assert.IsTrue(AuthorsAreEqual(beforeUpdate, authorBefore));
@@ -92,17 +92,17 @@ namespace DataTrack.Core.Tests
 			List<Author> resultsAfterDelete;
 
 			// Act
-			new Query<Author>().Create(author).Execute();
+			new EntityQuery<Author>().Create(author).Execute();
 
 			using (Transaction<Author> t = new Transaction<Author>())
 			{
-				t.Execute(new Query<Author>().Delete(author));
+				t.Execute(new EntityQuery<Author>().Delete(author));
 				t.RollBack();
 			}
 
-			resultsAfterRollBack = new Query<Author>().Read().AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName).Execute();
-			new Query<Author>().Delete().Execute();
-			resultsAfterDelete = new Query<Author>().Read().AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName).Execute();
+			resultsAfterRollBack = new EntityQuery<Author>().Read().AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName).Execute();
+			new EntityQuery<Author>().Delete().Execute();
+			resultsAfterDelete = new EntityQuery<Author>().Read().AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName).Execute();
 
 			//Assert
 			Assert.AreEqual(resultsAfterRollBack.Count, 1);

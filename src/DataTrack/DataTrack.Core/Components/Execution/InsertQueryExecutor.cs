@@ -13,7 +13,7 @@ namespace DataTrack.Core.Components.Execution
 {
 	public class InsertQueryExecutor<TBase> : QueryExecutor<TBase> where TBase : IEntity
 	{
-		internal InsertQueryExecutor(Query<TBase> query, SqlConnection connection, SqlTransaction? transaction = null)
+		internal InsertQueryExecutor(EntityQuery<TBase> query, SqlConnection connection, SqlTransaction? transaction = null)
 			: base(query, connection, transaction)
 		{
 

@@ -9,7 +9,7 @@ namespace DataTrack.Core.Components.Execution
 {
 	public class DeleteQueryExecutor<TBase> : QueryExecutor<TBase> where TBase : IEntity
 	{
-		internal DeleteQueryExecutor(Query<TBase> query, SqlConnection connection, SqlTransaction? transaction = null)
+		internal DeleteQueryExecutor(EntityQuery<TBase> query, SqlConnection connection, SqlTransaction? transaction = null)
 			: base(query, connection, transaction)
 		{
 

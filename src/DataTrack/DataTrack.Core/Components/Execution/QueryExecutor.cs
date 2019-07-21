@@ -15,7 +15,7 @@ namespace DataTrack.Core.Components.Execution
 		private protected SqlConnection _connection;
 		private protected SqlTransaction? _transaction;
 
-		public QueryExecutor(Query<TBase> query, SqlConnection connection, SqlTransaction? transaction)
+		public QueryExecutor(EntityQuery<TBase> query, SqlConnection connection, SqlTransaction? transaction)
 		{
 			stopwatch = new Stopwatch();
 			mapping = query.Mapping;

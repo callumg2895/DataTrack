@@ -16,7 +16,7 @@ namespace DataTrack.Core.Components.Execution
 		private readonly List<EntityTable> tables;
 		private readonly Dictionary<Table, List<IEntity>> entityDictionary;
 
-		internal ReadQueryExecutor(Query<TBase> query, SqlConnection connection, SqlTransaction? transaction = null)
+		internal ReadQueryExecutor(EntityQuery<TBase> query, SqlConnection connection, SqlTransaction? transaction = null)
 			: base(query, connection, transaction)
 		{
 			results = new List<TBase>();
