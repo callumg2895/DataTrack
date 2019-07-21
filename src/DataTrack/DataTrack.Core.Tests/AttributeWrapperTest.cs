@@ -1,4 +1,6 @@
 ﻿using DataTrack.Core.Attributes;
+using DataTrack.Core.Enums;
+using DataTrack.Core.Tests.TestBeans;
 using DataTrack.Core.Tests.TestEntities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
@@ -19,6 +21,7 @@ namespace DataTrack.Core.Tests
 			AttributeWrapper wrapper = new AttributeWrapper(typeof(Author));
 
 			// Assert
+			Assert.AreEqual(wrapper.MappingType, MappingType.TableBased);
 			Assert.AreEqual(wrapper.TableAttribute.TableName, "authors");
 
 			Assert.IsNotNull(wrapper.ColumnAttributes.Where(c => c.ColumnName == "id").FirstOrDefault());
@@ -38,6 +41,7 @@ namespace DataTrack.Core.Tests
 			AttributeWrapper wrapper = new AttributeWrapper(typeof(Book));
 
 			// Assert
+			Assert.AreEqual(wrapper.MappingType, MappingType.TableBased);
 			Assert.AreEqual(wrapper.TableAttribute.TableName, "books");
 
 			Assert.IsNotNull(wrapper.ColumnAttributes.Where(c => c.ColumnName == "id").FirstOrDefault());
@@ -50,5 +54,20 @@ namespace DataTrack.Core.Tests
 			Assert.IsTrue(wrapper.ColumnPrimaryKeys.Keys.First().ColumnName == "id");
 		}
 
+		[TestMethod]
+		public void TestAttrbuteWrapper_ShouldLoadAllCorrectAttributesForEntityBean()
+		{
+			// Arrange
+			// Act
+			AttributeWrapper wrapper = new AttributeWrapper(typeof(BookInfo));
+
+			// Assert
+			Assert.AreEqual(wrapper.MappingType, MappingType.EntityBased);
+
+			Assert.IsNotNull(wrapper.EntityAttributes.Where(e => e.EntityType == typeof(Author) && e.EntityProperty == "FirstName, LastName").FirstOrDefault());
+			Assert.IsNotNull(wrapper.EntityAttributes.Where(e => e.EntityType == typeof(Book) && e.EntityProperty == "Title").FirstOrDefault());
+
+			Assert.IsTrue(wrapper.EntityAttributes.Count == 2);
+		}
 	}
 }

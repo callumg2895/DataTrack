@@ -3,12 +3,12 @@ using System;
 
 namespace DataTrack.Core.Exceptions
 {
-	public class TableMappingException : Exception
+	public class TableMappingException : MappingException
 	{
 		public TableMappingException(Type type, string tableName)
 			: base($"No child property of type {type.Name} is mapped to table '{tableName}'")
 		{
-			Logger.ErrorFatal(TargetSite, Message);
+
 		}
 	}
 }
