@@ -16,7 +16,7 @@ namespace DataTrack.Core.Components.Builders
 
 		internal List<TBase> Data { get; private set; }
 		internal List<EntityTable> Tables { get; private set; }
-		internal Mapping<TBase> Mapping { get; private set; }
+		internal EntityMapping<TBase> Mapping { get; private set; }
 
 		private readonly Map<EntityTable, DataTable> DataMap = new Map<EntityTable, DataTable>();
 		private readonly Map<Column, DataColumn> ColumnMap = new Map<Column, DataColumn>();
@@ -25,13 +25,13 @@ namespace DataTrack.Core.Components.Builders
 
 		#region Constructors
 
-		internal BulkDataBuilder(TBase data, Mapping<TBase> mapping)
+		internal BulkDataBuilder(TBase data, EntityMapping<TBase> mapping)
 			: this(new List<TBase>() { data }, mapping)
 		{
 
 		}
 
-		internal BulkDataBuilder(List<TBase> data, Mapping<TBase> mapping)
+		internal BulkDataBuilder(List<TBase> data, EntityMapping<TBase> mapping)
 		{
 			Data = data;
 			Tables = mapping.Tables;

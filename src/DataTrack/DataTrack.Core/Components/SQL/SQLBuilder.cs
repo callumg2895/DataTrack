@@ -15,14 +15,14 @@ namespace DataTrack.Core.Components.SQL
 		#region Members
 
 		private readonly Type _baseType;
-		private readonly Mapping<TBase> _mapping;
+		private readonly EntityMapping<TBase> _mapping;
 		private readonly StringBuilder _sql;
 
 		#endregion
 
 		#region Constructors
 
-		internal SQLBuilder(Mapping<TBase> mapping)
+		internal SQLBuilder(EntityMapping<TBase> mapping)
 		{
 			_baseType = typeof(TBase);
 			_mapping = mapping;

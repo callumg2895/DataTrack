@@ -9,7 +9,7 @@ namespace DataTrack.Core.Components.Execution
 {
 	public abstract class QueryExecutor<TBase> where TBase : IEntity
 	{
-		private protected Mapping<TBase> mapping;
+		private protected EntityMapping<TBase> mapping;
 		private protected Stopwatch stopwatch;
 		private protected Type baseType;
 		private protected SqlConnection _connection;

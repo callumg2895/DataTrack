@@ -22,7 +22,7 @@ namespace DataTrack.Core.Components.Query
 		private readonly Type baseType;
 		private readonly Stopwatch stopwatch;
 
-		internal Mapping<TBase> Mapping { get; set; }
+		internal EntityMapping<TBase> Mapping { get; set; }
 		public CRUDOperationTypes OperationType { get; set; }
 		public string QueryString { get; set; }
 
@@ -34,7 +34,7 @@ namespace DataTrack.Core.Components.Query
 		{
 			OperationType = CRUDOperationTypes.Read;
 
-			Mapping = new Mapping<TBase>();
+			Mapping = new EntityMapping<TBase>();
 			QueryString = string.Empty;
 			baseType = typeof(TBase);
 			stopwatch = new Stopwatch();

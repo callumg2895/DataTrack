@@ -12,7 +12,7 @@ using System.Reflection;
 
 namespace DataTrack.Core.Components.Mapping
 {
-	internal class Mapping<TBase> where TBase : IEntity
+	internal class EntityMapping<TBase> where TBase : IEntity
 	{
 		internal Type BaseType { get; set; }
 		internal List<EntityTable> Tables { get; set; }
@@ -23,7 +23,7 @@ namespace DataTrack.Core.Components.Mapping
 		internal Dictionary<IEntity, DataRow> EntityDataRowMapping { get; set; }
 		internal Map<EntityTable, DataTable> DataTableMapping { get; set; }
 
-		internal Mapping()
+		internal EntityMapping()
 		{
 			BaseType = typeof(TBase);
 
