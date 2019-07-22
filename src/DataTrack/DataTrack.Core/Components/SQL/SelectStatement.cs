@@ -84,10 +84,6 @@ namespace DataTrack.Core.Components.SQL
 
 			foreach (EntityTable table in tables)
 			{
-				string tableName = from != null
-					? table.StagingTable.Name
-					: table.Name;
-
 				BuildFromSection(table, ref writtenTables);			
 			}
 		}
