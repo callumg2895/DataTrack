@@ -97,7 +97,7 @@ namespace DataTrack.Core.Components.SQL
 
 		private void BuildFromSection(EntityTable table, ref HashSet<EntityTable> writtenTables)
 		{
-			EntityTable? parentTable = table.Mapping.ChildParentMapping.ContainsKey(table) ? table.Mapping.ChildParentMapping[table] : null;
+			EntityTable? parentTable = table.GetParentTable();
 			string tableName = from != null
 				? table.StagingTable.Name
 				: table.Name;
@@ -109,7 +109,7 @@ namespace DataTrack.Core.Components.SQL
 			}
 			else if (writtenTables.Contains(parentTable))
 			{
-				sql.AppendLine($"inner join {tableName} as {table.Alias} on {parentTable.Alias}.{parentTable.GetPrimaryKeyColumn().Name} = {table.Alias}.{table.GetForeignKeyColumn(parentTable.Name).Name}");
+				sql.AppendLine($"inner join {tableName} as {table.Alias} on {parentTable.Alias}.{parentTable.GetPrimaryKeyColumn().Name} = {table.Alias}.{table.GetForeignKeyColumnFor(parentTable).Name}");
 				writtenTables.Add(table);
 			}
 			else

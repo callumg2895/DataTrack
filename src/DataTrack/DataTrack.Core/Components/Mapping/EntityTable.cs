@@ -88,9 +88,16 @@ namespace DataTrack.Core.Components.Mapping
 			return foreignKeyColumns;
 		}
 
-		public Column GetForeignKeyColumn(string foreignTableName)
+		public Column GetForeignKeyColumnFor(EntityTable foreignTable)
 		{
-			return foreignKeyColumnsDict[foreignTableName] ?? throw new TableMappingException(Type, Name);
+			return foreignKeyColumnsDict[foreignTable.Name] ?? throw new TableMappingException(Type, Name);
+		}
+
+		public EntityTable? GetParentTable()
+		{
+			return Mapping.ChildParentMapping.ContainsKey(this) 
+				? Mapping.ChildParentMapping[this] 
+				: null;
 		}
 
 		public object Clone()

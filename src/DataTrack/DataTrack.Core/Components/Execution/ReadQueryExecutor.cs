@@ -81,7 +81,7 @@ namespace DataTrack.Core.Components.Execution
 
 			foreach (IEntity parentEntity in entityDictionary[parentTable])
 			{
-				object foreignKey = entity.GetPropertyValue(table.GetForeignKeyColumn(parentTable.Name).PropertyName);
+				object foreignKey = entity.GetPropertyValue(table.GetForeignKeyColumnFor(parentTable).PropertyName);
 				object parentPrimaryKey = parentEntity.GetID();
 
 				if (parentPrimaryKey.Equals(foreignKey))

@@ -49,19 +49,24 @@ namespace DataTrack.Core.Components.Mapping
 
 				foreach (IEntity childEntity in ParentChildEntityMapping[entity])
 				{
-					SetForeignKeyValue(childEntity, table.Name, primaryKeys?[primaryKeyIndex] ?? 0);
+					SetForeignKeyValue(childEntity, primaryKeys?[primaryKeyIndex] ?? 0);
 				}
 
 				primaryKeyIndex++;
 			}
 		}
 
-		private void SetForeignKeyValue(IEntity item, string foreignTable, dynamic foreignKey)
+		private void SetForeignKeyValue(IEntity item, dynamic foreignKey)
 		{
 			EntityTable table = TypeTableMapping[item.GetType()];
-			Column column = table.GetForeignKeyColumn(foreignTable);
+			EntityTable? parentTable = table.GetParentTable();
 
-			EntityDataRowMapping[item][column.Name] = foreignKey;
+			if (parentTable != null)
+			{
+				Column column = table.GetForeignKeyColumnFor(parentTable);
+
+				EntityDataRowMapping[item][column.Name] = foreignKey;
+			}
 		}
 	}
 }
