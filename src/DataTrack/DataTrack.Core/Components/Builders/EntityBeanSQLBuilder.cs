@@ -16,5 +16,35 @@ namespace DataTrack.Core.Components.Builders
 		{
 
 		}
+
+		public void BuildSelectStatement()
+		{
+			EntityBeanMapping<TBase> mapping = GetMapping();
+
+			foreach (EntityTable table in _mapping.Tables)
+			{
+				List<Column> columns = table.Columns;
+				List<Column> foreignKeyColumns = table.GetForeignKeyColumns();
+
+				if (table.Type != _baseType)
+				{
+					foreach (Column column in foreignKeyColumns)
+					{
+						EntityTable foreignTable = _mapping.Tables.Where(t => t.Name == column.ForeignKeyTableMapping).First();
+						Column foreignColumn = foreignTable.GetPrimaryKeyColumn();
+
+						column.Restrictions.Add(new Restriction(column, $"select {foreignColumn.Name} from {foreignTable.StagingTable.Name}", Enums.RestrictionTypes.In));
+					}
+				}
+			}
+
+			_sql.AppendLine();
+			_sql.AppendLine(new SelectStatement(mapping.Tables, mapping.Columns).ToString());
+		}
+
+		public EntityBeanMapping<TBase> GetMapping()
+		{
+			return _mapping as EntityBeanMapping<TBase>;
+		} 
 	}
 }

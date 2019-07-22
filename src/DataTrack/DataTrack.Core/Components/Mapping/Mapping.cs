@@ -79,7 +79,7 @@ namespace DataTrack.Core.Components.Mapping
 				Logger.Trace($"Caching database mapping for Entity '{type.Name}'");
 				Dictionaries.TypeMappingCache[type] = table;
 
-				return (EntityTable)table.Clone();
+				return (EntityTable)table.Clone(this);
 			}
 
 			Logger.Error(MethodBase.GetCurrentMethod(), $"Failed to load Table object for '{type.Name}' entity");
@@ -89,7 +89,7 @@ namespace DataTrack.Core.Components.Mapping
 		protected EntityTable LoadTableMappingFromCache(Type type)
 		{
 			Logger.Info(MethodBase.GetCurrentMethod(), $"Loading Table object for '{type.Name}' entity from cache");
-			return (EntityTable)Dictionaries.TypeMappingCache[type].Clone();
+			return (EntityTable)Dictionaries.TypeMappingCache[type].Clone(this);
 		}
 
 		protected bool TryGetTable(Type type, out EntityTable? table)
@@ -98,7 +98,7 @@ namespace DataTrack.Core.Components.Mapping
 
 			if (attributes.IsValid())
 			{
-				table = new EntityTable(type, attributes);
+				table = new EntityTable(type, attributes, this);
 				return true;
 			}
 

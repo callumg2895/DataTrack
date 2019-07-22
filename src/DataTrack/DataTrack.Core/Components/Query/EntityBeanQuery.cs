@@ -55,7 +55,9 @@ namespace DataTrack.Core.Components.Query
 		{
 			EntityBeanSQLBuilder<TBase> sqlBuilder = new EntityBeanSQLBuilder<TBase>(GetMapping());
 
-			return string.Empty;
+			sqlBuilder.BuildSelectStatement();
+
+			return sqlBuilder.ToString();
 		}
 
 		internal EntityBeanMapping<TBase> GetMapping()

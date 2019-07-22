@@ -8,6 +8,7 @@ namespace DataTrack.Core.Components.SQL
 	{
 		private StagingTable? into = null;
 		private StagingTable? from = null;
+		private Dictionary<string, EntityTable> tableNameMapping;
 
 		internal SelectStatement(EntityTable table)
 			: base(table)
@@ -25,6 +26,13 @@ namespace DataTrack.Core.Components.SQL
 			: base(new List<Column>() { column })
 		{
 
+		}
+
+		internal SelectStatement(List<EntityTable> tables, List<Column> columns)
+			: base()
+		{
+			this.tables.AddRange(tables);
+			this.columns.AddRange(columns);
 		}
 
 		internal SelectStatement From(StagingTable stagingTable)
@@ -72,18 +80,41 @@ namespace DataTrack.Core.Components.SQL
 
 		protected override void BuildFrom()
 		{
-			for (int i = 0; i < tables.Count; i++)
-			{
-				EntityTable table = tables[i];
+			HashSet<EntityTable> writtenTables = new HashSet<EntityTable>();
 
+			foreach (EntityTable table in tables)
+			{
 				string tableName = from != null
 					? table.StagingTable.Name
 					: table.Name;
 
-				if (i == 0)
+				if (!writtenTables.Contains(table))
 				{
-					sql.AppendLine($"from {tableName}{(from != null ? "" : $" as {table.Alias}")}");
+					BuildFromSection(table, ref writtenTables);
 				}
+			}
+		}
+
+		private void BuildFromSection(EntityTable table, ref HashSet<EntityTable> writtenTables)
+		{
+			EntityTable? parentTable = table.Mapping.ChildParentMapping.ContainsKey(table) ? table.Mapping.ChildParentMapping[table] : null;
+			string tableName = from != null
+				? table.StagingTable.Name
+				: table.Name;
+
+			if (parentTable == null || !tables.Contains(parentTable))
+			{
+				sql.AppendLine($"from {tableName}{(from != null ? "" : $" as {table.Alias}")}");
+				writtenTables.Add(table);
+			}
+			else if (writtenTables.Contains(parentTable))
+			{
+				sql.AppendLine($"inner join {tableName} as {table.Alias} on {parentTable.Alias}.{parentTable.GetPrimaryKeyColumn().Name} = {table.Alias}.{table.GetForeignKeyColumn(parentTable.Name).Name}");
+				writtenTables.Add(table);
+			}
+			else
+			{
+				BuildFromSection(parentTable, ref writtenTables);
 			}
 		}
 	}

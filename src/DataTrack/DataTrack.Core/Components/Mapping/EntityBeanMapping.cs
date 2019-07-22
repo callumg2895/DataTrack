@@ -14,8 +14,8 @@ namespace DataTrack.Core.Components.Mapping
 {
 	internal class EntityBeanMapping<TBase> : Mapping where TBase : IEntityBean
 	{
-		List<Column> Columns { get; set; }
-		Dictionary<string, List<Column>> PropertyMapping {get; set;}
+		internal List<Column> Columns { get; set; }
+		internal Dictionary<string, List<Column>> PropertyMapping {get; set;}
 
 		internal EntityBeanMapping()
 			: base(typeof(TBase))
