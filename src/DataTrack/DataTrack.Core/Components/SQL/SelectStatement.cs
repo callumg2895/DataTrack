@@ -88,15 +88,17 @@ namespace DataTrack.Core.Components.SQL
 					? table.StagingTable.Name
 					: table.Name;
 
-				if (!writtenTables.Contains(table))
-				{
-					BuildFromSection(table, ref writtenTables);
-				}
+				BuildFromSection(table, ref writtenTables);			
 			}
 		}
 
 		private void BuildFromSection(EntityTable table, ref HashSet<EntityTable> writtenTables)
 		{
+			if (writtenTables.Contains(table))
+			{
+				return;
+			}
+
 			EntityTable? parentTable = table.GetParentTable();
 			string tableName = from != null
 				? table.StagingTable.Name
