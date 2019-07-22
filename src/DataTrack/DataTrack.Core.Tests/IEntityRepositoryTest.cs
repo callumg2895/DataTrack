@@ -7,7 +7,7 @@ using System.Collections.Generic;
 namespace DataTrack.Core.Tests
 {
 	[TestClass]
-	public class IRepositoryTest : BaseTest
+	public class IEntityRepositoryTest : BaseTest
 	{
 
 		[TestMethod]
@@ -15,8 +15,8 @@ namespace DataTrack.Core.Tests
 		{
 			// Arrange
 			Author author = GetAuthors(1, 2)[0];
-			IRepository<Author> authorRepository = new Repository<Author>();
-			IRepository<Book> bookRepository = new Repository<Book>();
+			IEntityRepository<Author> authorRepository = new EntityRepository<Author>();
+			IEntityRepository<Book> bookRepository = new EntityRepository<Book>();
 
 			//Act
 			authorRepository.Create(author);
@@ -33,8 +33,8 @@ namespace DataTrack.Core.Tests
 		{
 			// Arrange
 			Author author = GetAuthors(1, 5)[0];
-			IRepository<Author> authorRepository = new Repository<Author>();
-			IRepository<Book> bookRepository = new Repository<Book>();
+			IEntityRepository<Author> authorRepository = new EntityRepository<Author>();
+			IEntityRepository<Book> bookRepository = new EntityRepository<Book>();
 
 			//Act
 			authorRepository.Create(author);
@@ -51,7 +51,7 @@ namespace DataTrack.Core.Tests
 		{
 			// Arrange
 			Author author = GetAuthors(1, 5)[0];
-			IRepository<Author> authorRepository = new Repository<Author>();
+			IEntityRepository<Author> authorRepository = new EntityRepository<Author>();
 
 			//Act
 			authorRepository.Create(author);
@@ -69,9 +69,9 @@ namespace DataTrack.Core.Tests
 			int authorsToInsert = 10;
 			int booksPerAuthor = 20;
 			int reviewsPerBook = 2;
-			IRepository<Author> authorRepository = new Repository<Author>();
-			IRepository<Book> bookRepository = new Repository<Book>();
-			IRepository<Review> reviewRepository = new Repository<Review>();
+			IEntityRepository<Author> authorRepository = new EntityRepository<Author>();
+			IEntityRepository<Book> bookRepository = new EntityRepository<Book>();
+			IEntityRepository<Review> reviewRepository = new EntityRepository<Review>();
 
 			List<Author> authors = new List<Author>(GetAuthors(authorsToInsert, booksPerAuthor, reviewsPerBook));
 

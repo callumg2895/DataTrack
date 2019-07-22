@@ -7,7 +7,7 @@ using System.Reflection;
 
 namespace DataTrack.Core.Repository
 {
-	public class Repository<TBase> : IRepository<TBase> where TBase : IEntity
+	public class EntityRepository<TBase> : IEntityRepository<TBase> where TBase : IEntity
 	{
 		#region Create
 

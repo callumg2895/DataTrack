@@ -1,4 +1,6 @@
 ﻿using DataTrack.Core.Components.Query;
+using DataTrack.Core.Interface;
+using DataTrack.Core.Repository;
 using DataTrack.Core.Tests.TestBeans;
 using DataTrack.Core.Tests.TestEntities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -9,18 +11,21 @@ using System.Text;
 namespace DataTrack.Core.Tests
 {
 	[TestClass]
-	public class EntityBeanQueryTest : BaseTest
+	public class IEntityBeanRepositoryTests : BaseTest
 	{
 		[TestMethod]
 		public void TestEntityBeanQuery_ShouldReturnCorrectItems()
 		{
 			// Arrange
+			IEntityRepository<Author> authorRepository = new EntityRepository<Author>();
+			IEntityBeanRepository<BookInfo> bookInfoRepository = new EntityBeanRepository<BookInfo>();
+
 			Author author = GetAuthors(1, 5)[0];
-			new EntityQuery<Author>().Create(author).Execute();
+			authorRepository.Create(author);
 
 			// Act
-			List<BookInfo> bookInfoCollection = new EntityBeanQuery<BookInfo>().Execute();
-			new EntityQuery<Author>().Delete().Execute();
+			List<BookInfo> bookInfoCollection = bookInfoRepository.GetAll();
+			authorRepository.DeleteAll();
 
 			// Assert
 			Assert.IsTrue(bookInfoCollection.Count == 5);
