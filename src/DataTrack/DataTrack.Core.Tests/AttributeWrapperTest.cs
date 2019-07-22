@@ -64,7 +64,7 @@ namespace DataTrack.Core.Tests
 			// Assert
 			Assert.AreEqual(wrapper.MappingType, MappingTypes.EntityBased);
 
-			Assert.IsNotNull(wrapper.EntityAttributes.Where(e => e.EntityType == typeof(Author) && e.EntityProperty == "FirstName, LastName").FirstOrDefault());
+			Assert.IsNotNull(wrapper.EntityAttributes.Where(e => e.EntityType == typeof(Author) && e.EntityProperty == "FirstName").FirstOrDefault());
 			Assert.IsNotNull(wrapper.EntityAttributes.Where(e => e.EntityType == typeof(Book) && e.EntityProperty == "Title").FirstOrDefault());
 
 			Assert.IsTrue(wrapper.EntityAttributes.Count == 2);

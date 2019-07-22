@@ -12,7 +12,7 @@ namespace DataTrack.Core.Tests.TestBeans
 		[Entity(typeof(Book), "Title")]
 		public string Title { get; set; }
 
-		[Entity(typeof(Author), "FirstName, LastName")]
+		[Entity(typeof(Author), "FirstName")]
 		public string Author { get; set; }
 	}
 }

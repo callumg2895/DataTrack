@@ -4,6 +4,7 @@ using DataTrack.Core.Components.Mapping;
 using DataTrack.Core.Enums;
 using DataTrack.Core.Interface;
 using DataTrack.Logging;
+using DataTrack.Util.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -48,7 +49,32 @@ namespace DataTrack.Core.Components.Query
 
 			command.CommandText = ToString();
 
-			return new List<TBase>();
+			List<TBase> results = new List<TBase>();
+			EntityBeanMapping<TBase> mapping = GetMapping();
+
+			stopwatch.Start();
+
+			using (SqlDataReader reader = command.ExecuteReader())
+			{
+				while (reader.Read())
+				{
+					IEntityBean entityBean = (IEntityBean)Activator.CreateInstance(baseType);
+
+					foreach (PropertyInfo property in baseType.GetProperties())
+					{
+						string columnName = mapping.PropertyMapping[property.Name].Name;
+						property.SetValue(entityBean, Convert.ChangeType(reader[columnName], property.PropertyType));
+					}
+
+					results.Add((TBase)entityBean);
+				}
+			}
+
+			stopwatch.Stop();
+
+			Logger.Info(MethodBase.GetCurrentMethod(), $"Executed Read statement ({stopwatch.GetElapsedMicroseconds()}\u03BCs): {results.Count} result{(results.Count > 1 ? "s" : "")} retrieved");
+
+			return (List<TBase>)results;
 		}
 
 		public override string ToString()

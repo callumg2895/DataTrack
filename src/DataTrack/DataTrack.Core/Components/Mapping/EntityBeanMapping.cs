@@ -15,13 +15,13 @@ namespace DataTrack.Core.Components.Mapping
 	internal class EntityBeanMapping<TBase> : Mapping where TBase : IEntityBean
 	{
 		internal List<Column> Columns { get; set; }
-		internal Dictionary<string, List<Column>> PropertyMapping {get; set;}
+		internal Dictionary<string, Column> PropertyMapping {get; set;}
 
 		internal EntityBeanMapping()
 			: base(typeof(TBase))
 		{
 			Columns = new List<Column>();
-			PropertyMapping = new Dictionary<string, List<Column>>();
+			PropertyMapping = new Dictionary<string, Column>();
 
 			MapBean();
 		}
@@ -39,17 +39,14 @@ namespace DataTrack.Core.Components.Mapping
 
 		private void MapToBean(EntityAttribute entityAttribute)
 		{
-			List<string> entityProperties = entityAttribute.EntityProperty.Replace(" ", "").Split(',').ToList();
+			string entityProperty = entityAttribute.EntityProperty;
 			PropertyInfo beanProperty = ReflectionUtil.GetProperty(BaseType, entityAttribute) ?? throw new NullReferenceException();
+			Column? column = TypeTableMapping[entityAttribute.EntityType].Columns.Where(c => c.PropertyName == entityProperty).FirstOrDefault();
 
-			PropertyMapping.Add(beanProperty.Name, new List<Column>());
-
-			foreach (string entityProperty in entityProperties)
+			if (column != null)
 			{
-				List<Column> columns = TypeTableMapping[entityAttribute.EntityType].Columns.Where(c => c.PropertyName == entityProperty).ToList();
-
-				Columns.AddRange(columns);
-				PropertyMapping[beanProperty.Name].AddRange(columns);
+				Columns.Add(column);
+				PropertyMapping.Add(beanProperty.Name, column);
 			}
 		}
 	}
