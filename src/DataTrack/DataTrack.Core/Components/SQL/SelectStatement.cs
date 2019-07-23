@@ -8,7 +8,6 @@ namespace DataTrack.Core.Components.SQL
 	{
 		private StagingTable? into = null;
 		private StagingTable? from = null;
-		private Dictionary<string, EntityTable> tableNameMapping;
 
 		internal SelectStatement(EntityTable table)
 			: base(table)
