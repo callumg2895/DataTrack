@@ -25,7 +25,7 @@ namespace DataTrack.Core.Tests
 			List<Author> results = null;
 
 			//Act
-			using (Transaction<Author> t1 = new Transaction<Author>())
+			using (Transaction t1 = new Transaction())
 			{
 				t1.Execute(new EntityQuery<Author>().Create(author));
 				results = t1.Execute(new EntityQuery<Author>().Read().AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName));
@@ -49,7 +49,7 @@ namespace DataTrack.Core.Tests
 
 			// Act
 
-			using (Transaction<Author> t1 = new Transaction<Author>())
+			using (Transaction t1 = new Transaction())
 			{
 				t1.Execute(new EntityQuery<Author>().Create(authorBefore));
 				results1 = t1.Execute(new EntityQuery<Author>().AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, authorBefore.FirstName));
@@ -59,7 +59,7 @@ namespace DataTrack.Core.Tests
 			Author beforeUpdate = results1[0];
 			authorAfter.ID = beforeUpdate.ID;
 
-			using (Transaction<Author> t2 = new Transaction<Author>())
+			using (Transaction t2 = new Transaction())
 			{
 				t2.Execute(new EntityQuery<Author>().Update(authorAfter));
 				results2 = t2.Execute(new EntityQuery<Author>().Read(authorAfter.ID).AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, authorAfter.FirstName));
@@ -94,7 +94,7 @@ namespace DataTrack.Core.Tests
 			// Act
 			new EntityQuery<Author>().Create(author).Execute();
 
-			using (Transaction<Author> t = new Transaction<Author>())
+			using (Transaction t = new Transaction())
 			{
 				t.Execute(new EntityQuery<Author>().Delete(author));
 				t.RollBack();

@@ -33,7 +33,7 @@ namespace DataTrack.Core.Components.Query
 			}
 		}
 
-		internal override dynamic Execute(SqlCommand command, SqlConnection connection, SqlTransaction? transaction = null)
+		public override dynamic Execute(SqlCommand command, SqlConnection connection, SqlTransaction? transaction = null)
 		{
 			if (transaction != null)
 			{
@@ -84,6 +84,15 @@ namespace DataTrack.Core.Components.Query
 			sqlBuilder.BuildSelectStatement();
 
 			return sqlBuilder.ToString();
+		}
+
+		public override IQuery AddRestriction(string property, RestrictionTypes type, object value)
+		{
+			EntityBeanMapping<TBase> mapping = GetMapping();
+			Column column = mapping.PropertyMapping[property];
+			column.AddRestriction(type, value);
+
+			return this;
 		}
 
 		internal EntityBeanMapping<TBase> GetMapping()

@@ -8,10 +8,11 @@ using DataTrack.Logging;
 using System.Reflection;
 using System.Linq;
 using System.Data.SqlClient;
+using DataTrack.Core.Interface;
 
 namespace DataTrack.Core.Components.Query
 {
-	public abstract class Query
+	public abstract class Query : IQuery
 	{
 		protected readonly Type baseType;
 		protected readonly Stopwatch stopwatch;
@@ -29,11 +30,12 @@ namespace DataTrack.Core.Components.Query
 			Mapping = mapping;
 		}
 
+		public abstract IQuery AddRestriction(string property, RestrictionTypes type, object value);
+
 		public abstract dynamic Execute();
 
-		internal abstract dynamic Execute(SqlCommand command, SqlConnection connection, SqlTransaction? transaction = null);
+		public abstract dynamic Execute(SqlCommand command, SqlConnection connection, SqlTransaction? transaction = null);
 
-		public abstract override string ToString();
 		public List<Parameter> GetParameters()
 		{
 			List<Parameter> parameters = new List<Parameter>();
@@ -48,6 +50,8 @@ namespace DataTrack.Core.Components.Query
 
 			return parameters;
 		}
+
+		public abstract override string ToString();
 
 		private protected void ValidateMapping(Mapping.Mapping mapping)
 		{

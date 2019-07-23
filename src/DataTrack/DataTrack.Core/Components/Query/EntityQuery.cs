@@ -85,21 +85,6 @@ namespace DataTrack.Core.Components.Query
 
 		#region Methods
 
-		public List<Parameter> GetParameters()
-		{
-			List<Parameter> parameters = new List<Parameter>();
-
-			foreach (EntityTable table in Mapping.Tables)
-			{
-				foreach (Column column in table.Columns)
-				{
-					parameters.AddRange(column.Parameters);
-				}
-			}
-
-			return parameters;
-		}
-
 		internal void UpdateParameters(IEntity item)
 		{
 			Type type = item.GetType();
@@ -127,7 +112,7 @@ namespace DataTrack.Core.Components.Query
 			}
 		}
 
-		public EntityQuery<TBase> AddRestriction(string property, RestrictionTypes type, object value)
+		public override IQuery AddRestriction(string property, RestrictionTypes type, object value)
 		{
 			Column column = Mapping.TypeTableMapping[baseType].Columns.Single(x => x.Name == property);
 			column.AddRestriction(type, value);
@@ -163,7 +148,7 @@ namespace DataTrack.Core.Components.Query
 			}
 		}
 
-		internal override dynamic Execute(SqlCommand command, SqlConnection connection, SqlTransaction? transaction = null)
+		public override dynamic Execute(SqlCommand command, SqlConnection connection, SqlTransaction? transaction = null)
 		{
 			if (transaction != null)
 			{

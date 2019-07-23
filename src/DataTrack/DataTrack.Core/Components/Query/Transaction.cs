@@ -9,14 +9,13 @@ using System.Reflection;
 
 namespace DataTrack.Core.Components.Query
 {
-	public class Transaction<TBase> : IDisposable where TBase : IEntity, new()
+	public class Transaction : IDisposable
 	{
 		#region Members
 
 		private readonly SqlTransaction transaction;
 		private readonly SqlConnection connection;
 		private readonly Stopwatch stopwatch;
-		private readonly List<object> results;
 
 		#endregion
 
@@ -27,14 +26,13 @@ namespace DataTrack.Core.Components.Query
 			connection = DataTrackConfiguration.CreateConnection();
 			transaction = connection.BeginTransaction();
 			stopwatch = new Stopwatch();
-			results = new List<object>();
 		}
 
 		#endregion
 
 		#region Methods
 
-		public dynamic Execute(EntityQuery<TBase> query)
+		public dynamic Execute(IQuery query)
 		{
 			return query.Execute(connection.CreateCommand(), connection, transaction);
 		}
