@@ -1,4 +1,4 @@
-﻿using DataTrack.Core.Tests.TestEntities;
+﻿using DataTrack.Core.Tests.TestClasses.TestEntities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using DataTrack.Core.Components.Query;
 using System.Collections.Generic;

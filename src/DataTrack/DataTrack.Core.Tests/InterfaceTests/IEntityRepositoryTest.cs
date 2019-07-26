@@ -1,10 +1,10 @@
 ﻿using DataTrack.Core.Interface;
 using DataTrack.Core.Repository;
-using DataTrack.Core.Tests.TestEntities;
+using DataTrack.Core.Tests.TestClasses.TestEntities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 
-namespace DataTrack.Core.Tests
+namespace DataTrack.Core.Tests.InterfaceTests
 {
 	[TestClass]
 	public class IEntityRepositoryTest : BaseTest
