@@ -1,4 +1,7 @@
 ﻿using DataTrack.Core.Enums;
+using DataTrack.Core.Interface;
+using DataTrack.Core.Repository;
+using DataTrack.Core.Tests.TestClasses.TestBeans;
 using DataTrack.Core.Tests.TestClasses.TestEntities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
@@ -13,6 +16,21 @@ namespace DataTrack.Core.Tests
 		private static int totalAuthors = 0;
 		private static int totalBooks = 0;
 		private static int totalReviews = 0;
+
+		protected IEntityRepository<Author> AuthorRepository;
+		protected IEntityRepository<Book> BookRepository;
+		protected IEntityRepository<Review> ReviewRepository;
+
+		protected IEntityBeanRepository<BookInfo> BookInfoRepository;
+
+		public BaseTest()
+		{
+			this.AuthorRepository = new EntityRepository<Author>();
+			this.BookRepository = new EntityRepository<Book>();
+			this.ReviewRepository = new EntityRepository<Review>();
+
+			this.BookInfoRepository = new EntityBeanRepository<BookInfo>();
+		}
 
 		[AssemblyInitialize]
 		public static void AssemblyInit(TestContext testContext)

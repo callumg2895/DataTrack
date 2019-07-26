@@ -15,14 +15,12 @@ namespace DataTrack.Core.Tests.InterfaceTests
 		{
 			// Arrange
 			Author author = GetAuthors(1, 2)[0];
-			IEntityRepository<Author> authorRepository = new EntityRepository<Author>();
-			IEntityRepository<Book> bookRepository = new EntityRepository<Book>();
 
 			//Act
-			authorRepository.Create(author);
-			Author authorReadResult = authorRepository.GetByProperty("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName)[0];
-			Book book1ReadResult = bookRepository.GetByProperty("title", Enums.RestrictionTypes.EqualTo, author.Books[0].Title)[0];
-			authorRepository.Delete(authorReadResult);
+			AuthorRepository.Create(author);
+			Author authorReadResult = AuthorRepository.GetByProperty("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName)[0];
+			Book book1ReadResult = BookRepository.GetByProperty("title", Enums.RestrictionTypes.EqualTo, author.Books[0].Title)[0];
+			AuthorRepository.Delete(authorReadResult);
 
 			// Assert
 			Assert.IsTrue(AuthorsAreEqual(authorReadResult, author));
@@ -33,14 +31,12 @@ namespace DataTrack.Core.Tests.InterfaceTests
 		{
 			// Arrange
 			Author author = GetAuthors(1, 5)[0];
-			IEntityRepository<Author> authorRepository = new EntityRepository<Author>();
-			IEntityRepository<Book> bookRepository = new EntityRepository<Book>();
 
 			//Act
-			authorRepository.Create(author);
-			List<Author> authorReadResult = authorRepository.GetByProperty("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName);
-			List<Book> bookReadResult = bookRepository.GetByProperty("title", Enums.RestrictionTypes.EqualTo, author.Books[0].Title);
-			authorRepository.DeleteAll();
+			AuthorRepository.Create(author);
+			List<Author> authorReadResult = AuthorRepository.GetByProperty("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName);
+			List<Book> bookReadResult = BookRepository.GetByProperty("title", Enums.RestrictionTypes.EqualTo, author.Books[0].Title);
+			AuthorRepository.DeleteAll();
 
 			// Assert
 			Assert.IsTrue(BooksAreEqual(bookReadResult[0], author.Books[0]));
@@ -51,12 +47,11 @@ namespace DataTrack.Core.Tests.InterfaceTests
 		{
 			// Arrange
 			Author author = GetAuthors(1, 5)[0];
-			IEntityRepository<Author> authorRepository = new EntityRepository<Author>();
 
 			//Act
-			authorRepository.Create(author);
-			Author authorReadResult = authorRepository.GetByProperty("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName)[0];
-			authorRepository.Delete(authorReadResult);
+			AuthorRepository.Create(author);
+			Author authorReadResult = AuthorRepository.GetByProperty("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName)[0];
+			AuthorRepository.Delete(authorReadResult);
 
 			// Assert
 			Assert.AreEqual(authorReadResult.Books.Count, 5);
@@ -69,18 +64,15 @@ namespace DataTrack.Core.Tests.InterfaceTests
 			int authorsToInsert = 10;
 			int booksPerAuthor = 20;
 			int reviewsPerBook = 2;
-			IEntityRepository<Author> authorRepository = new EntityRepository<Author>();
-			IEntityRepository<Book> bookRepository = new EntityRepository<Book>();
-			IEntityRepository<Review> reviewRepository = new EntityRepository<Review>();
 
 			List<Author> authors = new List<Author>(GetAuthors(authorsToInsert, booksPerAuthor, reviewsPerBook));
 
 			// Act
-			authorRepository.Create(authors);
-			List<Author> createdAuthors = authorRepository.GetAll();
-			List<Book> createdBooks = bookRepository.GetAll();
-			List<Review> createdReviews = reviewRepository.GetAll();
-			authorRepository.DeleteAll();
+			AuthorRepository.Create(authors);
+			List<Author> createdAuthors = AuthorRepository.GetAll();
+			List<Book> createdBooks = BookRepository.GetAll();
+			List<Review> createdReviews = ReviewRepository.GetAll();
+			AuthorRepository.DeleteAll();
 
 			// Assert
 			Assert.AreEqual(authorsToInsert, createdAuthors.Count);

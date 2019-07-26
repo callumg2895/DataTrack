@@ -17,15 +17,12 @@ namespace DataTrack.Core.Tests.InterfaceTests
 		public void TestIEntityBeanRepository_GetAll_ShouldReturnCorrectItems()
 		{
 			// Arrange
-			IEntityRepository<Author> authorRepository = new EntityRepository<Author>();
-			IEntityBeanRepository<BookInfo> bookInfoRepository = new EntityBeanRepository<BookInfo>();
-
 			Author author = GetAuthors(1, 5)[0];
-			authorRepository.Create(author);
+			AuthorRepository.Create(author);
 
 			// Act
-			List<BookInfo> bookInfoCollection = bookInfoRepository.GetAll();
-			authorRepository.DeleteAll();
+			List<BookInfo> bookInfoCollection = BookInfoRepository.GetAll();
+			AuthorRepository.DeleteAll();
 
 			// Assert
 			Assert.IsTrue(bookInfoCollection.Count == 5);
@@ -47,15 +44,12 @@ namespace DataTrack.Core.Tests.InterfaceTests
 		public void TestIEntityBeanRepository_GetByProperty_ShouldReturnCorrectItems()
 		{
 			// Arrange
-			IEntityRepository<Author> authorRepository = new EntityRepository<Author>();
-			IEntityBeanRepository<BookInfo> bookInfoRepository = new EntityBeanRepository<BookInfo>();
-
 			List<Author> authors = GetAuthors(3, 5);
-			authorRepository.Create(authors);
+			AuthorRepository.Create(authors);
 
 			// Act
-			List<BookInfo> bookInfoCollection = bookInfoRepository.GetByProperty("Author", Enums.RestrictionTypes.EqualTo, authors[0].FirstName);
-			authorRepository.DeleteAll();
+			List<BookInfo> bookInfoCollection = BookInfoRepository.GetByProperty("Author", Enums.RestrictionTypes.EqualTo, authors[0].FirstName);
+			AuthorRepository.DeleteAll();
 
 			// Assert
 			Assert.IsTrue(bookInfoCollection.Count == 5);
