@@ -15,7 +15,7 @@ namespace DataTrack.Core.Tests.TestClasses.TestEntities
 		public virtual string Title { get; set; }
 
 		[Formula("avg_score", "(select coalesce(avg(r.score), 0) from reviews as r where r.book_id = id)")]
-		public int AverageScore { get; set; }
+		public int AverageScore { get; private set; }
 
 		[Table("reviews")]
 		public List<Review> Reviews { get; set; }
