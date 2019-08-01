@@ -55,6 +55,7 @@ namespace DataTrack.Core.Components.Builders
 		public void BuildInsertFromStagingToMainWithOutputIds(EntityTable table)
 		{
 			List<Column> columns = table.Columns;
+			List<EntityColumn> entityColumns = table.EntityColumns;
 			Column primarKeyColumn = table.GetPrimaryKeyColumn();
 
 			if (columns.Count == 0)
@@ -68,14 +69,9 @@ namespace DataTrack.Core.Components.Builders
 				.AppendLine()
 				.Append("insert into " + table.Name + " (");
 
-			for (int i = 0; i < columns.Count; i++)
+			for (int i = 0; i < entityColumns.Count; i++)
 			{
-				if (columns[i] as EntityColumn == null)
-				{
-					continue;
-				}
-
-				if (!((columns[i] as EntityColumn)?.IsPrimaryKey() ?? false))
+				if (!columns[i].IsPrimaryKey())
 				{
 					_sql.Append((isFirstElement ? "" : ", ") + columns[i].Name);
 					isFirstElement = false;
@@ -87,7 +83,7 @@ namespace DataTrack.Core.Components.Builders
 				.AppendLine($"output inserted.{primarKeyColumn.Name} into #insertedIds({primarKeyColumn.Name})")
 				.AppendLine();
 
-			_sql.AppendLine(new SelectStatement(columns.Where(c => !((c as EntityColumn)?.IsPrimaryKey() ?? false)).ToList()).From(table.StagingTable, false).ToString())
+			_sql.AppendLine(new SelectStatement(columns.Where(c => !c.IsPrimaryKey()).ToList()).From(table.StagingTable, false).ToString())
 				.AppendLine()
 				.AppendLine("select * from #insertedIds")
 				.AppendLine()
@@ -99,7 +95,7 @@ namespace DataTrack.Core.Components.Builders
 		public void BuildUpdateStatement()
 		{
 			EntityTable table = _mapping.TypeTableMapping[_baseType];
-			List<Column> columns = table.Columns.Where(c => !((c as EntityColumn)?.IsPrimaryKey() ?? false) ).ToList();
+			List<Column> columns = table.Columns.Where(c => !c.IsPrimaryKey()).ToList();
 
 			_sql.AppendLine(new UpdateStatement(columns).ToString());
 		}
@@ -108,7 +104,6 @@ namespace DataTrack.Core.Components.Builders
 		{
 			foreach (EntityTable table in _mapping.Tables)
 			{
-				List<Column> columns = table.Columns;
 				List<EntityColumn> foreignKeyColumns = table.GetForeignKeyColumns();
 
 				if (table.Type != _baseType)
@@ -116,7 +111,7 @@ namespace DataTrack.Core.Components.Builders
 					foreach (EntityColumn column in foreignKeyColumns)
 					{
 						EntityTable foreignTable = _mapping.Tables.Where(t => t.Name == column.ForeignKeyTableMapping).First();
-						Column foreignColumn = foreignTable.GetPrimaryKeyColumn();
+						EntityColumn foreignColumn = foreignTable.GetPrimaryKeyColumn();
 
 						column.Restrictions.Add(new Restriction(column, $"select {foreignColumn.Name} from {foreignTable.StagingTable.Name}", Enums.RestrictionTypes.In));
 					}

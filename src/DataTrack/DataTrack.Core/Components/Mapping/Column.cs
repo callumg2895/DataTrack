@@ -44,6 +44,16 @@ namespace DataTrack.Core.Components.Mapping
 			Restrictions.Add(restriction);
 		}
 
+		public virtual bool IsForeignKey()
+		{
+			return false;
+		}
+
+		public virtual bool IsPrimaryKey()
+		{
+			return false;
+		}
+
 		public abstract SqlDbType GetSqlDbType();
 
 		public abstract string GetSelectString();
@@ -51,5 +61,7 @@ namespace DataTrack.Core.Components.Mapping
 		public abstract object Clone();
 
 		public abstract override int GetHashCode();
+
+		protected abstract string GetPropertyName();
 	}
 }

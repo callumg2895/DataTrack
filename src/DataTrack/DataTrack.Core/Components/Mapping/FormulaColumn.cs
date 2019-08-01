@@ -31,7 +31,7 @@ namespace DataTrack.Core.Components.Mapping
 
 		private readonly FormulaAttribute FormulaAttribute;
 
-		private string GetPropertyName()
+		protected override string GetPropertyName()
 		{
 			Type type = Table.Type;
 

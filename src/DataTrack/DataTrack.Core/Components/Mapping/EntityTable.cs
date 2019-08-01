@@ -80,7 +80,7 @@ namespace DataTrack.Core.Components.Mapping
 			{
 				foreach (Column column in Columns)
 				{
-					if ((column as EntityColumn)?.IsPrimaryKey() ?? false)
+					if (column.IsPrimaryKey())
 					{
 						primaryKeyColumn = (EntityColumn)column;
 						break;

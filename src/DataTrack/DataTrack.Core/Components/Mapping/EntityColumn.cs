@@ -28,7 +28,7 @@ namespace DataTrack.Core.Components.Mapping
 
 		private readonly ColumnAttribute ColumnAttribute;
 
-		private string GetPropertyName()
+		protected override string GetPropertyName()
 		{
 			Type type = Table.Type;
 
@@ -66,12 +66,12 @@ namespace DataTrack.Core.Components.Mapping
 			throw new ColumnMappingException(type, Name);
 		}
 
-		public bool IsForeignKey()
+		public override bool IsForeignKey()
 		{
 			return (KeyType & (byte)KeyTypes.ForeignKey) == (byte)KeyTypes.ForeignKey;
 		}
 
-		public bool IsPrimaryKey()
+		public override bool IsPrimaryKey()
 		{
 			return (KeyType & (byte)KeyTypes.PrimaryKey) == (byte)KeyTypes.PrimaryKey;
 		}
