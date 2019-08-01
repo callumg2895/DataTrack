@@ -31,9 +31,9 @@ namespace DataTrack.Core.Components.Builders
 			_sql.AppendLine($"create table {table.StagingTable.Name}");
 			_sql.AppendLine("(");
 
-			for (int i = 0; i < table.Columns.Count; i++)
+			for (int i = 0; i < table.EntityColumns.Count; i++)
 			{
-				Column column = table.Columns[i];
+				EntityColumn column = table.EntityColumns[i];
 				SqlDbType sqlDbType = column.GetSqlDbType();
 
 				if (column.IsPrimaryKey())
@@ -45,7 +45,7 @@ namespace DataTrack.Core.Components.Builders
 					_sql.Append($"{column.Name} {sqlDbType.ToSqlString()} not null");
 				}
 
-				_sql.AppendLine(i == table.Columns.Count - 1 ? "" : ",");
+				_sql.AppendLine(i == table.EntityColumns.Count - 1 ? "" : ",");
 			}
 
 			_sql.AppendLine(")")
@@ -70,7 +70,12 @@ namespace DataTrack.Core.Components.Builders
 
 			for (int i = 0; i < columns.Count; i++)
 			{
-				if (!columns[i].IsPrimaryKey())
+				if (columns[i] as EntityColumn == null)
+				{
+					continue;
+				}
+
+				if (!((columns[i] as EntityColumn)?.IsPrimaryKey() ?? false))
 				{
 					_sql.Append((isFirstElement ? "" : ", ") + columns[i].Name);
 					isFirstElement = false;
@@ -82,7 +87,7 @@ namespace DataTrack.Core.Components.Builders
 				.AppendLine($"output inserted.{primarKeyColumn.Name} into #insertedIds({primarKeyColumn.Name})")
 				.AppendLine();
 
-			_sql.AppendLine(new SelectStatement(columns.Where(c => !c.IsPrimaryKey()).ToList()).From(table.StagingTable).ToString())
+			_sql.AppendLine(new SelectStatement(columns.Where(c => !((c as EntityColumn)?.IsPrimaryKey() ?? false)).ToList()).From(table.StagingTable, false).ToString())
 				.AppendLine()
 				.AppendLine("select * from #insertedIds")
 				.AppendLine()
@@ -94,7 +99,7 @@ namespace DataTrack.Core.Components.Builders
 		public void BuildUpdateStatement()
 		{
 			EntityTable table = _mapping.TypeTableMapping[_baseType];
-			List<Column> columns = table.Columns.Where(c => !c.IsPrimaryKey()).ToList();
+			List<Column> columns = table.Columns.Where(c => !((c as EntityColumn)?.IsPrimaryKey() ?? false) ).ToList();
 
 			_sql.AppendLine(new UpdateStatement(columns).ToString());
 		}
@@ -104,11 +109,11 @@ namespace DataTrack.Core.Components.Builders
 			foreach (EntityTable table in _mapping.Tables)
 			{
 				List<Column> columns = table.Columns;
-				List<Column> foreignKeyColumns = table.GetForeignKeyColumns();
+				List<EntityColumn> foreignKeyColumns = table.GetForeignKeyColumns();
 
 				if (table.Type != _baseType)
 				{
-					foreach (Column column in foreignKeyColumns)
+					foreach (EntityColumn column in foreignKeyColumns)
 					{
 						EntityTable foreignTable = _mapping.Tables.Where(t => t.Name == column.ForeignKeyTableMapping).First();
 						Column foreignColumn = foreignTable.GetPrimaryKeyColumn();

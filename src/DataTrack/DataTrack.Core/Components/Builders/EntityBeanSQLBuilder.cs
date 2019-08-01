@@ -24,14 +24,14 @@ namespace DataTrack.Core.Components.Builders
 			foreach (EntityTable table in _mapping.Tables)
 			{
 				List<Column> columns = table.Columns;
-				List<Column> foreignKeyColumns = table.GetForeignKeyColumns();
+				List<EntityColumn> foreignKeyColumns = table.GetForeignKeyColumns();
 
 				if (table.Type != _baseType)
 				{
-					foreach (Column column in foreignKeyColumns)
+					foreach (EntityColumn column in foreignKeyColumns)
 					{
 						EntityTable foreignTable = _mapping.Tables.Where(t => t.Name == column.ForeignKeyTableMapping).First();
-						Column foreignColumn = foreignTable.GetPrimaryKeyColumn();
+						EntityColumn foreignColumn = foreignTable.GetPrimaryKeyColumn();
 
 						column.Restrictions.Add(new Restriction(column, $"select {foreignColumn.Name} from {foreignTable.StagingTable.Name}", Enums.RestrictionTypes.In));
 					}

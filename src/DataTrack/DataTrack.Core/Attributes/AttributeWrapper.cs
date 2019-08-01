@@ -11,6 +11,7 @@ namespace DataTrack.Core.Attributes
 	{
 		public TableAttribute? TableAttribute { get; private set; }
 		public List<EntityAttribute> EntityAttributes { get; private set; }
+		public List<FormulaAttribute> FormulaAttributes { get; private set; }
 		public List<ColumnAttribute> ColumnAttributes { get; private set; }
 		public Dictionary<ColumnAttribute, ForeignKeyAttribute> ColumnForeignKeys { get; private set; }
 		public Dictionary<ColumnAttribute, PrimaryKeyAttribute> ColumnPrimaryKeys { get; private set; }
@@ -23,6 +24,7 @@ namespace DataTrack.Core.Attributes
 			TableAttribute = null;
 			ColumnAttributes = new List<ColumnAttribute>();
 			EntityAttributes = new List<EntityAttribute>();
+			FormulaAttributes = new List<FormulaAttribute>();
 			ColumnForeignKeys = new Dictionary<ColumnAttribute, ForeignKeyAttribute>();
 			ColumnPrimaryKeys = new Dictionary<ColumnAttribute, PrimaryKeyAttribute>();
 
@@ -51,6 +53,7 @@ namespace DataTrack.Core.Attributes
 		private void LoadAttributes(PropertyInfo property)
 		{
 			EntityAttribute? entityAttribute = null;
+			FormulaAttribute? formulaAttribute = null;
 			ForeignKeyAttribute? foreignKeyAttribute = null;
 			PrimaryKeyAttribute? primaryKeyAttribute = null;
 			ColumnAttribute? columnAttribute = null;
@@ -58,6 +61,7 @@ namespace DataTrack.Core.Attributes
 			foreach (Attribute attribute in property.GetCustomAttributes())
 			{
 				entityAttribute = attribute as EntityAttribute ?? entityAttribute;
+				formulaAttribute = attribute as FormulaAttribute ?? formulaAttribute;
 				foreignKeyAttribute = attribute as ForeignKeyAttribute ?? foreignKeyAttribute;
 				primaryKeyAttribute = attribute as PrimaryKeyAttribute ?? primaryKeyAttribute;
 				columnAttribute = attribute as ColumnAttribute ?? columnAttribute;
@@ -66,6 +70,11 @@ namespace DataTrack.Core.Attributes
 			if (entityAttribute != null)
 			{
 				EntityAttributes.Add(entityAttribute);
+			}
+
+			if (formulaAttribute != null)
+			{
+				FormulaAttributes.Add(formulaAttribute);
 			}
 
 			if (columnAttribute != null)

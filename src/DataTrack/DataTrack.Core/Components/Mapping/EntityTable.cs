@@ -17,9 +17,9 @@ namespace DataTrack.Core.Components.Mapping
 		internal Mapping Mapping {get; set;}
 
 		private readonly AttributeWrapper _attributes;
-		private Column? primaryKeyColumn;
-		private readonly Dictionary<string, Column?> foreignKeyColumnsDict;
-		private readonly List<Column> foreignKeyColumns;
+		private EntityColumn? primaryKeyColumn;
+		private readonly Dictionary<string, EntityColumn?> foreignKeyColumnsDict;
+		private readonly List<EntityColumn> foreignKeyColumns;
 
 		internal EntityTable(Type type, AttributeWrapper attributes, Mapping mapping)
 			: base()
@@ -31,12 +31,12 @@ namespace DataTrack.Core.Components.Mapping
 
 			_attributes = attributes;
 			primaryKeyColumn = null;
-			foreignKeyColumnsDict = new Dictionary<string, Column?>();
-			foreignKeyColumns = new List<Column>();
+			foreignKeyColumnsDict = new Dictionary<string, EntityColumn?>();
+			foreignKeyColumns = new List<EntityColumn>();
 
 			foreach (ColumnAttribute columnAttribute in attributes.ColumnAttributes)
 			{
-				Column column = new Column(columnAttribute, this);
+				EntityColumn column = new EntityColumn(columnAttribute, this);
 
 				if (attributes.ColumnForeignKeys.ContainsKey(columnAttribute))
 				{
@@ -56,6 +56,15 @@ namespace DataTrack.Core.Components.Mapping
 					column.KeyType = (byte)KeyTypes.PrimaryKey;
 				}
 
+				EntityColumns.Add(column);
+				Columns.Add(column);
+			}
+
+			foreach (FormulaAttribute formulaAttribute in attributes.FormulaAttributes)
+			{
+				FormulaColumn column = new FormulaColumn(formulaAttribute, this);
+
+				FormulaColumns.Add(column);
 				Columns.Add(column);
 			}
 
@@ -65,15 +74,15 @@ namespace DataTrack.Core.Components.Mapping
 			Logger.Trace($"Loaded database mapping for Entity '{Type.Name}' (Table '{Name}')");
 		}
 
-		public Column GetPrimaryKeyColumn()
+		public EntityColumn GetPrimaryKeyColumn()
 		{
 			if (primaryKeyColumn == null)
 			{
 				foreach (Column column in Columns)
 				{
-					if (column.IsPrimaryKey())
+					if ((column as EntityColumn)?.IsPrimaryKey() ?? false)
 					{
-						primaryKeyColumn = column;
+						primaryKeyColumn = (EntityColumn)column;
 						break;
 					}
 
@@ -83,12 +92,12 @@ namespace DataTrack.Core.Components.Mapping
 			return primaryKeyColumn ?? throw new TableMappingException(Type, Name);
 		}
 
-		public List<Column> GetForeignKeyColumns()
+		public List<EntityColumn> GetForeignKeyColumns()
 		{
 			return foreignKeyColumns;
 		}
 
-		public Column GetForeignKeyColumnFor(EntityTable foreignTable)
+		public EntityColumn GetForeignKeyColumnFor(EntityTable foreignTable)
 		{
 			return foreignKeyColumnsDict[foreignTable.Name] ?? throw new TableMappingException(Type, Name);
 		}

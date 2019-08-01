@@ -8,6 +8,7 @@ namespace DataTrack.Core.Components.SQL
 	{
 		private StagingTable? into = null;
 		private StagingTable? from = null;
+		private bool? includeFormula = null;
 
 		internal SelectStatement(EntityTable table)
 			: base(table)
@@ -34,9 +35,10 @@ namespace DataTrack.Core.Components.SQL
 			this.columns.AddRange(columns);
 		}
 
-		internal SelectStatement From(StagingTable stagingTable)
+		internal SelectStatement From(StagingTable stagingTable, bool includeFormula = true)
 		{
-			from = stagingTable;
+			this.from = stagingTable;
+			this.includeFormula = includeFormula;
 
 			return this;
 		}
@@ -68,8 +70,8 @@ namespace DataTrack.Core.Components.SQL
 			sql.AppendLine("select");
 
 			List<string> fromColumns = from != null
-				? from.Columns.Where(c => columns.Contains(c)).Select(c => c.Alias).ToList()
-				: columns.Select(c => c.Alias).ToList();
+				? from.Columns.Where(c => ShouldInclude(c)).Select(c => c.GetSelectString()).ToList()
+				: columns.Select(c => c.GetSelectString()).ToList();
 
 			for (int i = 0; i < fromColumns.Count; i++)
 			{
@@ -113,6 +115,19 @@ namespace DataTrack.Core.Components.SQL
 			{
 				BuildFromSection(parentTable, ref writtenTables);
 			}
+		}
+
+		private bool ShouldInclude(Column column)
+		{
+			if (column as EntityColumn == null)
+			{
+				if (includeFormula.HasValue)
+				{
+					return includeFormula.Value && columns.Contains(column);
+				}
+			}
+
+			return columns.Contains(column);
 		}
 	}
 }

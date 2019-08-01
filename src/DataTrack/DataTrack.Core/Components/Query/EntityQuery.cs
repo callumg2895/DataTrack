@@ -95,7 +95,7 @@ namespace DataTrack.Core.Components.Query
 				string propertyName = column.PropertyName;
 				object propertyValue = item.GetPropertyValue(propertyName);
 
-				if (propertyValue == null || (column.IsPrimaryKey() && propertyValue == default))
+				if (propertyValue == null || ((column as EntityColumn)?.IsPrimaryKey() ?? false && propertyValue == default))
 				{
 					continue;
 				}

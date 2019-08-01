@@ -19,7 +19,7 @@ namespace DataTrack.Core.Components.Builders
 		internal EntityMapping<TBase> Mapping { get; private set; }
 
 		private readonly Map<EntityTable, DataTable> DataMap = new Map<EntityTable, DataTable>();
-		private readonly Map<Column, DataColumn> ColumnMap = new Map<Column, DataColumn>();
+		private readonly Map<EntityColumn, DataColumn> ColumnMap = new Map<EntityColumn, DataColumn>();
 		private readonly Type BaseType = typeof(TBase);
 		#endregion
 
@@ -98,9 +98,15 @@ namespace DataTrack.Core.Components.Builders
 
 		private void SetColumns(DataTable dataTable)
 		{
-			List<Column> columns = DataMap[dataTable].Columns;
+			/*
+			 * Bulk inserts can only be performed on data that is mapped to a physics column in the database. These are
+			 * represented by instances of the EntityColumn class, and contain specific methods which determine key type
+			 * etc.
+			 */
 
-			foreach (Column column in columns)
+			List<EntityColumn> columns = DataMap[dataTable].EntityColumns;
+
+			foreach (EntityColumn column in columns)
 			{
 				if (ColumnMap.ContainsKey(column))
 				{
@@ -132,7 +138,7 @@ namespace DataTrack.Core.Components.Builders
 
 			for (int i = 0; i < rowData.Count; i++)
 			{
-				Column column = table.Columns[i];
+				EntityColumn column = table.EntityColumns[i];
 				if (!column.IsPrimaryKey())
 				{
 					dataRow[column.Name] = rowData[i];
