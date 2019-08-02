@@ -70,7 +70,7 @@ namespace DataTrack.Core.Components.SQL
 			sql.AppendLine("select");
 
 			List<string> fromColumns = from != null
-				? from.Columns.Where(c => CanSelectFromStaging(c)).Select(c => c.GetSelectString()).ToList()
+				? from.Columns.Where(c => CanSelectFromStaging(c)).Select(c => c.Name).ToList()
 				: columns.Where(c => IsAllowedColumn(c)).Select(c => c.GetSelectString()).ToList();
 
 			for (int i = 0; i < fromColumns.Count; i++)
