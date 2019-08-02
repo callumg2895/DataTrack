@@ -15,7 +15,6 @@ namespace DataTrack.Core.Attributes
 		public List<ColumnAttribute> ColumnAttributes { get; private set; }
 		public Dictionary<ColumnAttribute, ForeignKeyAttribute> ColumnForeignKeys { get; private set; }
 		public Dictionary<ColumnAttribute, PrimaryKeyAttribute> ColumnPrimaryKeys { get; private set; }
-		public MappingTypes MappingType { get; set; }
 
 		private Type entityType;
 
@@ -30,7 +29,7 @@ namespace DataTrack.Core.Attributes
 
 			entityType = type;
 
-			Logger.Info(MethodBase.GetCurrentMethod(), $"Loading Table object for '{type.Name}' entity");
+			Logger.Info(MethodBase.GetCurrentMethod(), $"Loading Attribute mappings for class '{type.Name}'");
 
 			foreach (Attribute attribute in type.GetCustomAttributes())
 			{
@@ -42,7 +41,7 @@ namespace DataTrack.Core.Attributes
 				LoadAttributes(property);
 			}
 
-			MappingType = GetMappingType();
+			Validate();
 		}
 
 		internal bool IsValid()
@@ -96,29 +95,27 @@ namespace DataTrack.Core.Attributes
 			}
 		}
 
-		private MappingTypes GetMappingType()
+		private void Validate()
 		{
-			if (TableAttribute == null && ColumnAttributes.Count == 0 && EntityAttributes.Count == 0)
+			if (TableAttribute == null && ColumnAttributes.Count == 0 && EntityAttributes.Count == 0 && FormulaAttributes.Count == 0)
 			{
-				throw new MappingException(entityType);
+				throw new MappingException($"Connot find any mapping information for class {entityType.Name}");
+			}
+
+			if (FormulaAttributes.Count > 0 && EntityAttributes.Count > 0)
+			{
+				throw new MappingException($"Cannot define Formula columns for an Entity based mapping for class {entityType.Name}");
 			}
 
 			if (TableAttribute != null && EntityAttributes.Count > 0)
 			{
-				throw new MappingException($"Cannot define both Table and Entity based mapping for {entityType.Name}");
-			}
-
-			if (EntityAttributes.Count > 0)
-			{
-				return MappingTypes.EntityBased;
+				throw new MappingException($"Cannot define both Table and Entity based mapping for class {entityType.Name}");
 			}
 
 			if (TableAttribute != null && ColumnAttributes.Count == 0)
 			{
-				throw new MappingException($"Cannot find column mappings for {entityType.Name}");
+				throw new MappingException($"Cannot find column mappings for class {entityType.Name}");
 			}
-
-			return MappingTypes.TableBased;
 		}
 	}
 }

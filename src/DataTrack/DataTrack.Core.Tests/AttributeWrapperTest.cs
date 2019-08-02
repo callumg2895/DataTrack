@@ -1,5 +1,6 @@
 ﻿using DataTrack.Core.Attributes;
 using DataTrack.Core.Enums;
+using DataTrack.Core.Exceptions;
 using DataTrack.Core.Tests.TestClasses.TestBeans;
 using DataTrack.Core.Tests.TestClasses.TestEntities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -21,7 +22,6 @@ namespace DataTrack.Core.Tests
 			AttributeWrapper wrapper = new AttributeWrapper(typeof(Author));
 
 			// Assert
-			Assert.AreEqual(wrapper.MappingType, MappingTypes.TableBased);
 			Assert.AreEqual(wrapper.TableAttribute.TableName, "authors");
 
 			Assert.IsNotNull(wrapper.ColumnAttributes.Where(c => c.ColumnName == "id").FirstOrDefault());
@@ -41,7 +41,6 @@ namespace DataTrack.Core.Tests
 			AttributeWrapper wrapper = new AttributeWrapper(typeof(Book));
 
 			// Assert
-			Assert.AreEqual(wrapper.MappingType, MappingTypes.TableBased);
 			Assert.AreEqual(wrapper.TableAttribute.TableName, "books");
 
 			Assert.IsNotNull(wrapper.ColumnAttributes.Where(c => c.ColumnName == "id").FirstOrDefault());
@@ -63,12 +62,32 @@ namespace DataTrack.Core.Tests
 			AttributeWrapper wrapper = new AttributeWrapper(typeof(BookInfo));
 
 			// Assert
-			Assert.AreEqual(wrapper.MappingType, MappingTypes.EntityBased);
-
 			Assert.IsNotNull(wrapper.EntityAttributes.Where(e => e.EntityType == typeof(Author) && e.EntityProperty == "FirstName").FirstOrDefault());
 			Assert.IsNotNull(wrapper.EntityAttributes.Where(e => e.EntityType == typeof(Book) && e.EntityProperty == "Title").FirstOrDefault());
 
 			Assert.IsTrue(wrapper.EntityAttributes.Count == 2);
+		}
+
+		[TestMethod]
+		public void TestAttributeWrapper_ShouldFailOnMalformedEntityBean()
+		{
+			// Arrange
+			// Act
+			// Assert
+			try
+			{
+				AttributeWrapper wrapper = new AttributeWrapper(typeof(MalformedBookInfo));
+
+				Assert.Fail();
+			}
+			catch (MappingException e)
+			{
+				Assert.AreEqual("Cannot define Formula columns for an Entity based mapping for class MalformedBookInfo", e.Message);
+			}
+			catch(Exception e)
+			{
+				Assert.Fail();
+			}
 		}
 	}
 }
