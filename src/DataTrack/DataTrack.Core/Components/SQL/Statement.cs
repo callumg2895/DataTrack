@@ -1,5 +1,6 @@
 ﻿using DataTrack.Core.Components.Mapping;
 using DataTrack.Core.Components.Query;
+using DataTrack.Core.Enums;
 using System.Collections.Generic;
 using System.Text;
 
@@ -11,6 +12,8 @@ namespace DataTrack.Core.Components.SQL
 		protected readonly List<EntityTable> tables;
 		protected readonly List<Column> columns;
 
+		protected ColumnTypes allowedColumnTypes;
+
 		private int restrictionCount;
 
 		internal Statement()
@@ -18,6 +21,7 @@ namespace DataTrack.Core.Components.SQL
 			tables = new List<EntityTable>();
 			columns = new List<Column>();
 			sql = new StringBuilder();
+			allowedColumnTypes = ColumnTypes.EntityColumn | ColumnTypes.FormulaColumn;
 
 			restrictionCount = 0;
 		}
@@ -68,6 +72,11 @@ namespace DataTrack.Core.Components.SQL
 		{
 			foreach (Column column in columns)
 			{
+				if (!IsAllowedColumn(column))
+				{
+					continue;
+				}
+
 				foreach (Restriction restriction in column.Restrictions)
 				{
 					sql.Append($"{GetRestrictionKeyWord()} ")
@@ -76,6 +85,11 @@ namespace DataTrack.Core.Components.SQL
 
 				column.Restrictions.Clear();
 			}
+		}
+
+		protected bool IsAllowedColumn(Column column)
+		{
+			return (column.ColumnType & allowedColumnTypes) == column.ColumnType;
 		}
 
 		private string GetRestrictionKeyWord()

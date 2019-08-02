@@ -17,6 +17,7 @@ namespace DataTrack.Core.Components.Mapping
 			: base(table, columnAttribute.ColumnName)
 		{
 			ColumnAttribute = columnAttribute;
+			ColumnType = ColumnTypes.EntityColumn;
 
 			PropertyName = GetPropertyName();
 
@@ -25,6 +26,7 @@ namespace DataTrack.Core.Components.Mapping
 
 		public byte KeyType { get; set; }
 		public string? ForeignKeyTableMapping { get; set; }
+		public override ColumnTypes ColumnType { get; set; }
 
 		private readonly ColumnAttribute ColumnAttribute;
 

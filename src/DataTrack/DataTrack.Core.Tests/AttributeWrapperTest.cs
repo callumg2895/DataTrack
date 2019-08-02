@@ -47,6 +47,7 @@ namespace DataTrack.Core.Tests
 			Assert.IsNotNull(wrapper.ColumnAttributes.Where(c => c.ColumnName == "id").FirstOrDefault());
 			Assert.IsNotNull(wrapper.ColumnAttributes.Where(c => c.ColumnName == "author_id").FirstOrDefault());
 			Assert.IsNotNull(wrapper.ColumnAttributes.Where(c => c.ColumnName == "title").FirstOrDefault());
+			Assert.IsNotNull(wrapper.FormulaAttributes.Where(f => f.Alias == "avg_score").FirstOrDefault());
 
 			Assert.IsTrue(wrapper.ColumnForeignKeys.Keys.Count() == 1);
 			Assert.IsTrue(wrapper.ColumnForeignKeys.Keys.First().ColumnName == "author_id");

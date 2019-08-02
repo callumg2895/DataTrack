@@ -1,6 +1,7 @@
 ﻿using DataTrack.Core.Components.Mapping;
 using DataTrack.Core.Components.Query;
 using DataTrack.Core.Components.SQL;
+using DataTrack.Core.Enums;
 using DataTrack.Core.Interface;
 using DataTrack.Util.Extensions;
 using System;
@@ -83,7 +84,7 @@ namespace DataTrack.Core.Components.Builders
 				.AppendLine($"output inserted.{primarKeyColumn.Name} into #insertedIds({primarKeyColumn.Name})")
 				.AppendLine();
 
-			_sql.AppendLine(new SelectStatement(columns.Where(c => !c.IsPrimaryKey()).ToList()).From(table.StagingTable, false).ToString())
+			_sql.AppendLine(new SelectStatement(columns.Where(c => !c.IsPrimaryKey()).ToList()).From(table.StagingTable, ColumnTypes.EntityColumn).ToString())
 				.AppendLine()
 				.AppendLine("select * from #insertedIds")
 				.AppendLine()

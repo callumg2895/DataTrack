@@ -1,4 +1,5 @@
 ﻿using DataTrack.Core.Components.Mapping;
+using DataTrack.Core.Enums;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -8,7 +9,6 @@ namespace DataTrack.Core.Components.SQL
 	{
 		private StagingTable? into = null;
 		private StagingTable? from = null;
-		private bool? includeFormula = null;
 
 		internal SelectStatement(EntityTable table)
 			: base(table)
@@ -35,10 +35,10 @@ namespace DataTrack.Core.Components.SQL
 			this.columns.AddRange(columns);
 		}
 
-		internal SelectStatement From(StagingTable stagingTable, bool includeFormula = true)
+		internal SelectStatement From(StagingTable stagingTable, ColumnTypes? allowedColumnTypes = null)
 		{
 			this.from = stagingTable;
-			this.includeFormula = includeFormula;
+			this.allowedColumnTypes = allowedColumnTypes ?? this.allowedColumnTypes;
 
 			return this;
 		}
@@ -70,8 +70,8 @@ namespace DataTrack.Core.Components.SQL
 			sql.AppendLine("select");
 
 			List<string> fromColumns = from != null
-				? from.Columns.Where(c => ShouldInclude(c)).Select(c => c.GetSelectString()).ToList()
-				: columns.Select(c => c.GetSelectString()).ToList();
+				? from.Columns.Where(c => CanSelectFromStaging(c)).Select(c => c.GetSelectString()).ToList()
+				: columns.Where(c => IsAllowedColumn(c)).Select(c => c.GetSelectString()).ToList();
 
 			for (int i = 0; i < fromColumns.Count; i++)
 			{
@@ -117,17 +117,9 @@ namespace DataTrack.Core.Components.SQL
 			}
 		}
 
-		private bool ShouldInclude(Column column)
+		private bool CanSelectFromStaging(Column column)
 		{
-			if (column as EntityColumn == null)
-			{
-				if (includeFormula.HasValue)
-				{
-					return includeFormula.Value && columns.Contains(column);
-				}
-			}
-
-			return columns.Contains(column);
+			return IsAllowedColumn(column) && columns.Contains(column);
 		}
 	}
 }

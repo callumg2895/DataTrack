@@ -18,6 +18,7 @@ namespace DataTrack.Core.Components.Mapping
 		public string Alias { get; set; }
 		public string Name { get; set; }
 		public string PropertyName { get; set; }
+		public abstract ColumnTypes ColumnType { get; set; }
 
 		public Column(EntityTable table, string name)
 		{

@@ -22,12 +22,14 @@ namespace DataTrack.Core.Components.Mapping
 			FormulaAttribute = formulaAttribute;
 			Alias = Name;
 			Formula = formulaAttribute.Query;
+			ColumnType = ColumnTypes.FormulaColumn;
 			PropertyName = GetPropertyName();
 
 			Logger.Trace($"Loaded database mapping for Property '{PropertyName}' of Entity '{Table.Type.Name}' (Column '{Name}')");
 		}
 
 		public string Formula { get; set; }
+		public override ColumnTypes ColumnType { get; set; }
 
 		private readonly FormulaAttribute FormulaAttribute;
 
