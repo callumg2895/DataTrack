@@ -18,6 +18,7 @@ namespace DataTrack.Core.Components.Mapping
 		public string Alias { get; set; }
 		public string Name { get; set; }
 		public string PropertyName { get; set; }
+		public Type PropertyType { get; set; }
 		public abstract ColumnTypes ColumnType { get; set; }
 
 		public Column(EntityTable table, string name)
@@ -28,6 +29,7 @@ namespace DataTrack.Core.Components.Mapping
 			Name = name;
 			Alias = $"{table.Type.Name}.{Name}";
 			PropertyName = string.Empty;
+			PropertyType = typeof(object);
 		}
 
 		public void AddParameter(object value)
@@ -63,6 +65,6 @@ namespace DataTrack.Core.Components.Mapping
 
 		public abstract override int GetHashCode();
 
-		protected abstract string GetPropertyName();
+		protected abstract void GetPropertyInfo();
 	}
 }

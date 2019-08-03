@@ -4,10 +4,8 @@ using DataTrack.Core.Enums;
 using DataTrack.Core.Exceptions;
 using DataTrack.Logging;
 using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Reflection;
-using System.Text;
 
 namespace DataTrack.Core.Components.Mapping
 {
@@ -19,7 +17,7 @@ namespace DataTrack.Core.Components.Mapping
 			ColumnAttribute = columnAttribute;
 			ColumnType = ColumnTypes.EntityColumn;
 
-			PropertyName = GetPropertyName();
+			GetPropertyInfo();
 
 			Logger.Trace($"Loaded database mapping for Property '{PropertyName}' of Entity '{Table.Type.Name}' (Column '{Name}')");
 		}
@@ -30,7 +28,7 @@ namespace DataTrack.Core.Components.Mapping
 
 		private readonly ColumnAttribute ColumnAttribute;
 
-		protected override string GetPropertyName()
+		protected override void GetPropertyInfo()
 		{
 			Type type = Table.Type;
 
@@ -41,7 +39,9 @@ namespace DataTrack.Core.Components.Mapping
 				{
 					if ((attribute as ColumnAttribute)?.ColumnName == Name)
 					{
-						return property.Name;
+						PropertyName = property.Name;
+						PropertyType = property.PropertyType;
+						return;
 					}
 				}
 			}
@@ -51,21 +51,7 @@ namespace DataTrack.Core.Components.Mapping
 
 		public override SqlDbType GetSqlDbType()
 		{
-			Type type = Table.Type;
-
-			foreach (PropertyInfo property in type.GetProperties())
-			{
-				foreach (Attribute attribute in property.GetCustomAttributes())
-				{
-					if ((attribute as ColumnAttribute)?.ColumnName == Name)
-					{
-						return Parameter.SQLDataTypes[property.PropertyType];
-					}
-				}
-			}
-			// Technically the wrong exception to throw. The problem here is that the 'type' supplied
-			// does not contain a property with ColumnMappingAttribute with a matching column name.
-			throw new ColumnMappingException(type, Name);
+			return Parameter.SQLDataTypes[PropertyType];
 		}
 
 		public override bool IsForeignKey()
