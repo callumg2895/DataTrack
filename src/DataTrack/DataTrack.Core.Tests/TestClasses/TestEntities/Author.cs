@@ -15,5 +15,21 @@ namespace DataTrack.Core.Tests.TestClasses.TestEntities
 
 		[Table("books")]
 		public virtual List<Book> Books { get; set; }
+
+		[Unmapped] // This property is just a getter, and so does not have a 1:1 database mapping
+		public virtual string FullName
+		{
+			get
+			{
+				if (string.IsNullOrEmpty(FirstName) || string.IsNullOrEmpty(LastName))
+				{
+					return string.Empty;
+				}
+				else
+				{
+					return $"{FirstName} {LastName}";
+				}
+			}
+		}
 	}
 }
