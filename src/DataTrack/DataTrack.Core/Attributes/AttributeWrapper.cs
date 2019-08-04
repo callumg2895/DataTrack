@@ -53,67 +53,47 @@ namespace DataTrack.Core.Attributes
 
 		private void LoadAttributes(PropertyInfo property)
 		{
-			TableAttribute? tableAttribute = null;
-			EntityAttribute? entityAttribute = null;
-			FormulaAttribute? formulaAttribute = null;
-			ForeignKeyAttribute? foreignKeyAttribute = null;
-			PrimaryKeyAttribute? primaryKeyAttribute = null;
-			ColumnAttribute? columnAttribute = null;
-			UnmappedAttribute? unmappedAttribute = null;
+			AttributeExtractor extractor = new AttributeExtractor(property);
 
-			foreach (Attribute attribute in property.GetCustomAttributes())
-			{
-				tableAttribute = attribute as TableAttribute ?? tableAttribute;
-				entityAttribute = attribute as EntityAttribute ?? entityAttribute;
-				formulaAttribute = attribute as FormulaAttribute ?? formulaAttribute;
-				foreignKeyAttribute = attribute as ForeignKeyAttribute ?? foreignKeyAttribute;
-				primaryKeyAttribute = attribute as PrimaryKeyAttribute ?? primaryKeyAttribute;
-				columnAttribute = attribute as ColumnAttribute ?? columnAttribute;
-				unmappedAttribute = attribute as UnmappedAttribute ?? unmappedAttribute;
-			}
-
-			if (unmappedAttribute != null)
+			if (extractor.UnmappedAttribute != null)
 			{
 				return;
 			}
 
-			if (tableAttribute != null)
+			if (extractor.TableAttribute != null)
 			{
-				ChildTableAttributes.Add(tableAttribute);
+				ChildTableAttributes.Add(extractor.TableAttribute);
 			}
 
-			if (entityAttribute != null)
+			if (extractor.EntityAttribute != null)
 			{
-				EntityAttributes.Add(entityAttribute);
+				EntityAttributes.Add(extractor.EntityAttribute);
 			}
 
-			if (formulaAttribute != null)
+			if (extractor.FormulaAttribute != null)
 			{
-				FormulaAttributes.Add(formulaAttribute);
+				FormulaAttributes.Add(extractor.FormulaAttribute);
 			}
 
-			if (columnAttribute != null)
+			if (extractor.ColumnAttribute != null)
 			{
-				if (!ColumnAttributes.Contains(columnAttribute))
+				if (!ColumnAttributes.Contains(extractor.ColumnAttribute))
 				{
-					ColumnAttributes.Add(columnAttribute);
+					ColumnAttributes.Add(extractor.ColumnAttribute);
 				}
 
-				if (foreignKeyAttribute != null)
+				if (extractor.ForeignKeyAttribute != null)
 				{
-					ColumnForeignKeys[columnAttribute] = foreignKeyAttribute;
+					ColumnForeignKeys[extractor.ColumnAttribute] = extractor.ForeignKeyAttribute;
 				}
 
-				if (primaryKeyAttribute != null)
+				if (extractor.PrimaryKeyAttribute != null)
 				{
-					ColumnPrimaryKeys[columnAttribute] = primaryKeyAttribute;
+					ColumnPrimaryKeys[extractor.ColumnAttribute] = extractor.PrimaryKeyAttribute;
 				}
 			}
 
-			if (columnAttribute == null && 
-				formulaAttribute == null && 
-				entityAttribute == null && 
-				tableAttribute == null)
+			if (!extractor.PropertyIsMapped())
 			{
 				/* 
 				 * We should warn the user if they have a property in this class that is not mapped, as 
