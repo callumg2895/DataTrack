@@ -14,14 +14,14 @@ namespace DataTrack.Core.Components.Execution
 	{
 		private readonly List<TBase> results;
 		private readonly List<EntityTable> tables;
-		private readonly Dictionary<Table, List<IEntity>> entityDictionary;
+		private readonly Dictionary<Table, Dictionary<object, IEntity>> entityDictionary;
 
 		internal ReadQueryExecutor(EntityQuery<TBase> query, SqlConnection connection, SqlTransaction? transaction = null)
 			: base(query, connection, transaction)
 		{
 			results = new List<TBase>();
 			tables = mapping.Tables;
-			entityDictionary = new Dictionary<Table, List<IEntity>>();
+			entityDictionary = new Dictionary<Table, Dictionary<object, IEntity>>();
 		}
 
 		internal List<TBase> Execute(SqlDataReader reader)
@@ -57,10 +57,10 @@ namespace DataTrack.Core.Components.Execution
 		{
 			if (!entityDictionary.ContainsKey(table))
 			{
-				entityDictionary.Add(table, new List<IEntity>());
+				entityDictionary.Add(table, new Dictionary<object, IEntity>());
 			}
 
-			entityDictionary[table].Add(entity);
+			entityDictionary[table].Add(entity.GetID(), entity);
 		}
 
 		private void AddResult(IEntity entity, EntityTable table)
@@ -78,18 +78,10 @@ namespace DataTrack.Core.Components.Execution
 		private void AssociateWithParent(IEntity entity, EntityTable table)
 		{
 			EntityTable parentTable = mapping.ChildParentMapping[table];
+			object foreignKey = entity.GetPropertyValue(table.GetForeignKeyColumnFor(parentTable).PropertyName);
+			IEntity parentEntity = entityDictionary[parentTable][foreignKey];
 
-			foreach (IEntity parentEntity in entityDictionary[parentTable])
-			{
-				object foreignKey = entity.GetPropertyValue(table.GetForeignKeyColumnFor(parentTable).PropertyName);
-				object parentPrimaryKey = parentEntity.GetID();
-
-				if (parentPrimaryKey.Equals(foreignKey))
-				{
-					parentEntity.AddChildPropertyValue(table.Name, entity);
-					break;
-				}
-			}
+			parentEntity.AddChildPropertyValue(table.Name, entity);
 		}
 
 		private IEntity ReadEntity(SqlDataReader reader, EntityTable table)
