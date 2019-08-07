@@ -103,18 +103,18 @@ namespace DataTrack.Core.Components.Mapping
 		{
 			lock (typeMappingLock)
 			{
-				int? minAccessCount = null;
+				long oldestAccess = long.MaxValue;
 				Type? candidate = null;
 
 				foreach (Type key in TypeAccessMapping.Keys)
 				{
-					if (minAccessCount.HasValue && TypeAccessMapping[key] >= minAccessCount.Value)
+					if (TypeAccessMapping[key] >= oldestAccess)
 					{
 						continue;
 					}
 					else
 					{
-						minAccessCount = (int?)TypeAccessMapping[key];
+						oldestAccess = TypeAccessMapping[key];
 						candidate = key;
 					}
 				}
@@ -134,7 +134,7 @@ namespace DataTrack.Core.Components.Mapping
 			{
 				Logger.Info(MethodBase.GetCurrentMethod(), $"Caching database mapping for Entity '{type.Name}'");
 				TypeTableMapping[type] = table;
-				TypeAccessMapping[type] = 1;		
+				TypeAccessMapping[type] = DateTime.UtcNow.ToFileTime();		
 			}
 		}
 
@@ -148,7 +148,7 @@ namespace DataTrack.Core.Components.Mapping
 				{
 					Logger.Info(MethodBase.GetCurrentMethod(), $"Loading Table object for '{type.Name}' entity from cache");
 					table = TypeTableMapping[type];
-					TypeAccessMapping[type] += 1;
+					TypeAccessMapping[type] = DateTime.UtcNow.ToFileTime();
 				}				
 			}
 
