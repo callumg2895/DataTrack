@@ -16,6 +16,7 @@ namespace DataTrack.Logging
 		private static Thread loggingThread;
 		private static volatile bool shouldExecute;
 		private static volatile bool logBufferInUse;
+		private static volatile bool isStarted = false;
 		private static List<LogItem> logBuffer;
 		private static bool _enableConsoleLogging;
 
@@ -38,6 +39,8 @@ namespace DataTrack.Logging
 
 			loggingThread = new Thread(new ThreadStart(Logging));
 			loggingThread.Start();
+
+			isStarted = true;
 		}
 
 		private static void Create()
@@ -256,6 +259,11 @@ namespace DataTrack.Logging
 			{
 				shouldExecute = false;
 			}
+		}
+
+		public static bool IsStarted()
+		{
+			return isStarted;
 		}
 	}
 }

@@ -21,7 +21,7 @@ namespace DataTrack.Core.Components.Mapping
 		private readonly Dictionary<string, EntityColumn?> foreignKeyColumnsDict;
 		private readonly List<EntityColumn> foreignKeyColumns;
 
-		internal EntityTable(Type type, AttributeWrapper attributes, Mapping mapping)
+		internal EntityTable(Type type, AttributeWrapper attributes)
 			: base()
 		{
 			Type = type;
@@ -69,7 +69,6 @@ namespace DataTrack.Core.Components.Mapping
 			}
 
 			StagingTable = new StagingTable(this);
-			Mapping = mapping;
 
 			Logger.Trace($"Loaded database mapping for Entity '{Type.Name}' (Table '{Name}')");
 		}
@@ -111,13 +110,8 @@ namespace DataTrack.Core.Components.Mapping
 
 		public object Clone()
 		{
-			return this.Clone(Mapping);
-		}
-
-		internal object Clone(Mapping mapping)
-		{
 			Logger.Trace($"Cloning database mapping for Entity '{Type.Name}' (Table '{Name}')");
-			return new EntityTable(Type, _attributes, mapping);
+			return new EntityTable(Type, _attributes);
 		}
 	}
 }

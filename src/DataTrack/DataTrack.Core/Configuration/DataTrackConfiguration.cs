@@ -1,4 +1,5 @@
-﻿using DataTrack.Core.Enums;
+﻿using DataTrack.Core.Components.Mapping;
+using DataTrack.Core.Enums;
 using DataTrack.Logging;
 using System;
 using System.Data.SqlClient;
@@ -26,6 +27,7 @@ namespace DataTrack.Core
 
 		public static void Init(bool enableConsoleLogging, ConfigType configType, string connection = "")
 		{
+			MappingCache.Init();
 			Logger.Init(enableConsoleLogging);
 
 			switch (configType)
@@ -69,6 +71,7 @@ namespace DataTrack.Core
 
 		public static void Dispose()
 		{
+			MappingCache.Stop();
 			Logger.Stop();
 		}
 

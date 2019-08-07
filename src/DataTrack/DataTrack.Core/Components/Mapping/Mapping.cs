@@ -1,7 +1,6 @@
 ﻿using DataTrack.Core.Attributes;
 using DataTrack.Core.Exceptions;
 using DataTrack.Core.Interface;
-using DataTrack.Core.Util;
 using DataTrack.Logging;
 using DataTrack.Util.Helpers;
 using System;
@@ -36,6 +35,8 @@ namespace DataTrack.Core.Components.Mapping
 			{
 				EntityTable table = GetTableByType(type);
 
+				table.Mapping = this;
+
 				Tables.Add(table);
 				TypeTableMapping.Add(type, table);
 				ParentChildMapping.Add(table, new List<EntityTable>());
@@ -67,29 +68,29 @@ namespace DataTrack.Core.Components.Mapping
 
 		protected EntityTable GetTableByType(Type type)
 		{
-			return Dictionaries.TypeMappingCache.ContainsKey(type)
-				? LoadTableMappingFromCache(type)
-				: LoadTableMapping(type);
+			EntityTable? entityTable = MappingCache.RetrieveItem(type);
+
+			if (entityTable != null)
+			{
+				return (EntityTable)entityTable.Clone();
+			}
+			else
+			{
+				return LoadTableMapping(type);
+			}
 		}
 
 		protected EntityTable LoadTableMapping(Type type)
 		{
 			if (TryGetTable(type, out EntityTable? table) && table != null)
 			{
-				Logger.Trace($"Caching database mapping for Entity '{type.Name}'");
-				Dictionaries.TypeMappingCache[type] = table;
+				MappingCache.CacheItem(type, (EntityTable)table.Clone());
 
-				return (EntityTable)table.Clone(this);
+				return (EntityTable)table.Clone();
 			}
 
 			Logger.Error(MethodBase.GetCurrentMethod(), $"Failed to load Table object for '{type.Name}' entity");
 			throw new TableMappingException(type, string.Empty);
-		}
-
-		protected EntityTable LoadTableMappingFromCache(Type type)
-		{
-			Logger.Info(MethodBase.GetCurrentMethod(), $"Loading Table object for '{type.Name}' entity from cache");
-			return (EntityTable)Dictionaries.TypeMappingCache[type].Clone(this);
 		}
 
 		protected bool TryGetTable(Type type, out EntityTable? table)
@@ -98,7 +99,7 @@ namespace DataTrack.Core.Components.Mapping
 
 			if (attributes.IsValid())
 			{
-				table = new EntityTable(type, attributes, this);
+				table = new EntityTable(type, attributes);
 				return true;
 			}
 
