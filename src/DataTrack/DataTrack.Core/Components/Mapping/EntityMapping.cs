@@ -41,6 +41,14 @@ namespace DataTrack.Core.Components.Mapping
 			}
 		}
 
+		internal void UpdateTableDataTable(EntityTable table)
+		{
+			if (!DataTableMapping.ContainsKey(table))
+			{
+				DataTableMapping[table] = new DataTable(table.Name);
+			}
+		}
+
 		internal void UpdateDataTableForeignKeys(EntityTable table, dynamic primaryKey, int primaryKeyIndex)
 		{
 			Logger.Trace($"Checking for child entities of '{table.Type.Name}' entity");

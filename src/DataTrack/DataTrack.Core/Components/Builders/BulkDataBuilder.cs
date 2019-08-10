@@ -14,26 +14,17 @@ namespace DataTrack.Core.Components.Builders
 
 		#region Members
 
-		internal List<TBase> Data { get; private set; }
 		internal List<EntityTable> Tables { get; private set; }
 		internal EntityMapping<TBase> Mapping { get; private set; }
 
-		private readonly Map<EntityTable, DataTable> DataMap = new Map<EntityTable, DataTable>();
 		private readonly Map<EntityColumn, DataColumn> ColumnMap = new Map<EntityColumn, DataColumn>();
 		private readonly Type BaseType = typeof(TBase);
 		#endregion
 
 		#region Constructors
 
-		internal BulkDataBuilder(TBase data, EntityMapping<TBase> mapping)
-			: this(new List<TBase>() { data }, mapping)
+		internal BulkDataBuilder(EntityMapping<TBase> mapping)
 		{
-
-		}
-
-		internal BulkDataBuilder(List<TBase> data, EntityMapping<TBase> mapping)
-		{
-			Data = data;
 			Tables = mapping.Tables;
 			Mapping = mapping;
 		}
@@ -42,35 +33,35 @@ namespace DataTrack.Core.Components.Builders
 
 		#region Methods
 
-		internal Map<EntityTable, DataTable> YieldDataMap()
+		internal void BuildDataFor(List<TBase> items)
 		{
-			foreach (TBase item in Data)
+			foreach (IEntity item in items)
 			{
-				BuildDataFor(item);
+				BuildDataForEntity(item);
 			}
-
-			return DataMap;
 		}
 
-		private void BuildDataFor(IEntity item)
+		internal void BuildDataFor(TBase item)
 		{
+			BuildDataForEntity(item);
+		}
+
+		private void BuildDataForEntity(IEntity item)
+		{	
 			if (item == null)
 			{
 				return;
 			}
 
+			Logger.Info(MethodBase.GetCurrentMethod(), $"Building DataTable for: {item.GetType().ToString()}");
+
 			Type type = item.GetType();
 			EntityTable table = Mapping.TypeTableMapping[type];
 
 			Mapping.UpdateTableEntities(table, item);
+			Mapping.UpdateTableDataTable(table);
 
-			if (!DataMap.ContainsKey(table))
-			{
-				DataMap[table] = new DataTable(table.Name);
-				Logger.Info(MethodBase.GetCurrentMethod(), $"Building DataTable for: {Data?.GetType().ToString()}");
-			}
-
-			DataTable dataTable = DataMap[table];
+			DataTable dataTable = Mapping.DataTableMapping[table];
 
 			SetColumns(dataTable);
 			AddRow(dataTable, item);
@@ -91,7 +82,7 @@ namespace DataTrack.Core.Components.Builders
 
 				foreach (dynamic childItem in childItems)
 				{
-					BuildDataFor(childItem);
+					BuildDataForEntity(childItem);
 					Mapping.ParentChildEntityMapping[item].Add(childItem);
 				}
 			}
@@ -106,7 +97,8 @@ namespace DataTrack.Core.Components.Builders
 			 * etc.
 			 */
 
-			List<EntityColumn> columns = DataMap[dataTable].EntityColumns;
+			EntityTable table = Mapping.DataTableMapping[dataTable];
+			List <EntityColumn> columns = table.EntityColumns;
 
 			foreach (EntityColumn column in columns)
 			{
@@ -135,7 +127,7 @@ namespace DataTrack.Core.Components.Builders
 		{
 			List<object> rowData = item.GetPropertyValues();
 
-			EntityTable table = DataMap[dataTable];
+			EntityTable table = Mapping.DataTableMapping[dataTable];
 			DataRow dataRow = dataTable.NewRow();
 
 			for (int i = 0; i < rowData.Count; i++)
