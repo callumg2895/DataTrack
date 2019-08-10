@@ -45,10 +45,12 @@ namespace DataTrack.Core.Components.Execution
 			Logger.Debug($"Executing Bulk Insert for {table.Name}");
 
 			SqlBulkCopyOptions copyOptions = SqlBulkCopyOptions.Default;
+
 			SqlBulkCopy bulkCopy = new SqlBulkCopy(_connection, copyOptions, _transaction)
 			{
 				DestinationTableName = table.StagingTable.Name
 			};
+
 			bulkCopy.WriteToServer(mapping.DataTableMapping[table]);
 
 			InsertFromStagingTable(table);
@@ -60,49 +62,63 @@ namespace DataTrack.Core.Components.Execution
 
 			sql.CreateStagingTable(table);
 
-			using (SqlCommand cmd = _connection.CreateCommand())
-			{
-				cmd.CommandText = sql.ToString();
-				cmd.CommandType = CommandType.Text;
-				cmd.Transaction = _transaction;
+			using SqlCommand cmd = _connection.CreateCommand();
 
-				Logger.Debug($"Creating staging table {table.StagingTable.Name}");
-				Logger.Debug($"Executing SQL: {sql.ToString()}");
+			cmd.CommandText = sql.ToString();
+			cmd.CommandType = CommandType.Text;
+			cmd.Transaction = _transaction;
 
-				cmd.ExecuteNonQuery();
-			}
+			Logger.Debug($"Creating staging table {table.StagingTable.Name}");
+			Logger.Debug($"Executing SQL: {sql.ToString()}");
+
+			cmd.ExecuteNonQuery();
 		}
 
 		private void InsertFromStagingTable(EntityTable table)
 		{
 			EntitySQLBuilder<TBase> sql = new EntitySQLBuilder<TBase>(mapping);
 			string primaryKeyColumnName = table.GetPrimaryKeyColumn().Name;
-			List<dynamic> ids = new List<dynamic>();
 
 			sql.BuildInsertFromStagingToMainWithOutputIds(table);
 
-			using (SqlCommand cmd = _connection.CreateCommand())
-			{
-				cmd.CommandText = sql.ToString();
-				cmd.CommandType = CommandType.Text;
-				cmd.Transaction = _transaction;
+			using SqlCommand cmd = _connection.CreateCommand();
 
-				Logger.Debug($"Reading primary keys inserted into {table.Name}");
-				Logger.Debug($"Executing SQL: {sql.ToString()}");
+			cmd.CommandText = sql.ToString();
+			cmd.CommandType = CommandType.Text;
+			cmd.Transaction = _transaction;
 
-				using (SqlDataReader reader = cmd.ExecuteReader())
-				{
-					while (reader.Read())
-					{
-						object id = reader[primaryKeyColumnName];
-						ids.Add(id);
-						Logger.Trace($"Inserted {table.Name} entity with primary key {id.ToString()}");
-					}
-				}
+			int totalPrimaryKeys = ReadPrimaryKeys(cmd, table, primaryKeyColumnName);
 
-				Logger.Debug($"{(ids.Count == 0 ? "No" : ids.Count.ToString())} {table.Name} were inserted");
-				mapping.UpdateDataTableForeignKeys(table, ids);
-			}
+			Logger.Debug($"{(totalPrimaryKeys == 0 ? "No" : totalPrimaryKeys.ToString())} {table.Name} were inserted");
 		}
+
+		private int ReadPrimaryKeys(SqlCommand cmd, EntityTable table, string columnName)
+		{
+			int primaryKeyIndex = 0;
+
+			Logger.Debug($"Reading primary keys inserted into {table.Name}");
+			Logger.Debug($"Executing SQL: {cmd.CommandText}");
+
+			using SqlDataReader reader = cmd.ExecuteReader();
+			
+			while (reader.Read())
+			{
+				dynamic primaryKey = reader[columnName];
+
+				Logger.Trace($"Inserted '{table.Type.Name}' entity with primary key {primaryKey.ToString()}");
+
+				/*
+				 * We need to make sure that the data rows for child entities which have a foreign key relationship
+				 * to this newly inserted entity are updated with foreign keys. These are currently set to the default
+				 * value of their data type, and so will all be the same - any insert operation attempted at this point
+				 * would cause a foreign key exception in SQL.
+				 */
+
+				mapping.UpdateDataTableForeignKeys(table, primaryKey, primaryKeyIndex++);
+			}
+			
+			return primaryKeyIndex;
+		}
+
 	}
 }

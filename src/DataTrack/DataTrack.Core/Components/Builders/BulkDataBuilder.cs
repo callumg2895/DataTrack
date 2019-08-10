@@ -62,6 +62,8 @@ namespace DataTrack.Core.Components.Builders
 			Type type = item.GetType();
 			EntityTable table = Mapping.TypeTableMapping[type];
 
+			Mapping.UpdateTableEntities(table, item);
+
 			if (!DataMap.ContainsKey(table))
 			{
 				DataMap[table] = new DataTable(table.Name);
