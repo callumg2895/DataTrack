@@ -54,6 +54,8 @@ namespace DataTrack.Core.Components.Mapping
 					PrimaryKeyAttribute key = attributes.ColumnPrimaryKeys[columnAttribute];
 
 					column.KeyType = (byte)KeyTypes.PrimaryKey;
+
+					primaryKeyColumn = column;
 				}
 
 				EntityColumns.Add(column);
@@ -77,18 +79,10 @@ namespace DataTrack.Core.Components.Mapping
 		{
 			if (primaryKeyColumn == null)
 			{
-				foreach (Column column in Columns)
-				{
-					if (column.IsPrimaryKey())
-					{
-						primaryKeyColumn = (EntityColumn)column;
-						break;
-					}
-
-				}
+				throw new TableMappingException(Type, Name);
 			}
 
-			return primaryKeyColumn ?? throw new TableMappingException(Type, Name);
+			return primaryKeyColumn;
 		}
 
 		public List<EntityColumn> GetForeignKeyColumns()

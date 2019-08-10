@@ -16,6 +16,7 @@ namespace DataTrack.Core.Components.Mapping
 		internal Dictionary<IEntity, List<IEntity>> ParentChildEntityMapping { get; set; }
 		internal Dictionary<IEntity, DataRow> EntityDataRowMapping { get; set; }
 		internal Map<EntityTable, DataTable> DataTableMapping { get; set; }
+		internal Dictionary<EntityTable, List<IEntity>> TableEntityMapping { get; set; }
 
 		internal EntityMapping()
 			: base(typeof(TBase))
@@ -23,35 +24,60 @@ namespace DataTrack.Core.Components.Mapping
 			ParentChildEntityMapping = new Dictionary<IEntity, List<IEntity>>();
 			EntityDataRowMapping = new Dictionary<IEntity, DataRow>();
 			DataTableMapping = new Map<EntityTable, DataTable>();
+			TableEntityMapping = new Dictionary<EntityTable, List<IEntity>>();
 
 			MapEntity(BaseType);
 		}
 
-		internal void UpdateDataTableForeignKeys(EntityTable table, List<dynamic> primaryKeys)
+		internal void UpdateTableEntities(EntityTable table, IEntity entity)
 		{
-			Type type = table.Type;
-			int primaryKeyIndex = 0;
+			if (TableEntityMapping.ContainsKey(table))
+			{
+				TableEntityMapping[table].Add(entity);
+			}
+			else
+			{
+				TableEntityMapping[table] = new List<IEntity>() { entity };
+			}
+		}
 
-			bool hasChildren = ParentChildMapping.TryGetValue(table, out List<EntityTable> childTables);
+		internal void UpdateTableDataTable(EntityTable table)
+		{
+			if (!DataTableMapping.ContainsKey(table))
+			{
+				DataTableMapping[table] = new DataTable(table.Name);
+			}
+		}
+
+		internal void UpdateDataTableForeignKeys(EntityTable table, dynamic primaryKey, int primaryKeyIndex)
+		{
+			Logger.Trace($"Checking for child entities of '{table.Type.Name}' entity");
+
+			bool hasChildren = ParentChildMapping.TryGetValue(table, out List<EntityTable> childTables) && childTables.Count > 0;
 
 			if (!hasChildren)
 			{
+				Logger.Trace($"No child tables found for '{table.Type.Name}' entity");
 				return;
 			}
 
-			foreach (IEntity entity in ParentChildEntityMapping.Keys)
+			/*
+			 * It is guaranteed that entities are processed by the bulk data builder in the same order that their respective
+			 * primary keys are read out from the database after a bulk insert. Hence it is safe to assume that the index 
+			 * provided by the query executor matches exactly with the position of that entity in the TableEntityMapping list.
+			 */
+
+			IEntity entity = TableEntityMapping[table][primaryKeyIndex];
+
+			if (!ParentChildEntityMapping.ContainsKey(entity))
 			{
-				if (entity.GetType() != type)
-				{
-					continue;
-				}
+				Logger.Trace($"No child entities found for '{table.Type.Name}' entity");
+				return;
+			}
 
-				foreach (IEntity childEntity in ParentChildEntityMapping[entity])
-				{
-					SetForeignKeyValue(childEntity, primaryKeys?[primaryKeyIndex] ?? 0);
-				}
-
-				primaryKeyIndex++;
+			foreach (IEntity childEntity in ParentChildEntityMapping[entity])
+			{
+				SetForeignKeyValue(childEntity, primaryKey);
 			}
 		}
 
@@ -62,6 +88,8 @@ namespace DataTrack.Core.Components.Mapping
 
 			if (parentTable != null)
 			{
+				Logger.Trace($"Updating foreign key value for '{table.Type.Name}' child entity of newly inserted '{parentTable.Type.Name}' entity");
+
 				Column column = table.GetForeignKeyColumnFor(parentTable);
 
 				EntityDataRowMapping[item][column.Name] = foreignKey;

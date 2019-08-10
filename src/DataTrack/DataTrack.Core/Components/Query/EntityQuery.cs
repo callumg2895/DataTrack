@@ -19,7 +19,7 @@ namespace DataTrack.Core.Components.Query
 	{
 		#region Members
 
-		//internal EntityMapping<TBase> Mapping { get; set; }
+		internal BulkDataBuilder<TBase> BulkDataBuilder { get; set; }
 
 		#endregion
 
@@ -28,22 +28,26 @@ namespace DataTrack.Core.Components.Query
 		public EntityQuery() 
 			: base(typeof(TBase), new EntityMapping<TBase>())
 		{
-			//Mapping = new EntityMapping<TBase>();
-
 			ValidateMapping(Mapping);
+
+			BulkDataBuilder = new BulkDataBuilder<TBase>(GetMapping());
 		}
 
 		public EntityQuery<TBase> Create(TBase item)
 		{
 			OperationType = CRUDOperationTypes.Create;
-			GetMapping().DataTableMapping = new BulkDataBuilder<TBase>(item, GetMapping()).YieldDataMap();
+
+			BulkDataBuilder.BuildDataFor(item);
+
 			return this;
 		}
 
 		public EntityQuery<TBase> Create(List<TBase> items)
 		{
 			OperationType = CRUDOperationTypes.Create;
-			GetMapping().DataTableMapping = new BulkDataBuilder<TBase>(items, GetMapping()).YieldDataMap();
+
+			BulkDataBuilder.BuildDataFor(items);
+
 			return this;
 		}
 
