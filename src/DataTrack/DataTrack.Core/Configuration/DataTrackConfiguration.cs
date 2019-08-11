@@ -1,8 +1,11 @@
 ﻿using DataTrack.Core.Components.Mapping;
+using DataTrack.Core.Configuration;
 using DataTrack.Core.Enums;
 using DataTrack.Logging;
 using System;
+using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.IO;
 using System.Reflection;
 using System.Xml;
 
@@ -16,38 +19,30 @@ namespace DataTrack.Core
 
 		public static string ConnectionString = string.Empty;
 
+		private static DatabaseConfiguration databaseConfig;
+		private static LogConfiguration loggingConfig;
+		private static CacheConfiguration cacheConfig;
+
+		private const string configFileName = "DataTrackConfig";
+		private const string configFileExtension = ".xml";
+
+		private const string databaseConfigNode = "Database";
+		private const string loggingConfigNode = "Logging";
+		private const string cacheConfigNode = "Cache";
+
+		private static string configFilePath = $"{Path.GetPathRoot(Environment.SystemDirectory)}DataTrack/config";
+
 		#endregion
 
 		#region Methods
-
 		public static void Init()
 		{
-			Init(false, ConfigType.Manual);
-		}
+			LoadConfiguration();
 
-		public static void Init(bool enableConsoleLogging, ConfigType configType, string connection = "")
-		{
-			MappingCache.Init();
-			Logger.Init(enableConsoleLogging);
+			MappingCache.Init(cacheConfig.CacheSizeLimit);
+			Logger.Init(loggingConfig);
 
-			switch (configType)
-			{
-				case ConfigType.FilePath:
-					if (string.IsNullOrEmpty(connection))
-					{
-						throw new ArgumentNullException("'FilePath' ConfigType specified but the specified filepath was null", nameof(connection));
-					}
-					ConnectionString = GetConnectionString(connection);
-					Logger.Info(MethodBase.GetCurrentMethod(), $"Set database connection string '{ConnectionString}'");
-					break;
-				case ConfigType.ConnectionString:
-					ConnectionString = connection;
-					Logger.Info(MethodBase.GetCurrentMethod(), $"Set database connection string '{ConnectionString}'");
-					break;
-				case ConfigType.Manual:
-					Logger.Warn(MethodBase.GetCurrentMethod(), "Database connection string must be set manually");
-					break;
-			}
+			ConnectionString = databaseConfig.GetConnectionString();
 		}
 
 		public static SqlConnection CreateConnection()
@@ -63,7 +58,7 @@ namespace DataTrack.Core
 			}
 			else
 			{
-				Logger.Warn(MethodBase.GetCurrentMethod(), "Failed to open new SQL connection - connection string not supplied");
+				Logger.Warn(MethodBase.GetCurrentMethod(), "Failed to open new SQL connection - configuration not initialised");
 			}
 
 			return connection;
@@ -73,38 +68,35 @@ namespace DataTrack.Core
 		{
 			MappingCache.Stop();
 			Logger.Stop();
-		}
+		}		
 
-		private static string GetConnectionString(string configPath)
+		private static void LoadConfiguration()
 		{
 			XmlDocument doc = new XmlDocument();
-			string xPath = "dbconfig/connection";
-			string xPathAttr = "DataTrack";
 
-			try
+			doc.Load($"{configFilePath}/{configFileName}{configFileExtension}");
+
+			XmlNode rootNode = doc.SelectSingleNode(configFileName);
+
+			foreach (XmlNode node in rootNode.ChildNodes)
 			{
-				doc.Load(configPath);
-
-				foreach (XmlNode node in doc.SelectNodes(xPath))
+				switch (node.Name)
 				{
-					if (node.Attributes[0].Value == xPathAttr)
-					{
-						return new SqlConnectionStringBuilder()
-						{
-							DataSource = node.Attributes[1].Value,
-							InitialCatalog = node.Attributes[2].Value,
-							UserID = node.Attributes[3].Value,
-							Password = node.Attributes[4].Value
-						}.ToString();
-					}
-				}
+					case databaseConfigNode:
+						databaseConfig = new DatabaseConfiguration(node);
+						break;
 
-				throw new Exception($"Could not find node '{xPath}' with an attribute 'type' with value '{xPathAttr}' in file: {configPath}");
-			}
-			catch (Exception e)
-			{
-				Logger.Error(MethodBase.GetCurrentMethod(), e.Message);
-				return string.Empty;
+					case loggingConfigNode:
+						loggingConfig = new LogConfiguration(node);
+						break;
+
+					case cacheConfigNode:
+						cacheConfig = new CacheConfiguration(node);
+						break;
+
+					default:
+						return;
+				}
 			}
 		}
 

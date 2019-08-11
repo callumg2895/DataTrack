@@ -10,7 +10,6 @@ namespace DataTrack.Logging
 	{
 		private static LogConfiguration config;
 
-		private const int maxLogLength = 10000;
 		private static int currentLength = 0;
 
 		private static Thread loggingThread;
@@ -18,18 +17,16 @@ namespace DataTrack.Logging
 		private static volatile bool logBufferInUse;
 		private static volatile bool isStarted = false;
 		private static List<LogItem> logBuffer;
-		private static bool _enableConsoleLogging;
 
 		private static readonly object configLock = new object();
 		private static readonly object logBufferLock = new object();
 		private static readonly object logBufferInUseLock = new object();
 		private static readonly object shouldExecuteLock = new object();
 
-		public static void Init(bool enableConsoleLogging)
+		public static void Init(LogConfiguration logConfig)
 		{
-			config = new LogConfiguration("DataTrack");
+			config = logConfig;
 
-			_enableConsoleLogging = enableConsoleLogging;
 			logBuffer = new List<LogItem>();
 			logBufferInUse = true;
 			shouldExecute = true;
@@ -45,13 +42,13 @@ namespace DataTrack.Logging
 
 		private static void Create()
 		{
-			if (currentLength < maxLogLength && currentLength != 0)
-			{
-				return;
-			}
-
 			lock (configLock)
 			{
+				if (currentLength < config.MaxFileSize && currentLength != 0)
+				{
+					return;
+				}
+
 				config.CreateLogFile();
 			}
 
@@ -60,6 +57,14 @@ namespace DataTrack.Logging
 
 		private static void Log(MethodBase? method, string message, LogLevel level)
 		{
+			lock (configLock)
+			{
+				if (level < config.LogLevel)
+				{
+					return;
+				}
+			}
+
 			lock (logBuffer)
 			{
 				logBuffer.Add(new LogItem(method, message, level));
@@ -215,17 +220,17 @@ namespace DataTrack.Logging
 					writer.WriteLine(logOutput);
 					currentLength++;
 				}
-			}
 
-			if (_enableConsoleLogging)
-			{
-				switch (log.Level)
+				if (config.EnableConsoleLogging)
 				{
-					case LogLevel.Error: WriteErrorLine(logOutput); break;
-					case LogLevel.Warn: WriteWarningLine(logOutput); break;
-					case LogLevel.Info: WriteInfoLine(logOutput); break;
-					default:
-						break;
+					switch (log.Level)
+					{
+						case LogLevel.Error: WriteErrorLine(logOutput); break;
+						case LogLevel.Warn: WriteWarningLine(logOutput); break;
+						case LogLevel.Info: WriteInfoLine(logOutput); break;
+						default:
+							break;
+					}
 				}
 			}
 

@@ -1,0 +1,17 @@
+<DataTrackConfig>
+    <Database>
+        <Connection 
+            source="[data source]" 
+            catalog="[database name]" 
+            id="[username]" 
+            password="[password]"/>
+    </Database>
+    <Logging>
+        <ProjectName>DataTrack</ProjectName>
+        <LogLevel>Trace</LogLevel>
+        <MaxFileLength>10000</MaxFileLength>
+    </Logging>
+    <Cache>
+        <MaxCacheSize>100</MaxCacheSize>
+    </Cache>
+</DataTrackConfig>

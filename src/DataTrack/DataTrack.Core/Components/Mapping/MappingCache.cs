@@ -23,10 +23,12 @@ namespace DataTrack.Core.Components.Mapping
 
 		private static Thread cullingThread;
 
-		public static void Init()
+		public static void Init(int cacheSizeLimit)
 		{
 			TypeTableMapping = new Dictionary<Type, EntityTable>();
 			TypeAccessMapping = new Dictionary<Type, long>();
+
+			maxCachedItems = cacheSizeLimit;
 
 			shouldCull = true;
 			typeMappingInUse = true;

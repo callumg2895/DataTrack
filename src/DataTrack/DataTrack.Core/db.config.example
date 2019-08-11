@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<dbconfig>
-  <connection type="DataTrack" source="127.0.0.1" name="data_track_testing" user="sa" password="password"/>
-</dbconfig>
