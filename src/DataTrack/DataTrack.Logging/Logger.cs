@@ -10,7 +10,8 @@ namespace DataTrack.Logging
 	{
 		private static LogConfiguration config;
 
-		private const int maxLogLength = 10000;
+		private static LogLevel logLevel = LogLevel.Trace;
+		private static int maxLogLength = 10000;
 		private static int currentLength = 0;
 
 		private static Thread loggingThread;
@@ -25,9 +26,12 @@ namespace DataTrack.Logging
 		private static readonly object logBufferInUseLock = new object();
 		private static readonly object shouldExecuteLock = new object();
 
-		public static void Init(bool enableConsoleLogging)
+		public static void Init(bool enableConsoleLogging, LogLevel level, int maxFileSize)
 		{
 			config = new LogConfiguration("DataTrack");
+
+			logLevel = level;
+			maxLogLength = maxFileSize;
 
 			_enableConsoleLogging = enableConsoleLogging;
 			logBuffer = new List<LogItem>();
@@ -60,6 +64,11 @@ namespace DataTrack.Logging
 
 		private static void Log(MethodBase? method, string message, LogLevel level)
 		{
+			if (level < logLevel)
+			{
+				return;
+			}
+
 			lock (logBuffer)
 			{
 				logBuffer.Add(new LogItem(method, message, level));

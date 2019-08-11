@@ -35,13 +35,7 @@ namespace DataTrack.Core.Tests
 		[AssemblyInitialize]
 		public static void AssemblyInit(TestContext testContext)
 		{
-			string connectionString =
-				"Data Source=(local);" +
-				"Initial Catalog=data_track_testing;" +
-				"User id=sa;" +
-				"Password=password;";
-
-			DataTrackConfiguration.Init(false, ConfigType.ConnectionString, connectionString);
+			DataTrackConfiguration.Init();
 
 			using (SqlConnection connection = DataTrackConfiguration.CreateConnection())
 			{

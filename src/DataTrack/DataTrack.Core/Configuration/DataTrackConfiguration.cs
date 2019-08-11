@@ -1,8 +1,11 @@
 ﻿using DataTrack.Core.Components.Mapping;
+using DataTrack.Core.Configuration;
 using DataTrack.Core.Enums;
 using DataTrack.Logging;
 using System;
+using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.IO;
 using System.Reflection;
 using System.Xml;
 
@@ -16,38 +19,23 @@ namespace DataTrack.Core
 
 		public static string ConnectionString = string.Empty;
 
+		private static DatabaseConfiguration databaseConfig;
+		private static LoggingConfiguration loggingConfig;
+		private static CacheConfiguration cacheConfig;
+
+		private static string configFilePath = $"{Path.GetPathRoot(Environment.SystemDirectory)}DataTrack/config";
+
 		#endregion
 
 		#region Methods
-
 		public static void Init()
 		{
-			Init(false, ConfigType.Manual);
-		}
+			LoadConfiguration();
 
-		public static void Init(bool enableConsoleLogging, ConfigType configType, string connection = "")
-		{
-			MappingCache.Init();
-			Logger.Init(enableConsoleLogging);
+			MappingCache.Init(cacheConfig.CacheSizeLimit);
+			Logger.Init(false, loggingConfig.LogLevel, loggingConfig.MaxFileSize);
 
-			switch (configType)
-			{
-				case ConfigType.FilePath:
-					if (string.IsNullOrEmpty(connection))
-					{
-						throw new ArgumentNullException("'FilePath' ConfigType specified but the specified filepath was null", nameof(connection));
-					}
-					ConnectionString = GetConnectionString(connection);
-					Logger.Info(MethodBase.GetCurrentMethod(), $"Set database connection string '{ConnectionString}'");
-					break;
-				case ConfigType.ConnectionString:
-					ConnectionString = connection;
-					Logger.Info(MethodBase.GetCurrentMethod(), $"Set database connection string '{ConnectionString}'");
-					break;
-				case ConfigType.Manual:
-					Logger.Warn(MethodBase.GetCurrentMethod(), "Database connection string must be set manually");
-					break;
-			}
+			ConnectionString = databaseConfig.GetConnectionString();
 		}
 
 		public static SqlConnection CreateConnection()
@@ -73,38 +61,60 @@ namespace DataTrack.Core
 		{
 			MappingCache.Stop();
 			Logger.Stop();
-		}
+		}		
 
-		private static string GetConnectionString(string configPath)
+		private static void LoadConfiguration()
 		{
 			XmlDocument doc = new XmlDocument();
-			string xPath = "dbconfig/connection";
-			string xPathAttr = "DataTrack";
 
-			try
+			string rootNode = "DataTrackConfig";
+
+			List<string> nodes = new List<string>(3)
 			{
-				doc.Load(configPath);
+				"Database",
+				"Logging",
+				"Cache"
+			};
 
-				foreach (XmlNode node in doc.SelectNodes(xPath))
+			databaseConfig = new DatabaseConfiguration();
+			loggingConfig = new LoggingConfiguration();
+			cacheConfig = new CacheConfiguration();
+
+			doc.Load($"{configFilePath}/{rootNode}.xml");
+
+			foreach (string node in nodes)
+			{
+				switch (node)
 				{
-					if (node.Attributes[0].Value == xPathAttr)
-					{
-						return new SqlConnectionStringBuilder()
-						{
-							DataSource = node.Attributes[1].Value,
-							InitialCatalog = node.Attributes[2].Value,
-							UserID = node.Attributes[3].Value,
-							Password = node.Attributes[4].Value
-						}.ToString();
-					}
-				}
+					case "Database":
+						XmlNode xmlNode = doc.SelectSingleNode($"{rootNode}/{node}/Connection");
 
-				throw new Exception($"Could not find node '{xPath}' with an attribute 'type' with value '{xPathAttr}' in file: {configPath}");
-			}
-			catch (Exception e)
-			{
-				Logger.Error(MethodBase.GetCurrentMethod(), e.Message);
-				return string.Empty;
+						databaseConfig.DataSource = xmlNode.Attributes.GetNamedItem("source").Value;
+						databaseConfig.InitalCatalog = xmlNode.Attributes.GetNamedItem("catalog").Value;
+						databaseConfig.UserID = xmlNode.Attributes.GetNamedItem("id").Value;
+						databaseConfig.Password = xmlNode.Attributes.GetNamedItem("password").Value;
+
+						break;
+
+					case "Logging":
+						XmlNode xmlNodeLogLevel = doc.SelectSingleNode($"{rootNode}/{node}/LogLevel");
+						XmlNode xmlNodeMaxFileLength = doc.SelectSingleNode($"{rootNode}/{node}/MaxFileLength");
+
+						loggingConfig.LogLevel = (LogLevel)Enum.Parse(typeof(LogLevel), xmlNodeLogLevel.InnerText);
+						loggingConfig.MaxFileSize = int.Parse(xmlNodeMaxFileLength.InnerText);
+
+						break;
+
+					case "Cache":
+						XmlNode xmlNodeMaxCacheSize = doc.SelectSingleNode($"{rootNode}/{node}/MaxCacheSize");
+
+						cacheConfig.CacheSizeLimit = int.Parse(xmlNodeMaxCacheSize.InnerText);
+
+						break;
+
+					default:
+						return;
+				}
 			}
 		}
 
