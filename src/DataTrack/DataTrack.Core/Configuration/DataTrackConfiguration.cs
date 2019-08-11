@@ -20,8 +20,15 @@ namespace DataTrack.Core
 		public static string ConnectionString = string.Empty;
 
 		private static DatabaseConfiguration databaseConfig;
-		private static LoggingConfiguration loggingConfig;
+		private static LogConfiguration loggingConfig;
 		private static CacheConfiguration cacheConfig;
+
+		private const string configFileName = "DataTrackConfig";
+		private const string configFileExtension = ".xml";
+
+		private const string databaseConfigNode = "Database";
+		private const string loggingConfigNode = "Logging";
+		private const string cacheConfigNode = "Cache";
 
 		private static string configFilePath = $"{Path.GetPathRoot(Environment.SystemDirectory)}DataTrack/config";
 
@@ -33,7 +40,7 @@ namespace DataTrack.Core
 			LoadConfiguration();
 
 			MappingCache.Init(cacheConfig.CacheSizeLimit);
-			Logger.Init(false, loggingConfig.LogLevel, loggingConfig.MaxFileSize);
+			Logger.Init(loggingConfig);
 
 			ConnectionString = databaseConfig.GetConnectionString();
 		}
@@ -51,7 +58,7 @@ namespace DataTrack.Core
 			}
 			else
 			{
-				Logger.Warn(MethodBase.GetCurrentMethod(), "Failed to open new SQL connection - connection string not supplied");
+				Logger.Warn(MethodBase.GetCurrentMethod(), "Failed to open new SQL connection - configuration not initialised");
 			}
 
 			return connection;
@@ -67,49 +74,24 @@ namespace DataTrack.Core
 		{
 			XmlDocument doc = new XmlDocument();
 
-			string rootNode = "DataTrackConfig";
+			doc.Load($"{configFilePath}/{configFileName}{configFileExtension}");
 
-			List<string> nodes = new List<string>(3)
+			XmlNode rootNode = doc.SelectSingleNode(configFileName);
+
+			foreach (XmlNode node in rootNode.ChildNodes)
 			{
-				"Database",
-				"Logging",
-				"Cache"
-			};
-
-			databaseConfig = new DatabaseConfiguration();
-			loggingConfig = new LoggingConfiguration();
-			cacheConfig = new CacheConfiguration();
-
-			doc.Load($"{configFilePath}/{rootNode}.xml");
-
-			foreach (string node in nodes)
-			{
-				switch (node)
+				switch (node.Name)
 				{
-					case "Database":
-						XmlNode xmlNode = doc.SelectSingleNode($"{rootNode}/{node}/Connection");
-
-						databaseConfig.DataSource = xmlNode.Attributes.GetNamedItem("source").Value;
-						databaseConfig.InitalCatalog = xmlNode.Attributes.GetNamedItem("catalog").Value;
-						databaseConfig.UserID = xmlNode.Attributes.GetNamedItem("id").Value;
-						databaseConfig.Password = xmlNode.Attributes.GetNamedItem("password").Value;
-
+					case databaseConfigNode:
+						databaseConfig = new DatabaseConfiguration(node);
 						break;
 
-					case "Logging":
-						XmlNode xmlNodeLogLevel = doc.SelectSingleNode($"{rootNode}/{node}/LogLevel");
-						XmlNode xmlNodeMaxFileLength = doc.SelectSingleNode($"{rootNode}/{node}/MaxFileLength");
-
-						loggingConfig.LogLevel = (LogLevel)Enum.Parse(typeof(LogLevel), xmlNodeLogLevel.InnerText);
-						loggingConfig.MaxFileSize = int.Parse(xmlNodeMaxFileLength.InnerText);
-
+					case loggingConfigNode:
+						loggingConfig = new LogConfiguration(node);
 						break;
 
-					case "Cache":
-						XmlNode xmlNodeMaxCacheSize = doc.SelectSingleNode($"{rootNode}/{node}/MaxCacheSize");
-
-						cacheConfig.CacheSizeLimit = int.Parse(xmlNodeMaxCacheSize.InnerText);
-
+					case cacheConfigNode:
+						cacheConfig = new CacheConfiguration(node);
 						break;
 
 					default:
