@@ -15,7 +15,7 @@ namespace DataTrack.Logging
 		public LogConfiguration(string projectName)
 		{
 			fileName = $"{projectName}Log_";
-			filePath = $"{Path.GetPathRoot(Environment.SystemDirectory)}{projectName}";
+			filePath = $"{Path.GetPathRoot(Environment.SystemDirectory)}{projectName}/logs";
 			fileExtension = ".txt";
 			fileDate = DateTime.Now.Date;
 			fileDateString = fileDate.ToShortDateString().Replace("/", "_");
