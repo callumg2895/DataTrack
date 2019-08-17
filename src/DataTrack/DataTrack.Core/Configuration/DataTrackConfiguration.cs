@@ -2,6 +2,7 @@
 using DataTrack.Core.Configuration;
 using DataTrack.Core.Enums;
 using DataTrack.Logging;
+using DataTrack.Util.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -22,15 +23,6 @@ namespace DataTrack.Core
 		private static DatabaseConfiguration databaseConfig;
 		private static LogConfiguration loggingConfig;
 		private static CacheConfiguration cacheConfig;
-
-		private const string configFileName = "DataTrackConfig";
-		private const string configFileExtension = ".xml";
-
-		private const string databaseConfigNode = "Database";
-		private const string loggingConfigNode = "Logging";
-		private const string cacheConfigNode = "Cache";
-
-		private static string configFilePath = $"{Path.GetPathRoot(Environment.SystemDirectory)}DataTrack/config";
 
 		#endregion
 
@@ -72,32 +64,11 @@ namespace DataTrack.Core
 
 		private static void LoadConfiguration()
 		{
-			XmlDocument doc = new XmlDocument();
+			DataTrackConfigReader reader = new DataTrackConfigReader();
 
-			doc.Load($"{configFilePath}/{configFileName}{configFileExtension}");
-
-			XmlNode rootNode = doc.SelectSingleNode(configFileName);
-
-			foreach (XmlNode node in rootNode.ChildNodes)
-			{
-				switch (node.Name)
-				{
-					case databaseConfigNode:
-						databaseConfig = new DatabaseConfiguration(node);
-						break;
-
-					case loggingConfigNode:
-						loggingConfig = new LogConfiguration(node);
-						break;
-
-					case cacheConfigNode:
-						cacheConfig = new CacheConfiguration(node);
-						break;
-
-					default:
-						return;
-				}
-			}
+			databaseConfig = new DatabaseConfiguration(reader.GetDatabaseConfigNode());
+			loggingConfig = new LogConfiguration(reader.GetLoggingConfigNode());
+			cacheConfig = new CacheConfiguration(reader.GetCacheConfigNode());
 		}
 
 		#endregion

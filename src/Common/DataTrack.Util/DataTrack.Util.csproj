@@ -1,15 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+	<OutputType>Library</OutputType>
+	<TargetFramework>netcoreapp2.2</TargetFramework>
 	<RuntimeFrameworkVersion>2.2.0</RuntimeFrameworkVersion>
 	<LangVersion>8.0</LangVersion>
 	<NullableContextOptions>enable</NullableContextOptions>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Common\DataTrack.Util\DataTrack.Util.csproj" />
+    <ProjectReference Include="..\DataTrack.Logging\DataTrack.Logging.csproj" />
   </ItemGroup>
 
 </Project>

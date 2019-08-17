@@ -1,4 +1,6 @@
-﻿using System;
+﻿using DataTrack.Logging;
+using DataTrack.Util.Helpers;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,15 +11,10 @@ namespace LogTrack
 	{
 		static void Main(string[] args)
 		{
-			string projectName = "DataTrack";
-			string fileName = $"{projectName}Log_";
-			string filePath = $"{Path.GetPathRoot(Environment.SystemDirectory)}{projectName}";
-			string fileExtension = ".txt";
-			DateTime fileDate = DateTime.Now.Date;
-			string fileDateString = fileDate.ToShortDateString().Replace("/", "_");
-			int fileIndex = 0;
+			DataTrackConfigReader configReader = new DataTrackConfigReader();
+			LogConfiguration logConfig = new LogConfiguration(configReader.GetLoggingConfigNode());
 
-			LogReader reader = new LogReader(filePath, $"{fileDateString}_{fileName}", fileExtension);
+			LogReader reader = new LogReader(logConfig);
 
 			List<LogStatement> logBuffer = reader.Read();
 
