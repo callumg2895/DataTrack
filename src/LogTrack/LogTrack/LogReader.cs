@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DataTrack.Logging;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -23,22 +24,23 @@ namespace LogTrack
 
 		private object parsingLock = new object();
 
-		public LogReader(string path, string name, string extension)
+		public LogReader(LogConfiguration logConfiguration)
 		{
 			logBuffer = new List<LogStatement>();
-			maxLogSize = 10000;
+			logStats = new LogStats();
+
+			maxLogSize = logConfiguration.MaxFileSize;
+			filePath = logConfiguration.FilePath;
+			fileName = logConfiguration.FileName;
+			fileExtension = logConfiguration.FileExtension;
+
+			fileIndex = 0;
 			maxLoadingBarSize = 10;
 
 			lock (parsingLock)
 			{
 				parsing = false;
 			}
-
-			logStats = new LogStats();
-			filePath = path;
-			fileName = name;
-			fileExtension = extension;
-			fileIndex = 0;
 		}
 
 		public List<LogStatement> Read()

@@ -6,16 +6,17 @@ namespace DataTrack.Logging
 {
 	public class LogConfiguration
 	{
+		public int MaxFileSize { get; set; }
+		public string FileName { get; set; }
+		public string FilePath { get; set; }
+		public string FileExtension { get; set; }
+
 		internal LogLevel LogLevel { get; set; }
-		internal int MaxFileSize { get; set; }
 		internal bool EnableConsoleLogging { get; set; }
 
 		private readonly string projectName;
-		private readonly string fileName;
-		private readonly string filePath;
-		private readonly string fileExtension;
 		private DateTime fileDate;
-		private readonly string fileDateString;
+		private string fileDateString;
 		private int fileIndex;
 
 		public LogConfiguration(XmlNode loggingNode)
@@ -29,24 +30,26 @@ namespace DataTrack.Logging
 			MaxFileSize = int.Parse(xmlNodeMaxFileLength.InnerText);
 			EnableConsoleLogging = false;
 
-			fileName = $"{projectName}Log_";
-			filePath = $"{Path.GetPathRoot(Environment.SystemDirectory)}{projectName}/logs";
-			fileExtension = ".txt";
 			fileDate = DateTime.Now.Date;
 			fileDateString = fileDate.ToShortDateString().Replace("/", "_");
+			FileName = $"{fileDateString}_{projectName}Log_";
+			FilePath = $@"{Path.GetPathRoot(Environment.SystemDirectory)}{projectName}/logs";
+			FileExtension = ".txt";
 			fileIndex = 0;
 		}
 
 		internal void CreateLogFile()
 		{
-			if (!Directory.Exists(filePath))
+			if (!Directory.Exists(FilePath))
 			{
-				Directory.CreateDirectory(filePath);
+				Directory.CreateDirectory(FilePath);
 			}
 
 			if (DateTime.Now.Date > fileDate)
 			{
 				fileDate = DateTime.Now.Date;
+				fileDateString = fileDate.ToShortDateString().Replace("/", "_");
+				FileName = $"{fileDateString}_{projectName}Log_";
 			}
 
 			while (File.Exists(GetFullPath()))
@@ -59,9 +62,9 @@ namespace DataTrack.Logging
 
 		internal void DeleteLogFiles()
 		{
-			if (Directory.Exists(filePath))
+			if (Directory.Exists(FilePath))
 			{
-				string[] files = Directory.GetFiles(filePath, $"{fileDateString}_{fileName}*");
+				string[] files = Directory.GetFiles(FilePath, $"{FileName}*");
 
 				foreach (string file in files)
 				{
@@ -72,7 +75,7 @@ namespace DataTrack.Logging
 
 		internal string GetFullPath()
 		{
-			return $@"{filePath}\{fileDateString}_{fileName}{fileIndex}{fileExtension}";
+			return $@"{FilePath}\{FileName}{fileIndex}{FileExtension}";
 		}
 	}
 }
