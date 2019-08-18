@@ -14,14 +14,14 @@ namespace DataTrack.Core.Components.Execution
 	{
 		private readonly List<TBase> results;
 		private readonly List<EntityTable> tables;
-		private readonly Dictionary<Table, List<IEntity>> entityDictionary;
+		private readonly IDictionary<Table, Dictionary<object, IEntity>> entityPrimaryKeyDictionary;
 
 		internal ReadQueryExecutor(EntityQuery<TBase> query, SqlConnection connection, SqlTransaction? transaction = null)
 			: base(query, connection, transaction)
 		{
 			results = new List<TBase>();
 			tables = mapping.Tables;
-			entityDictionary = new Dictionary<Table, List<IEntity>>();
+			entityPrimaryKeyDictionary = new Dictionary<Table, Dictionary<object, IEntity>>();
 		}
 
 		internal List<TBase> Execute(SqlDataReader reader)
@@ -55,12 +55,12 @@ namespace DataTrack.Core.Components.Execution
 
 		private void MapEntity(IEntity entity, EntityTable table)
 		{
-			if (!entityDictionary.ContainsKey(table))
+			if (!entityPrimaryKeyDictionary.ContainsKey(table))
 			{
-				entityDictionary.Add(table, new List<IEntity>());
+				entityPrimaryKeyDictionary.Add(table, new Dictionary<object, IEntity>());
 			}
 
-			entityDictionary[table].Add(entity);
+			entityPrimaryKeyDictionary[table].Add(entity.GetID(), entity);
 		}
 
 		private void AddResult(IEntity entity, EntityTable table)
@@ -78,18 +78,11 @@ namespace DataTrack.Core.Components.Execution
 		private void AssociateWithParent(IEntity entity, EntityTable table)
 		{
 			EntityTable parentTable = mapping.ChildParentMapping[table];
+			EntityColumn foreignKeyColumn = table.GetForeignKeyColumnFor(parentTable);
+			object foreignKey = entity.GetPropertyValue(foreignKeyColumn.PropertyName);
+			IEntity parentEntity = entityPrimaryKeyDictionary[parentTable][foreignKey];
 
-			foreach (IEntity parentEntity in entityDictionary[parentTable])
-			{
-				object foreignKey = entity.GetPropertyValue(table.GetForeignKeyColumnFor(parentTable).PropertyName);
-				object parentPrimaryKey = parentEntity.GetID();
-
-				if (parentPrimaryKey.Equals(foreignKey))
-				{
-					parentEntity.AddChildPropertyValue(table.Name, entity);
-					break;
-				}
-			}
+			parentEntity.AddChildPropertyValue(table.Name, entity);		
 		}
 
 		private IEntity ReadEntity(SqlDataReader reader, EntityTable table)
