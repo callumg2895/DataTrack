@@ -32,6 +32,8 @@ namespace DataTrack.Core
 			LoadConfiguration();
 
 			MappingCache.Init(cacheConfig.CacheSizeLimit);
+			ChildPropertyCache.Init(cacheConfig.CacheSizeLimit);
+			NativePropertyCache.Init(cacheConfig.CacheSizeLimit);
 			Logger.Init(loggingConfig);
 
 			ConnectionString = databaseConfig.GetConnectionString();
@@ -59,6 +61,8 @@ namespace DataTrack.Core
 		public static void Dispose()
 		{
 			MappingCache.Stop();
+			ChildPropertyCache.Stop();
+			NativePropertyCache.Stop();
 			Logger.Stop();
 		}		
 

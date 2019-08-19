@@ -10,26 +10,26 @@ namespace DataTrack.Core.Components.Mapping
 {
 	public static class MappingCache
 	{
-		private static Cache<Type, EntityTable> mappingCache;
+		private static Cache<Type, EntityTable> cache;
 
 		public static void Init(int cacheSizeLimit)
 		{
-			mappingCache = new Cache<Type, EntityTable>(cacheSizeLimit);
+			cache = new Cache<Type, EntityTable>(cacheSizeLimit, "MappingCache");
 		}
 
 		public static void CacheItem(Type type, EntityTable table)
 		{
-			mappingCache.CacheItem(type, table);
+			cache.CacheItem(type, table);
 		}
 
 		public static EntityTable RetrieveItem(Type type)
 		{
-			return mappingCache.RetrieveItem(type);
+			return cache.RetrieveItem(type);
 		}
 
 		public static void Stop()
 		{
-			mappingCache.Stop();
+			cache.Stop();
 		}
 	}
 }

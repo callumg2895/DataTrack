@@ -22,7 +22,9 @@ namespace DataTrack.Util.DataStructures
 
 		private Thread cullingThread;
 
-		public Cache(int cacheSizeLimit)
+		private string cacheName;
+
+		public Cache(int cacheSizeLimit, string name)
 		{
 			cacheDictionary = new Dictionary<TKey, TValue>();
 			cacheAccessMapping = new Dictionary<TKey, long>();
@@ -34,6 +36,8 @@ namespace DataTrack.Util.DataStructures
 
 			cullingThread = new Thread(new ThreadStart(Culling));
 			cullingThread.Start();
+
+			cacheName = $"({name})";
 		}
 
 		private bool ShouldCull()
@@ -78,7 +82,7 @@ namespace DataTrack.Util.DataStructures
 
 				int cacheSize = GetCurrentCacheSize();
 
-				Logger.Debug(MethodBase.GetCurrentMethod(), $"Beginning cache culling cycle - current cache size: {cacheSize} item(s)");
+				Logger.Debug($"{cacheName} Beginning cache culling cycle - current cache size: {cacheSize} item(s)");
 
 				lock (typeMappingInUseLock)
 				{
@@ -124,7 +128,7 @@ namespace DataTrack.Util.DataStructures
 				{
 					cacheDictionary.Remove(candidate);
 					cacheAccessMapping.Remove(candidate);
-					Logger.Info(MethodBase.GetCurrentMethod(), $"Culled values for key {candidate.ToString()}");
+					Logger.Info($"{cacheName} Culled values for key {candidate.ToString()}");
 				}
 			}
 		}
@@ -133,7 +137,7 @@ namespace DataTrack.Util.DataStructures
 		{
 			lock (typeMappingLock)
 			{
-				Logger.Info(MethodBase.GetCurrentMethod(), $"Caching value {value.ToString()} for key '{key.ToString()}'");
+				Logger.Info($"{cacheName} Caching value {value.ToString()} for key '{key.ToString()}'");
 				cacheDictionary[key] = value;
 				cacheAccessMapping[key] = DateTime.UtcNow.ToFileTime();
 			}
@@ -150,7 +154,7 @@ namespace DataTrack.Util.DataStructures
 					value = cacheDictionary[key];
 					cacheAccessMapping[key] = DateTime.UtcNow.ToFileTime();
 
-					Logger.Info(MethodBase.GetCurrentMethod(), $"Retrieved value {value.ToString()} for key '{key.ToString()}' from cache");
+					Logger.Info($"{cacheName} Retrieved value {value.ToString()} for key '{key.ToString()}' from cache");
 				}
 			}
 

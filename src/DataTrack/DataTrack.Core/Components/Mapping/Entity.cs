@@ -16,8 +16,6 @@ namespace DataTrack.Core.Components.Mapping
 		public virtual TIdentity ID { get; set; } = default;
 
 		private static readonly Dictionary<(Type, string), PropertyInfo> properties = new Dictionary<(Type, string), PropertyInfo>();
-		private static readonly Dictionary<Type, List<PropertyInfo>> childProperties = new Dictionary<Type, List<PropertyInfo>>();
-		private static readonly Dictionary<Type, List<PropertyInfo>> nativeProperties = new Dictionary<Type, List<PropertyInfo>>();
 
 		public object GetID()
 		{
@@ -33,25 +31,28 @@ namespace DataTrack.Core.Components.Mapping
 		{
 			List<object> values = new List<object>();
 			Type type = GetType();
-		
-			if (nativeProperties.ContainsKey(type))
+			List<PropertyInfo> nativeProperties = NativePropertyCache.RetrieveItem(type);
+
+			if (nativeProperties != null)
 			{
 				Logger.Trace($"Loading native properties for Entity '{type.Name}' from cache.");
-				foreach (PropertyInfo property in nativeProperties[type])
+				foreach (PropertyInfo property in nativeProperties)
 				{
 					values.Add(ReflectionUtil.GetPropertyValue(this, property.Name));
 				}
 			}
 			else
 			{
-				nativeProperties.Add(type, new List<PropertyInfo>());
+				nativeProperties = new List<PropertyInfo>();
 
 				Logger.Trace($"Loading native properties for Entity '{type.Name}'.");
 				foreach (PropertyInfo property in ReflectionUtil.GetProperties(this, typeof(ColumnAttribute)))
 				{
 					values.Add(ReflectionUtil.GetPropertyValue(this, property.Name));
-					nativeProperties[type].Add(property);
+					nativeProperties.Add(property);
 				}
+
+				NativePropertyCache.CacheItem(type, nativeProperties);
 			}
 
 			return values;
@@ -67,25 +68,29 @@ namespace DataTrack.Core.Components.Mapping
 		public void InstantiateChildProperties()
 		{
 			Type type = GetType();
+			List<PropertyInfo> childProperties = ChildPropertyCache.RetrieveItem(type);
 
-			if (childProperties.ContainsKey(type))
+
+			if (childProperties != null)
 			{
 				Logger.Trace($"Instantiating child properties for Entity '{type.Name}' from cache.");
-				foreach (PropertyInfo property in childProperties[type])
+				foreach (PropertyInfo property in childProperties)
 				{
 					property.SetValue(this, Activator.CreateInstance(property.PropertyType));
 				}
 			}
 			else
 			{
-				childProperties.Add(type, new List<PropertyInfo>());
+				childProperties = new List<PropertyInfo>();
 
 				Logger.Trace($"Instantiating child properties for Entity '{type.Name}'.");
 				foreach (PropertyInfo property in ReflectionUtil.GetProperties(this, typeof(TableAttribute)))
 				{
 					property.SetValue(this, Activator.CreateInstance(property.PropertyType));
-					childProperties[type].Add(property);
+					childProperties.Add(property);
 				}
+
+				ChildPropertyCache.CacheItem(type, childProperties);
 			}
 		}
 
