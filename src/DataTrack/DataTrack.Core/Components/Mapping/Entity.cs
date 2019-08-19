@@ -5,6 +5,7 @@ using DataTrack.Logging;
 using DataTrack.Util.Helpers;
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace DataTrack.Core.Components.Mapping
@@ -76,7 +77,16 @@ namespace DataTrack.Core.Components.Mapping
 				Logger.Trace($"Instantiating child properties for Entity '{type.Name}' from cache.");
 				foreach (PropertyInfo property in childProperties)
 				{
-					property.SetValue(this, Activator.CreateInstance(property.PropertyType));
+					Func<object> activator = CompiledActivatorCache.RetrieveItem(property.PropertyType);
+
+					if (activator == null)
+					{
+						activator = ReflectionUtil.GetActivator(property.PropertyType);
+						CompiledActivatorCache.CacheItem(property.PropertyType, activator);
+					}
+
+					object instance = activator();
+					property.SetValue(this, instance);
 				}
 			}
 			else
@@ -86,7 +96,11 @@ namespace DataTrack.Core.Components.Mapping
 				Logger.Trace($"Instantiating child properties for Entity '{type.Name}'.");
 				foreach (PropertyInfo property in ReflectionUtil.GetProperties(this, typeof(TableAttribute)))
 				{
-					property.SetValue(this, Activator.CreateInstance(property.PropertyType));
+					Func<object> activator = ReflectionUtil.GetActivator(property.PropertyType);
+
+					object instance = activator();
+					property.SetValue(this, instance);
+					CompiledActivatorCache.CacheItem(property.PropertyType, activator);
 					childProperties.Add(property);
 				}
 

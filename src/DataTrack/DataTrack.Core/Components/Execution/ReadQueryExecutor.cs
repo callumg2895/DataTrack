@@ -3,9 +3,11 @@ using DataTrack.Core.Components.Query;
 using DataTrack.Core.Interface;
 using DataTrack.Logging;
 using DataTrack.Util.Extensions;
+using DataTrack.Util.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace DataTrack.Core.Components.Execution
@@ -88,7 +90,15 @@ namespace DataTrack.Core.Components.Execution
 		private IEntity ReadEntity(SqlDataReader reader, EntityTable table)
 		{
 			Type type = table.Type;
-			IEntity entity = (IEntity)Activator.CreateInstance(type);
+			Func<object> activator = CompiledActivatorCache.RetrieveItem(type);
+
+			if (activator == null)
+			{
+				activator = ReflectionUtil.GetActivator(type);
+				CompiledActivatorCache.CacheItem(type, activator);
+			}
+
+			IEntity entity = (IEntity)activator();
 
 			foreach (Column column in table.Columns)
 			{

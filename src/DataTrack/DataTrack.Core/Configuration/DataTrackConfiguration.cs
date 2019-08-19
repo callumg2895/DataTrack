@@ -34,6 +34,7 @@ namespace DataTrack.Core
 			MappingCache.Init(cacheConfig.CacheSizeLimit);
 			ChildPropertyCache.Init(cacheConfig.CacheSizeLimit);
 			NativePropertyCache.Init(cacheConfig.CacheSizeLimit);
+			CompiledActivatorCache.Init(cacheConfig.CacheSizeLimit);
 			Logger.Init(loggingConfig);
 
 			ConnectionString = databaseConfig.GetConnectionString();
@@ -63,6 +64,7 @@ namespace DataTrack.Core
 			MappingCache.Stop();
 			ChildPropertyCache.Stop();
 			NativePropertyCache.Stop();
+			CompiledActivatorCache.Stop();
 			Logger.Stop();
 		}		
 

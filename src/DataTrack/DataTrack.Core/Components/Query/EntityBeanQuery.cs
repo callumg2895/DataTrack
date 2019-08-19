@@ -5,6 +5,7 @@ using DataTrack.Core.Enums;
 using DataTrack.Core.Interface;
 using DataTrack.Logging;
 using DataTrack.Util.Extensions;
+using DataTrack.Util.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -54,11 +55,19 @@ namespace DataTrack.Core.Components.Query
 
 			stopwatch.Start();
 
+			Func<object> activator = CompiledActivatorCache.RetrieveItem(baseType);
+
+			if (activator == null)
+			{
+				activator = ReflectionUtil.GetActivator(baseType);
+				CompiledActivatorCache.CacheItem(baseType, activator);
+			}
+
 			using (SqlDataReader reader = command.ExecuteReader())
 			{
 				while (reader.Read())
 				{
-					IEntityBean entityBean = (IEntityBean)Activator.CreateInstance(baseType);
+					IEntityBean entityBean = (IEntityBean)activator();
 
 					foreach (PropertyInfo property in baseType.GetProperties())
 					{

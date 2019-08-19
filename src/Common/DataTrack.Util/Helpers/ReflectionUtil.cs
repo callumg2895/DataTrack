@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace DataTrack.Util.Helpers
@@ -62,6 +63,11 @@ namespace DataTrack.Util.Helpers
 		public static bool IsGenericList(Type type)
 		{
 			return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>);
+		}
+
+		public static Func<object> GetActivator(Type type)
+		{
+			return Expression.Lambda<Func<object>>(Expression.New(type)).Compile();
 		}
 	}
 }
