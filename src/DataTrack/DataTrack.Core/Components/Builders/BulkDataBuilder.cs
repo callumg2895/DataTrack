@@ -53,7 +53,7 @@ namespace DataTrack.Core.Components.Builders
 				return;
 			}
 
-			Logger.Info(MethodBase.GetCurrentMethod(), $"Building DataTable for: {item.GetType().ToString()}");
+			Logger.Trace($"Building DataTable for: {item.GetType().ToString()}");
 
 			Type type = item.GetType();
 			EntityTable table = Mapping.TypeTableMapping[type];

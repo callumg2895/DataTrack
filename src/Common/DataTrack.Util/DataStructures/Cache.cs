@@ -128,7 +128,7 @@ namespace DataTrack.Util.DataStructures
 				{
 					cacheDictionary.Remove(candidate);
 					cacheAccessMapping.Remove(candidate);
-					Logger.Info($"{cacheName} Culled values for key {candidate.ToString()}");
+					Logger.Debug($"{cacheName} Culled values for key {candidate.ToString()}");
 				}
 			}
 		}
@@ -137,7 +137,7 @@ namespace DataTrack.Util.DataStructures
 		{
 			lock (typeMappingLock)
 			{
-				Logger.Info($"{cacheName} Caching value {value.ToString()} for key '{key.ToString()}'");
+				Logger.Trace($"{cacheName} Caching value {value.ToString()} for key '{key.ToString()}'");
 				cacheDictionary[key] = value;
 				cacheAccessMapping[key] = DateTime.UtcNow.ToFileTime();
 			}
@@ -154,7 +154,7 @@ namespace DataTrack.Util.DataStructures
 					value = cacheDictionary[key];
 					cacheAccessMapping[key] = DateTime.UtcNow.ToFileTime();
 
-					Logger.Info($"{cacheName} Retrieved value {value.ToString()} for key '{key.ToString()}' from cache");
+					Logger.Trace($"{cacheName} Retrieved value {value.ToString()} for key '{key.ToString()}' from cache");
 				}
 			}
 
