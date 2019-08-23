@@ -14,9 +14,9 @@ namespace DataTrack.Util.DataStructures
 		private volatile bool shouldCull;
 		private volatile bool typeMappingInUse;
 
-		private readonly object typeMappingLock = new object();
+		private readonly object cacheLock = new object();
 		private readonly object shouldCullLock = new object();
-		private readonly object typeMappingInUseLock = new object();
+		private readonly object cacheInUseLock = new object();
 
 		private readonly int maxCachedItems;
 
@@ -50,7 +50,7 @@ namespace DataTrack.Util.DataStructures
 
 		private bool CullingInProgress()
 		{
-			lock (typeMappingInUseLock)
+			lock (cacheInUseLock)
 			{
 				return typeMappingInUse;
 			}
@@ -84,7 +84,7 @@ namespace DataTrack.Util.DataStructures
 
 				Logger.Debug($"{cacheName} Beginning cache culling cycle - current cache size: {cacheSize} item(s)");
 
-				lock (typeMappingInUseLock)
+				lock (cacheInUseLock)
 				{
 					typeMappingInUse = cacheSize > maxCachedItems;
 				}
@@ -98,7 +98,7 @@ namespace DataTrack.Util.DataStructures
 
 		private int GetCurrentCacheSize()
 		{
-			lock (typeMappingLock)
+			lock (cacheLock)
 			{
 				return cacheDictionary.Count;
 			}
@@ -110,7 +110,7 @@ namespace DataTrack.Util.DataStructures
 			TKey candidate = default;
 			Dictionary<TKey, long> tempCacheAccessMapping;
 
-			lock (typeMappingLock)
+			lock (cacheLock)
 			{
 				tempCacheAccessMapping = cacheAccessMapping;
 			}
@@ -128,7 +128,7 @@ namespace DataTrack.Util.DataStructures
 				}
 			}
 
-			lock (typeMappingLock)
+			lock (cacheLock)
 			{
 				if (candidate != null && cacheDictionary.ContainsKey(candidate))
 				{
@@ -141,7 +141,7 @@ namespace DataTrack.Util.DataStructures
 
 		public void CacheItem(TKey key, TValue value)
 		{
-			lock (typeMappingLock)
+			lock (cacheLock)
 			{
 				Logger.Trace($"{cacheName} Caching value {value.ToString()} for key '{key.ToString()}'");
 				cacheDictionary[key] = value;
@@ -153,7 +153,7 @@ namespace DataTrack.Util.DataStructures
 		{
 			TValue value = default(TValue);
 
-			lock (typeMappingLock)
+			lock (cacheLock)
 			{
 				if (cacheDictionary.ContainsKey(key) && cacheAccessMapping.ContainsKey(key))
 				{
