@@ -106,24 +106,30 @@ namespace DataTrack.Util.DataStructures
 
 		private void CullItem()
 		{
+			long oldestAccess = long.MaxValue;
+			TKey candidate = default;
+			Dictionary<TKey, long> tempCacheAccessMapping;
+
 			lock (typeMappingLock)
 			{
-				long oldestAccess = long.MaxValue;
-				TKey candidate = default;
+				tempCacheAccessMapping = cacheAccessMapping;
+			}
 
-				foreach (TKey key in cacheAccessMapping.Keys)
+			foreach (TKey key in tempCacheAccessMapping.Keys)
+			{
+				if (tempCacheAccessMapping[key] >= oldestAccess)
 				{
-					if (cacheAccessMapping[key] >= oldestAccess)
-					{
-						continue;
-					}
-					else
-					{
-						oldestAccess = cacheAccessMapping[key];
-						candidate = key;
-					}
+					continue;
 				}
+				else
+				{
+					oldestAccess = tempCacheAccessMapping[key];
+					candidate = key;
+				}
+			}
 
+			lock (typeMappingLock)
+			{
 				if (candidate != null && cacheDictionary.ContainsKey(candidate))
 				{
 					cacheDictionary.Remove(candidate);
