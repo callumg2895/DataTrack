@@ -82,7 +82,7 @@ namespace DataTrack.Util.DataStructures
 
 				int cacheSize = GetCurrentCacheSize();
 
-				Logger.Debug($"{cacheName} Beginning cache culling cycle - current cache size: {cacheSize} item(s)");
+				Logger.Trace($"{cacheName} Beginning cache culling cycle - current cache size: {cacheSize} item(s)");
 
 				lock (cacheInUseLock)
 				{
@@ -134,7 +134,7 @@ namespace DataTrack.Util.DataStructures
 				{
 					cacheDictionary.Remove(candidate);
 					cacheAccessMapping.Remove(candidate);
-					Logger.Debug($"{cacheName} Culled values for key {candidate.ToString()}");
+					Logger.Debug($"{cacheName} Culled values for key '{candidate.ToString()}'");
 				}
 			}
 		}
@@ -143,7 +143,7 @@ namespace DataTrack.Util.DataStructures
 		{
 			lock (cacheLock)
 			{
-				Logger.Trace($"{cacheName} Caching value {value.ToString()} for key '{key.ToString()}'");
+				Logger.Trace($"{cacheName} Caching value '{value.ToString()}' for key '{key.ToString()}'");
 				cacheDictionary[key] = value;
 				cacheAccessMapping[key] = DateTime.UtcNow.ToFileTime();
 			}
@@ -160,7 +160,7 @@ namespace DataTrack.Util.DataStructures
 					value = cacheDictionary[key];
 					cacheAccessMapping[key] = DateTime.UtcNow.ToFileTime();
 
-					Logger.Trace($"{cacheName} Retrieved value {value.ToString()} for key '{key.ToString()}' from cache");
+					Logger.Trace($"{cacheName} Retrieved value '{value.ToString()}' for key '{key.ToString()}' from cache");
 				}
 			}
 
