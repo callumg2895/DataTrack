@@ -201,8 +201,7 @@ namespace DataTrack.Logging
 
 			lock (logBufferLock)
 			{
-				threadLogBuffer = new List<LogItem>(logBuffer.Count);
-				threadLogBuffer.AddRange(logBuffer);
+				threadLogBuffer = new List<LogItem>(logBuffer);
 				logBuffer.Clear();
 			}
 
