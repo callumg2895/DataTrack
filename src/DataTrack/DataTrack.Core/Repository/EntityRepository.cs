@@ -32,7 +32,7 @@ namespace DataTrack.Core.Repository
 
 		public TBase GetByID(int id)
 		{
-			return new EntityQuery<TBase>().AddRestriction("id", RestrictionTypes.EqualTo, id).Execute()[0];
+			return new EntityQuery<TBase>().AddRestriction("ID", RestrictionTypes.EqualTo, id).Execute()[0];
 		}
 
 		public List<TBase> GetByProperty(string propName, RestrictionTypes restriction, object propValue)

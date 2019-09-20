@@ -57,7 +57,7 @@ namespace DataTrack.Core.Components.Query
 
 			if (id.HasValue)
 			{
-				AddRestriction("id", RestrictionTypes.EqualTo, id.Value);
+				AddRestriction("ID", RestrictionTypes.EqualTo, id.Value);
 			}
 
 			return this;
@@ -118,7 +118,7 @@ namespace DataTrack.Core.Components.Query
 
 		public override IQuery AddRestriction(string property, RestrictionTypes type, object value)
 		{
-			Column column = Mapping.TypeTableMapping[baseType].Columns.Single(x => x.Name == property);
+			Column column = Mapping.TypeTableMapping[baseType].Columns.Single(x => x.PropertyName == property);
 			column.AddRestriction(type, value);
 
 			return this;
@@ -130,7 +130,7 @@ namespace DataTrack.Core.Components.Query
 			string primaryKeyColumnPropertyName = primaryKeyColumn.PropertyName;
 			object primaryKeyValue = item.GetPropertyValue(primaryKeyColumnPropertyName);
 
-			AddRestriction(primaryKeyColumn.Name, RestrictionTypes.EqualTo, primaryKeyValue);
+			AddRestriction(primaryKeyColumn.PropertyName, RestrictionTypes.EqualTo, primaryKeyValue);
 		}
 
 		private void AddPrimaryKeyDeleteRestriction(TBase item)
@@ -139,7 +139,7 @@ namespace DataTrack.Core.Components.Query
 			string primaryKeyColumnPropertyName = primaryKeyColumn.PropertyName;
 			object primaryKeyValue = item.GetPropertyValue(primaryKeyColumnPropertyName);
 
-			AddRestriction(primaryKeyColumn.Name, RestrictionTypes.In, primaryKeyValue);
+			AddRestriction(primaryKeyColumn.PropertyName, RestrictionTypes.In, primaryKeyValue);
 		}
 
 		public override dynamic Execute()

@@ -18,8 +18,7 @@ namespace DataTrack.Core.Tests.InterfaceTests
 
 			//Act
 			AuthorRepository.Create(author);
-			Author authorReadResult = AuthorRepository.GetByProperty("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName)[0];
-			Book book1ReadResult = BookRepository.GetByProperty("title", Enums.RestrictionTypes.EqualTo, author.Books[0].Title)[0];
+			Author authorReadResult = AuthorRepository.GetByProperty("FirstName", Enums.RestrictionTypes.EqualTo, author.FirstName)[0];
 			AuthorRepository.Delete(authorReadResult);
 
 			// Assert
@@ -34,8 +33,7 @@ namespace DataTrack.Core.Tests.InterfaceTests
 
 			//Act
 			AuthorRepository.Create(author);
-			List<Author> authorReadResult = AuthorRepository.GetByProperty("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName);
-			List<Book> bookReadResult = BookRepository.GetByProperty("title", Enums.RestrictionTypes.EqualTo, author.Books[0].Title);
+			List<Book> bookReadResult = BookRepository.GetByProperty("Title", Enums.RestrictionTypes.EqualTo, author.Books[0].Title);
 			AuthorRepository.DeleteAll();
 
 			// Assert
@@ -50,7 +48,7 @@ namespace DataTrack.Core.Tests.InterfaceTests
 
 			//Act
 			AuthorRepository.Create(author);
-			Author authorReadResult = AuthorRepository.GetByProperty("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName)[0];
+			Author authorReadResult = AuthorRepository.GetByProperty("FirstName", Enums.RestrictionTypes.EqualTo, author.FirstName)[0];
 			AuthorRepository.Delete(authorReadResult);
 
 			// Assert

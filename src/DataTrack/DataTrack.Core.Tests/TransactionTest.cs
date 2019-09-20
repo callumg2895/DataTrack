@@ -28,7 +28,7 @@ namespace DataTrack.Core.Tests
 			using (Transaction t1 = new Transaction())
 			{
 				t1.Execute(new EntityQuery<Author>().Create(author));
-				results = t1.Execute(new EntityQuery<Author>().Read().AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName));
+				results = t1.Execute(new EntityQuery<Author>().Read().AddRestriction("FirstName", Enums.RestrictionTypes.EqualTo, author.FirstName));
 				t1.Commit();
 			}
 
@@ -52,7 +52,7 @@ namespace DataTrack.Core.Tests
 			using (Transaction t1 = new Transaction())
 			{
 				t1.Execute(new EntityQuery<Author>().Create(authorBefore));
-				results1 = t1.Execute(new EntityQuery<Author>().AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, authorBefore.FirstName));
+				results1 = t1.Execute(new EntityQuery<Author>().AddRestriction("FirstName", Enums.RestrictionTypes.EqualTo, authorBefore.FirstName));
 				t1.Commit();
 			}
 
@@ -62,7 +62,7 @@ namespace DataTrack.Core.Tests
 			using (Transaction t2 = new Transaction())
 			{
 				t2.Execute(new EntityQuery<Author>().Update(authorAfter));
-				results2 = t2.Execute(new EntityQuery<Author>().Read(authorAfter.ID).AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, authorAfter.FirstName));
+				results2 = t2.Execute(new EntityQuery<Author>().Read(authorAfter.ID).AddRestriction("FirstName", Enums.RestrictionTypes.EqualTo, authorAfter.FirstName));
 				t2.Commit();
 			}
 
@@ -100,9 +100,9 @@ namespace DataTrack.Core.Tests
 				t.RollBack();
 			}
 
-			resultsAfterRollBack = new EntityQuery<Author>().Read().AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName).Execute();
+			resultsAfterRollBack = new EntityQuery<Author>().Read().AddRestriction("FirstName", Enums.RestrictionTypes.EqualTo, author.FirstName).Execute();
 			new EntityQuery<Author>().Delete().Execute();
-			resultsAfterDelete = new EntityQuery<Author>().Read().AddRestriction("first_name", Enums.RestrictionTypes.EqualTo, author.FirstName).Execute();
+			resultsAfterDelete = new EntityQuery<Author>().Read().AddRestriction("FirstName", Enums.RestrictionTypes.EqualTo, author.FirstName).Execute();
 
 			//Assert
 			Assert.AreEqual(resultsAfterRollBack.Count, 1);
