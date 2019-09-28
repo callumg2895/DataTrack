@@ -11,6 +11,8 @@ namespace DataTrack.Core.Components.Mapping
 {
 	public class FormulaColumn : Column, ICloneable
 	{
+		private static Logger Logger = DataTrackConfiguration.Logger;
+
 		public FormulaColumn(FormulaAttribute formulaAttribute, EntityTable table)
 			: base(table, formulaAttribute.Alias)
 		{

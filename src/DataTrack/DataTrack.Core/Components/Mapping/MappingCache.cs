@@ -12,9 +12,9 @@ namespace DataTrack.Core.Components.Mapping
 	{
 		private static Cache<Type, EntityTable> cache;
 
-		public static void Init(int cacheSizeLimit)
+		public static void Init(int cacheSizeLimit, LogConfiguration config)
 		{
-			cache = new Cache<Type, EntityTable>(cacheSizeLimit, "MappingCache");
+			cache = new Cache<Type, EntityTable>(cacheSizeLimit, "MappingCache", config);
 		}
 
 		public static void CacheItem(Type type, EntityTable table)

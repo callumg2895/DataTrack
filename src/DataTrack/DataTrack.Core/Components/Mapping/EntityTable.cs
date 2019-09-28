@@ -10,6 +10,8 @@ namespace DataTrack.Core.Components.Mapping
 {
 	public class EntityTable : Table, ICloneable
 	{
+		private static Logger Logger = DataTrackConfiguration.Logger;
+
 		public Type Type { get; set; }
 		public string Alias { get; set; }
 		public List<IEntity> Entities { get; set; }

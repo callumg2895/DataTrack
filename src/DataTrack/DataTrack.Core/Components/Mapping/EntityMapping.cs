@@ -13,6 +13,8 @@ namespace DataTrack.Core.Components.Mapping
 {
 	internal class EntityMapping<TBase> : Mapping where TBase : IEntity
 	{
+		private static Logger Logger = DataTrackConfiguration.Logger;
+
 		internal Dictionary<IEntity, List<IEntity>> ParentChildEntityMapping { get; set; }
 		internal Dictionary<IEntity, DataRow> EntityDataRowMapping { get; set; }
 		internal Map<EntityTable, DataTable> DataTableMapping { get; set; }

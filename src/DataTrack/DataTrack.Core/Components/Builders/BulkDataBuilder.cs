@@ -11,6 +11,7 @@ namespace DataTrack.Core.Components.Builders
 {
 	internal class BulkDataBuilder<TBase> where TBase : IEntity
 	{
+		private static Logger Logger = DataTrackConfiguration.Logger;
 
 		#region Members
 

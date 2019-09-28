@@ -19,6 +19,7 @@ namespace DataTrack.Core
 		#region Members
 
 		public static string ConnectionString = string.Empty;
+		internal static Logger Logger;
 
 		private static DatabaseConfiguration databaseConfig;
 		private static LogConfiguration loggingConfig;
@@ -31,12 +32,12 @@ namespace DataTrack.Core
 		{
 			LoadConfiguration();
 
-			MappingCache.Init(cacheConfig.CacheSizeLimit);
-			ChildPropertyCache.Init(cacheConfig.CacheSizeLimit);
-			NativePropertyCache.Init(cacheConfig.CacheSizeLimit);
-			CompiledActivatorCache.Init(cacheConfig.CacheSizeLimit);
-			Logger.Init(loggingConfig);
+			MappingCache.Init(cacheConfig.CacheSizeLimit, loggingConfig);
+			ChildPropertyCache.Init(cacheConfig.CacheSizeLimit, loggingConfig);
+			NativePropertyCache.Init(cacheConfig.CacheSizeLimit, loggingConfig);
+			CompiledActivatorCache.Init(cacheConfig.CacheSizeLimit, loggingConfig);
 
+			Logger = new Logger(loggingConfig);
 			ConnectionString = databaseConfig.GetConnectionString();
 		}
 
@@ -65,6 +66,7 @@ namespace DataTrack.Core
 			ChildPropertyCache.Stop();
 			NativePropertyCache.Stop();
 			CompiledActivatorCache.Stop();
+
 			Logger.Stop();
 		}		
 

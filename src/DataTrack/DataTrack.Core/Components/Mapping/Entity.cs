@@ -12,6 +12,8 @@ namespace DataTrack.Core.Components.Mapping
 {
 	public abstract class Entity<TIdentity> : IEntity where TIdentity : struct
 	{
+		private static Logger Logger = DataTrackConfiguration.Logger;
+
 		[Column("id")]
 		[PrimaryKey]
 		public virtual TIdentity ID { get; set; } = default;

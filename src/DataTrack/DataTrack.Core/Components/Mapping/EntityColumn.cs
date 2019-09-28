@@ -11,6 +11,8 @@ namespace DataTrack.Core.Components.Mapping
 {
 	public class EntityColumn : Column
 	{
+		private static Logger Logger = DataTrackConfiguration.Logger;
+
 		public EntityColumn(ColumnAttribute columnAttribute, EntityTable table)
 			: base(table, columnAttribute.ColumnName)
 		{

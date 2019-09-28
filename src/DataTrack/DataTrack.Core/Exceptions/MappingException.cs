@@ -7,6 +7,8 @@ namespace DataTrack.Core.Exceptions
 {
 	public class MappingException : Exception
 	{
+		private static Logger Logger = DataTrackConfiguration.Logger;
+
 		public MappingException(Type type)
 			: this($"Could not find mapping information for {type.Name}")
 		{

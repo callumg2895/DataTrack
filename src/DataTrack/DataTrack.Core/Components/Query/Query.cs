@@ -14,6 +14,8 @@ namespace DataTrack.Core.Components.Query
 {
 	public abstract class Query : IQuery
 	{
+		private static Logger Logger = DataTrackConfiguration.Logger;
+
 		protected readonly Type baseType;
 		protected readonly Stopwatch stopwatch;
 

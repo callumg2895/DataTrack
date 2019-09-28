@@ -1,4 +1,5 @@
 ﻿using DataTrack.Core.Interface;
+using DataTrack.Logging;
 using DataTrack.Util.DataStructures;
 using System;
 using System.Collections.Generic;
@@ -11,9 +12,9 @@ namespace DataTrack.Core.Components.Mapping
 	{
 		private static Cache<Type, Func<object>> cache;
 
-		public static void Init(int cacheSizeLimit)
+		public static void Init(int cacheSizeLimit, LogConfiguration config)
 		{
-			cache = new Cache<Type, Func<object>>(cacheSizeLimit, "CompiledActivatorCache");
+			cache = new Cache<Type, Func<object>>(cacheSizeLimit, "CompiledActivatorCache", config);
 		}
 
 		public static void CacheItem(Type type, Func<object> activator)

@@ -9,6 +9,8 @@ namespace DataTrack.Core.Attributes
 {
 	public class AttributeWrapper
 	{
+		private static Logger Logger = DataTrackConfiguration.Logger;
+
 		public TableAttribute? TableAttribute { get; private set; }
 		public List<TableAttribute> ChildTableAttributes { get; private set; }
 		public List<EntityAttribute> EntityAttributes { get; private set; }

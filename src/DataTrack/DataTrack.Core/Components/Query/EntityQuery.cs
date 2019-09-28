@@ -17,6 +17,8 @@ namespace DataTrack.Core.Components.Query
 {
 	public class EntityQuery<TBase> : Query where TBase : IEntity
 	{
+		private static Logger Logger = DataTrackConfiguration.Logger;
+
 		#region Members
 
 		internal BulkDataBuilder<TBase> BulkDataBuilder { get; set; }

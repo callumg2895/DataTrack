@@ -12,6 +12,8 @@ namespace DataTrack.Core.Components.Mapping
 {
 	internal abstract class Mapping
 	{
+		private static Logger Logger = DataTrackConfiguration.Logger;
+
 		internal Type BaseType { get; set; }
 		internal List<EntityTable> Tables { get; set; }
 		internal Dictionary<Type, EntityTable> TypeTableMapping { get; set; }

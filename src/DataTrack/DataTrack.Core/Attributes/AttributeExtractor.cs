@@ -8,6 +8,8 @@ namespace DataTrack.Core.Attributes
 {
 	public class AttributeExtractor
 	{
+		private static Logger Logger = DataTrackConfiguration.Logger;
+
 		public TableAttribute? TableAttribute { get; set; }
 		public EntityAttribute? EntityAttribute { get; set; }
 		public FormulaAttribute? FormulaAttribute { get; set; }

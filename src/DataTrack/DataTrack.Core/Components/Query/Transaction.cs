@@ -11,6 +11,8 @@ namespace DataTrack.Core.Components.Query
 {
 	public class Transaction : IDisposable
 	{
+		private static Logger Logger = DataTrackConfiguration.Logger;
+
 		#region Members
 
 		private readonly SqlTransaction transaction;

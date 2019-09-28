@@ -9,6 +9,8 @@ namespace DataTrack.Core.Components.Query
 {
 	public struct Restriction
 	{
+		private static Logger Logger = DataTrackConfiguration.Logger;
+
 		public string Alias;
 		public string Handle;
 		public RestrictionTypes RestrictionType;

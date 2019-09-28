@@ -18,6 +18,8 @@ namespace DataTrack.Core.Components.Query
 {
 	public class EntityBeanQuery<TBase> : Query where TBase : IEntityBean
 	{
+		private static Logger Logger = DataTrackConfiguration.Logger;
+
 		public EntityBeanQuery()
 			: base(typeof(TBase), new EntityBeanMapping<TBase>())
 		{

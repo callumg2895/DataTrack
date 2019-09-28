@@ -14,6 +14,8 @@ namespace DataTrack.Core.Components.Execution
 {
 	public class ReadQueryExecutor<TBase> : QueryExecutor<TBase> where TBase : IEntity
 	{
+		private static Logger Logger = DataTrackConfiguration.Logger;
+
 		private readonly List<TBase> results;
 		private readonly List<EntityTable> tables;
 		private readonly IDictionary<Table, Dictionary<object, IEntity>> entityPrimaryKeyDictionary;

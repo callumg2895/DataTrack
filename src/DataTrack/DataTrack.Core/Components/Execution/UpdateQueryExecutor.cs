@@ -9,6 +9,7 @@ namespace DataTrack.Core.Components.Execution
 {
 	public class UpdateQueryExecutor<TBase> : QueryExecutor<TBase> where TBase : IEntity
 	{
+		private static Logger Logger = DataTrackConfiguration.Logger;
 
 		internal UpdateQueryExecutor(EntityQuery<TBase> query, SqlConnection connection, SqlTransaction? transaction = null)
 			: base(query, connection, transaction)

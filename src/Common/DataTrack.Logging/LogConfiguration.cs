@@ -6,18 +6,27 @@ namespace DataTrack.Logging
 {
 	public class LogConfiguration
 	{
-		public int MaxFileSize { get; set; }
-		public string FileName { get; set; }
-		public string FilePath { get; set; }
-		public string FileExtension { get; set; }
+		public int MaxFileSize { get; private set; }
+
+		public readonly string ProjectName;
 
 		internal LogLevel LogLevel { get; set; }
-		internal bool EnableConsoleLogging { get; set; }
 
-		private readonly string projectName;
+		private string fileName;
+		private string filePath;
+		private string fileExtension;
 		private DateTime fileDate;
 		private string fileDateString;
 		private int fileIndex;
+
+		public LogConfiguration(string projectName, LogLevel logLevel, int maxFileSize = 10000)
+		{
+			ProjectName = projectName;
+			LogLevel = logLevel;
+			MaxFileSize = maxFileSize;
+
+			Initialize();
+		}
 
 		public LogConfiguration(XmlNode loggingNode)
 		{
@@ -25,31 +34,35 @@ namespace DataTrack.Logging
 			XmlNode xmlNodeLogLevel = loggingNode.SelectSingleNode("LogLevel");
 			XmlNode xmlNodeMaxFileLength = loggingNode.SelectSingleNode("MaxFileLength");
 
-			projectName = xmlNodeProjectName.InnerText;
+			ProjectName = xmlNodeProjectName.InnerText;
 			LogLevel = (LogLevel)Enum.Parse(typeof(LogLevel), xmlNodeLogLevel.InnerText);
 			MaxFileSize = int.Parse(xmlNodeMaxFileLength.InnerText);
-			EnableConsoleLogging = false;
 
+			Initialize();
+		}
+
+		private void Initialize()
+		{
 			fileDate = DateTime.Now.Date;
 			fileDateString = fileDate.ToShortDateString().Replace("/", "_");
-			FileName = $"{fileDateString}_{projectName}Log_";
-			FilePath = $@"{Path.GetPathRoot(Environment.SystemDirectory)}{projectName}/logs";
-			FileExtension = ".txt";
+			fileName = $"{fileDateString}_{ProjectName}Log_";
+			filePath = $@"{Path.GetPathRoot(Environment.SystemDirectory)}{ProjectName}/logs";
+			fileExtension = ".txt";
 			fileIndex = 0;
 		}
 
 		internal void CreateLogFile()
 		{
-			if (!Directory.Exists(FilePath))
+			if (!Directory.Exists(filePath))
 			{
-				Directory.CreateDirectory(FilePath);
+				Directory.CreateDirectory(filePath);
 			}
 
 			if (DateTime.Now.Date > fileDate)
 			{
 				fileDate = DateTime.Now.Date;
 				fileDateString = fileDate.ToShortDateString().Replace("/", "_");
-				FileName = $"{fileDateString}_{projectName}Log_";
+				fileName = $"{fileDateString}_{ProjectName}Log_";
 			}
 
 			while (File.Exists(GetFullPath()))
@@ -62,9 +75,9 @@ namespace DataTrack.Logging
 
 		internal void DeleteLogFiles()
 		{
-			if (Directory.Exists(FilePath))
+			if (Directory.Exists(filePath))
 			{
-				string[] files = Directory.GetFiles(FilePath, $"{FileName}*");
+				string[] files = Directory.GetFiles(filePath, $"{fileName}*");
 
 				foreach (string file in files)
 				{
@@ -75,7 +88,7 @@ namespace DataTrack.Logging
 
 		internal string GetFullPath()
 		{
-			return $@"{FilePath}\{FileName}{fileIndex}{FileExtension}";
+			return $@"{filePath}\{fileName}{fileIndex}{fileExtension}";
 		}
 	}
 }

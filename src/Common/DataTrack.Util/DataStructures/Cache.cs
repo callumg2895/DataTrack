@@ -9,6 +9,7 @@ namespace DataTrack.Util.DataStructures
 {
 	public class Cache<TKey, TValue>
 	{
+		private Logger logger;
 		private Dictionary<TKey, TValue> cacheDictionary;
 		private Dictionary<TKey, long> cacheAccessMapping;
 		private volatile bool shouldCull;
@@ -24,8 +25,9 @@ namespace DataTrack.Util.DataStructures
 
 		private string cacheName;
 
-		public Cache(int cacheSizeLimit, string name)
+		public Cache(int cacheSizeLimit, string name, LogConfiguration config)
 		{
+			logger = new Logger(config);
 			cacheDictionary = new Dictionary<TKey, TValue>();
 			cacheAccessMapping = new Dictionary<TKey, long>();
 
@@ -71,18 +73,13 @@ namespace DataTrack.Util.DataStructures
 
 		private void Culling()
 		{
-			while (!Logger.IsStarted())
-			{
-
-			}
-
 			while (ShouldCull())
 			{
 				Thread.Sleep(100);
 
 				int cacheSize = GetCurrentCacheSize();
 
-				Logger.Trace($"{cacheName} Beginning cache culling cycle - current cache size: {cacheSize} item(s)");
+				logger.Trace($"{cacheName} Beginning cache culling cycle - current cache size: {cacheSize} item(s)");
 
 				lock (cacheInUseLock)
 				{
@@ -134,7 +131,7 @@ namespace DataTrack.Util.DataStructures
 				{
 					cacheDictionary.Remove(candidate);
 					cacheAccessMapping.Remove(candidate);
-					Logger.Debug($"{cacheName} Culled values for key '{candidate.ToString()}'");
+					logger.Debug($"{cacheName} Culled values for key '{candidate.ToString()}'");
 				}
 			}
 		}
@@ -143,7 +140,7 @@ namespace DataTrack.Util.DataStructures
 		{
 			lock (cacheLock)
 			{
-				Logger.Trace($"{cacheName} Caching value '{value.ToString()}' for key '{key.ToString()}'");
+				logger.Trace($"{cacheName} Caching value '{value.ToString()}' for key '{key.ToString()}'");
 				cacheDictionary[key] = value;
 				cacheAccessMapping[key] = DateTime.UtcNow.ToFileTime();
 			}
@@ -160,7 +157,7 @@ namespace DataTrack.Util.DataStructures
 					value = cacheDictionary[key];
 					cacheAccessMapping[key] = DateTime.UtcNow.ToFileTime();
 
-					Logger.Trace($"{cacheName} Retrieved value '{value.ToString()}' for key '{key.ToString()}' from cache");
+					logger.Trace($"{cacheName} Retrieved value '{value.ToString()}' for key '{key.ToString()}' from cache");
 				}
 			}
 

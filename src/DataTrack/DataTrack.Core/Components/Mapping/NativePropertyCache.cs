@@ -1,4 +1,5 @@
-﻿using DataTrack.Util.DataStructures;
+﻿using DataTrack.Logging;
+using DataTrack.Util.DataStructures;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -10,9 +11,9 @@ namespace DataTrack.Core.Components.Mapping
 	{
 		private static Cache<Type, List<PropertyInfo>> cache;
 
-		public static void Init(int cacheSizeLimit)
+		public static void Init(int cacheSizeLimit, LogConfiguration config)
 		{
-			cache = new Cache<Type, List<PropertyInfo>>(cacheSizeLimit, "Native Property Cache");
+			cache = new Cache<Type, List<PropertyInfo>>(cacheSizeLimit, "Native Property Cache", config);
 		}
 
 		public static void CacheItem(Type type, List<PropertyInfo> properties)
