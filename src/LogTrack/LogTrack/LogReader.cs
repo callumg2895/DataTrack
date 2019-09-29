@@ -17,9 +17,7 @@ namespace LogTrack
 		private volatile bool parsing;
 
 		private LogStats logStats;
-		private string filePath;
-		private string fileName;
-		private string fileExtension;
+		private LogConfiguration logConfig;
 		private int fileIndex;
 
 		private object parsingLock = new object();
@@ -28,11 +26,7 @@ namespace LogTrack
 		{
 			logBuffer = new List<LogStatement>();
 			logStats = new LogStats();
-
-			maxLogSize = logConfiguration.MaxFileSize;
-			filePath = logConfiguration.FilePath;
-			fileName = logConfiguration.FileName;
-			fileExtension = logConfiguration.FileExtension;
+			logConfig = logConfiguration;
 
 			fileIndex = 0;
 			maxLoadingBarSize = 10;
@@ -45,12 +39,12 @@ namespace LogTrack
 
 		public List<LogStatement> Read()
 		{
-			if (!Directory.Exists(filePath))
+			if (!Directory.Exists(logConfig.GetFilePath()))
 			{
 				return logBuffer;
 			}
 
-			while (File.Exists(GetFileName()))
+			while (File.Exists(logConfig.GetFullPath(fileIndex)))
 			{
 				ReadCurrentFile();
 				fileIndex++;
@@ -66,7 +60,7 @@ namespace LogTrack
 
 		private void ReadCurrentFile()
 		{
-			using (StreamReader reader = File.OpenText(GetFileName()))
+			using (StreamReader reader = File.OpenText(logConfig.GetFullPath(fileIndex)))
 			{
 				lock (parsingLock)
 				{
@@ -105,11 +99,6 @@ namespace LogTrack
 			}
 		}
 
-		private string GetFileName()
-		{
-			return $"{filePath}/{fileName}{fileIndex}{fileExtension}";
-		}
-
 		private void LoadingBar()
 		{
 			bool running = true;
@@ -140,8 +129,8 @@ namespace LogTrack
 
 			format.Apply();
 
-			int currentLogsParsed = Math.Max(logBuffer.Count(), 1) - (fileIndex * maxLogSize);
-			int percentComplete = (int)Math.Round((currentLogsParsed / (decimal)maxLogSize) * maxLoadingBarSize);
+			int currentLogsParsed = Math.Max(logBuffer.Count(), 1) - (fileIndex * logConfig.MaxFileSize);
+			int percentComplete = (int)Math.Round((currentLogsParsed / (decimal)logConfig.MaxFileSize) * maxLoadingBarSize);
 
 			for (int i = 0; i < maxLoadingBarSize; i++)
 			{

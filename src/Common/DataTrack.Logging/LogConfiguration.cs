@@ -41,6 +41,16 @@ namespace DataTrack.Logging
 			Initialize();
 		}
 
+		public string GetFilePath()
+		{
+			return filePath;
+		}
+
+		public string GetFullPath(int? index = null)
+		{
+			return $@"{filePath}\{fileName}{index ?? fileIndex}{fileExtension}";
+		}
+
 		private void Initialize()
 		{
 			fileDate = DateTime.Now.Date;
@@ -84,11 +94,6 @@ namespace DataTrack.Logging
 					File.Delete(file);
 				}
 			}
-		}
-
-		internal string GetFullPath()
-		{
-			return $@"{filePath}\{fileName}{fileIndex}{fileExtension}";
 		}
 	}
 }
