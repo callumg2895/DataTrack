@@ -19,5 +19,8 @@ namespace DataTrack.Core.Tests.TestClasses.TestEntities
 
 		[Table("reviews")]
 		public List<Review> Reviews { get; set; }
+
+		[Parent("authors")]
+		public Author Author { get; set; }
 	}
 }
