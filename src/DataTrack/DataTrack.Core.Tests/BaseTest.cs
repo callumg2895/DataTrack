@@ -80,20 +80,20 @@ namespace DataTrack.Core.Tests
 					command.ExecuteNonQuery();
 				}
 			}
-
-			DataTrackConfiguration.Instance.StopAsync(CancellationToken.None).RunSynchronously();
 		}
 
 		[TestInitialize]
 		public void TestInit()
 		{
-			DataTrackConfiguration.Instance.StartAsync(CancellationToken.None).RunSynchronously();
+			
 		}
 
 		[TestCleanup]
 		public void TestCleanup()
 		{
-			DataTrackConfiguration.Instance.StopAsync(CancellationToken.None).RunSynchronously();
+			AuthorRepository.DeleteAll();
+			BookRepository.DeleteAll();
+			ReviewRepository.DeleteAll();
 		}
 
 		[TestMethod]
@@ -105,8 +105,6 @@ namespace DataTrack.Core.Tests
 		[AssemblyCleanup]
 		public static void AssemblyCleanup()
 		{
-			DataTrackConfiguration.Instance.StartAsync(CancellationToken.None).RunSynchronously();
-
 			using (SqlConnection connection = DataTrackConfiguration.Instance.CreateConnection())
 			{
 				using (SqlCommand command = connection.CreateCommand())

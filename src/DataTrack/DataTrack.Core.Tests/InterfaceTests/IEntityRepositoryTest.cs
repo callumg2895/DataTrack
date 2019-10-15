@@ -19,7 +19,6 @@ namespace DataTrack.Core.Tests.InterfaceTests
 			//Act
 			AuthorRepository.Create(author);
 			Author authorReadResult = AuthorRepository.GetByProperty("FirstName", Enums.RestrictionTypes.EqualTo, author.FirstName)[0];
-			AuthorRepository.Delete(authorReadResult);
 
 			// Assert
 			Assert.IsTrue(AuthorsAreEqual(authorReadResult, author));
@@ -34,7 +33,6 @@ namespace DataTrack.Core.Tests.InterfaceTests
 			//Act
 			AuthorRepository.Create(author);
 			List<Book> bookReadResult = BookRepository.GetByProperty("Title", Enums.RestrictionTypes.EqualTo, author.Books[0].Title);
-			AuthorRepository.DeleteAll();
 
 			// Assert
 			Assert.IsTrue(BooksAreEqual(bookReadResult[0], author.Books[0]));
@@ -49,7 +47,6 @@ namespace DataTrack.Core.Tests.InterfaceTests
 			//Act
 			AuthorRepository.Create(author);
 			Author authorReadResult = AuthorRepository.GetByProperty("FirstName", Enums.RestrictionTypes.EqualTo, author.FirstName)[0];
-			AuthorRepository.Delete(authorReadResult);
 
 			// Assert
 			Assert.AreEqual(authorReadResult.Books.Count, 5);
@@ -70,7 +67,6 @@ namespace DataTrack.Core.Tests.InterfaceTests
 			List<Author> createdAuthors = AuthorRepository.GetAll();
 			List<Book> createdBooks = BookRepository.GetAll();
 			List<Review> createdReviews = ReviewRepository.GetAll();
-			AuthorRepository.DeleteAll();
 
 			// Assert
 			Assert.AreEqual(authorsToInsert, createdAuthors.Count);

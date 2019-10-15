@@ -22,7 +22,6 @@ namespace DataTrack.Core.Tests.InterfaceTests
 
 			// Act
 			List<BookInfo> bookInfoCollection = BookInfoRepository.GetAll();
-			AuthorRepository.DeleteAll();
 
 			// Assert
 			Assert.IsTrue(bookInfoCollection.Count == 5);
@@ -49,7 +48,6 @@ namespace DataTrack.Core.Tests.InterfaceTests
 
 			// Act
 			List<BookInfo> bookInfoCollection = BookInfoRepository.GetByProperty("Author", Enums.RestrictionTypes.EqualTo, authors[0].FirstName);
-			AuthorRepository.DeleteAll();
 
 			// Assert
 			Assert.IsTrue(bookInfoCollection.Count == 5);
