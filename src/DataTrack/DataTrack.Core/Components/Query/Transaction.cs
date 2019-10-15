@@ -25,7 +25,7 @@ namespace DataTrack.Core.Components.Query
 
 		public Transaction()
 		{
-			connection = DataTrackConfiguration.CreateConnection();
+			connection = DataTrackConfiguration.Instance.CreateConnection();
 			transaction = connection.BeginTransaction();
 			stopwatch = new Stopwatch();
 		}

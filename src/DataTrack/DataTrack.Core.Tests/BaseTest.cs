@@ -7,6 +7,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace DataTrack.Core.Tests
 {
@@ -35,9 +37,9 @@ namespace DataTrack.Core.Tests
 		[AssemblyInitialize]
 		public static void AssemblyInit(TestContext testContext)
 		{
-			DataTrackConfiguration.Init();
+			DataTrackConfiguration.Instance.StartAsync(CancellationToken.None).RunSynchronously();
 
-			using (SqlConnection connection = DataTrackConfiguration.CreateConnection())
+			using (SqlConnection connection = DataTrackConfiguration.Instance.CreateConnection())
 			{
 				string sqlInit = @"
                     if OBJECT_ID('authors','U') is null
@@ -78,6 +80,20 @@ namespace DataTrack.Core.Tests
 					command.ExecuteNonQuery();
 				}
 			}
+
+			DataTrackConfiguration.Instance.StopAsync(CancellationToken.None).RunSynchronously();
+		}
+
+		[TestInitialize]
+		public void TestInit()
+		{
+			DataTrackConfiguration.Instance.StartAsync(CancellationToken.None).RunSynchronously();
+		}
+
+		[TestCleanup]
+		public void TestCleanup()
+		{
+			DataTrackConfiguration.Instance.StopAsync(CancellationToken.None).RunSynchronously();
 		}
 
 		[TestMethod]
@@ -89,7 +105,9 @@ namespace DataTrack.Core.Tests
 		[AssemblyCleanup]
 		public static void AssemblyCleanup()
 		{
-			using (SqlConnection connection = DataTrackConfiguration.CreateConnection())
+			DataTrackConfiguration.Instance.StartAsync(CancellationToken.None).RunSynchronously();
+
+			using (SqlConnection connection = DataTrackConfiguration.Instance.CreateConnection())
 			{
 				using (SqlCommand command = connection.CreateCommand())
 				{
@@ -110,7 +128,7 @@ namespace DataTrack.Core.Tests
 				}
 			}
 
-			DataTrackConfiguration.Dispose();
+			DataTrackConfiguration.Instance.StopAsync(CancellationToken.None).RunSynchronously();
 		}
 
 		protected List<Author> GetAuthors(int a, int b = 0, int r = 0)
