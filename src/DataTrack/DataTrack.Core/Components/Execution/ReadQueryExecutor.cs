@@ -92,15 +92,7 @@ namespace DataTrack.Core.Components.Execution
 		private IEntity ReadEntity(SqlDataReader reader, EntityTable table)
 		{
 			Type type = table.Type;
-			Func<object> activator = CompiledActivatorCache.RetrieveItem(type);
-
-			if (activator == null)
-			{
-				activator = ReflectionUtil.GetActivator(type);
-				CompiledActivatorCache.CacheItem(type, activator);
-			}
-
-			IEntity entity = (IEntity)activator();
+			IEntity entity = (IEntity)table.EntityActivator();
 
 			foreach (Column column in table.Columns)
 			{
