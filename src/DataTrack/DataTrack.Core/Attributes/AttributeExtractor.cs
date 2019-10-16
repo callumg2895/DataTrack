@@ -18,6 +18,7 @@ namespace DataTrack.Core.Attributes
 		public ColumnAttribute? ColumnAttribute { get; set; }
 		public UnmappedAttribute? UnmappedAttribute { get; set; }
 		public ParentAttribute? ParentAttribute { get; set; }
+		public ChildAttribute? ChildAttribute { get; set; }
 
 		public AttributeExtractor(PropertyInfo property)
 		{
@@ -31,6 +32,7 @@ namespace DataTrack.Core.Attributes
 			ColumnAttribute = null;
 			UnmappedAttribute = null;
 			ParentAttribute = null;
+			ChildAttribute = null;
 
 			foreach (Attribute attribute in property.GetCustomAttributes())
 			{
@@ -42,6 +44,7 @@ namespace DataTrack.Core.Attributes
 				ColumnAttribute = attribute as ColumnAttribute ?? ColumnAttribute;
 				UnmappedAttribute = attribute as UnmappedAttribute ?? UnmappedAttribute;
 				ParentAttribute = attribute as ParentAttribute ?? ParentAttribute;
+				ChildAttribute = attribute as ChildAttribute ?? ChildAttribute;
 			}
 		}
 
@@ -52,6 +55,7 @@ namespace DataTrack.Core.Attributes
 				&& EntityAttribute == null 
 				&& TableAttribute == null 
 				&& ParentAttribute == null 
+				&& ChildAttribute == null
 				&& UnmappedAttribute == null);
 		}
 	}

@@ -96,7 +96,7 @@ namespace DataTrack.Core.Components.Mapping
 				childProperties = new List<PropertyInfo>();
 
 				Logger.Trace($"Instantiating child properties for Entity '{type.Name}'.");
-				foreach (PropertyInfo property in ReflectionUtil.GetProperties(this, typeof(TableAttribute)))
+				foreach (PropertyInfo property in ReflectionUtil.GetProperties(this, typeof(ChildAttribute)))
 				{
 					Func<object> activator = ReflectionUtil.GetActivator(property.PropertyType);
 
@@ -131,7 +131,7 @@ namespace DataTrack.Core.Components.Mapping
 			}
 			else
 			{
-				foreach (PropertyInfo property in ReflectionUtil.GetProperties(this, typeof(TableAttribute)))
+				foreach (PropertyInfo property in ReflectionUtil.GetProperties(this, typeof(ChildAttribute)))
 				{
 					properties[(type, tableName)] = property;
 					Logger.Trace($"Loading property '{property.Name}' for Entity '{type.Name}'. ");

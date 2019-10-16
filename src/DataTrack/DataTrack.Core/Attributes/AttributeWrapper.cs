@@ -14,6 +14,7 @@ namespace DataTrack.Core.Attributes
 		public TableAttribute? TableAttribute { get; private set; }
 		public List<TableAttribute> ChildTableAttributes { get; private set; }
 		public List<ParentAttribute> ParentAttributes { get; private set; }
+		public List<ChildAttribute> ChildAttributes { get; private set; }
 		public List<EntityAttribute> EntityAttributes { get; private set; }
 		public List<FormulaAttribute> FormulaAttributes { get; private set; }
 		public List<ColumnAttribute> ColumnAttributes { get; private set; }
@@ -27,6 +28,7 @@ namespace DataTrack.Core.Attributes
 			TableAttribute = null;
 			ChildTableAttributes = new List<TableAttribute>();
 			ParentAttributes = new List<ParentAttribute>();
+			ChildAttributes = new List<ChildAttribute>();
 			ColumnAttributes = new List<ColumnAttribute>();
 			EntityAttributes = new List<EntityAttribute>();
 			FormulaAttributes = new List<FormulaAttribute>();
