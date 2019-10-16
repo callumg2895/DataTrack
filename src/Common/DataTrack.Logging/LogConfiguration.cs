@@ -57,7 +57,7 @@ namespace DataTrack.Logging
 			fileDateString = fileDate.ToShortDateString().Replace("/", "_");
 			fileName = $"{fileDateString}_{ProjectName}Log_";
 			filePath = $@"{Path.GetPathRoot(Environment.SystemDirectory)}{ProjectName}/logs";
-			fileExtension = ".txt";
+			fileExtension = ".log";
 			fileIndex = 0;
 		}
 

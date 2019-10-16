@@ -21,12 +21,12 @@ namespace LogTrack
 		private StringBuilder text;
 		public LogLevel LogLevel;
 
-		private static Regex Trace = new Regex("TRC");
-		private static Regex Debug = new Regex("DBG");
-		private static Regex Info = new Regex("INF");
-		private static Regex Warning = new Regex("WRN");
-		private static Regex Error = new Regex("ERR");
-		private static Regex Fatal = new Regex("ERF");
+		private static Regex Trace = new Regex("TRACE");
+		private static Regex Debug = new Regex("DEBUG");
+		private static Regex Info = new Regex("INFO");
+		private static Regex Warning = new Regex("WARN");
+		private static Regex Error = new Regex("ERROR");
+		private static Regex Fatal = new Regex("CRITICAL");
 
 		Dictionary<LogLevel, TextFormat> LogTextFormat = new Dictionary<LogLevel, TextFormat>()
 		{
