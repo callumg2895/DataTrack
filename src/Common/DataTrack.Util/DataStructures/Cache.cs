@@ -125,15 +125,13 @@ namespace DataTrack.Util.DataStructures
 				}
 			}
 
-			lock (cacheLock)
+			if (candidate == null)
 			{
-				if (candidate != null && cacheDictionary.ContainsKey(candidate))
-				{
-					cacheDictionary.Remove(candidate);
-					cacheAccessMapping.Remove(candidate);
-					logger.Debug($"{cacheName} Culled values for key '{candidate.ToString()}'");
-				}
+				logger.Warn($"{cacheName} Attempting to cull key will null value.");
+				return;
 			}
+			
+			EvictItem(candidate);
 		}
 
 		public void CacheItem(TKey key, TValue value)
@@ -162,6 +160,16 @@ namespace DataTrack.Util.DataStructures
 			}
 
 			return value;
+		}
+
+		public void EvictItem(TKey key)
+		{
+			lock (cacheLock)
+			{
+				cacheDictionary.Remove(key);
+				cacheAccessMapping.Remove(key);
+				logger.Debug($"{cacheName} Evicted values for key '{key.ToString()}'");
+			}
 		}
 
 		public void Stop()
