@@ -33,7 +33,13 @@ namespace DataTrack.Core.Components.Cache
 
 		public static void Init(int cacheSizeLimit, LogConfiguration config)
 		{
-			instance = new MappingCache(cacheSizeLimit, "MappingCache", config);
+			lock (instanceLock)
+			{
+				if (instance == null)
+				{
+					instance = new MappingCache(cacheSizeLimit, "MappingCache", config);
+				}
+			}
 		}
 	}
 }

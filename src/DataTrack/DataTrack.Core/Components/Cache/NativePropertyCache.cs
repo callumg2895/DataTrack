@@ -31,7 +31,13 @@ namespace DataTrack.Core.Components.Cache
 
 		public static void Init(int cacheSizeLimit, LogConfiguration config)
 		{
-			instance = new NativePropertyCache(cacheSizeLimit, "NativePropertyCache", config);
+			lock (instanceLock)
+			{
+				if (instance == null)
+				{
+					instance = new NativePropertyCache(cacheSizeLimit, "NativePropertyCache", config);
+				}
+			}
 		}
 	}
 }

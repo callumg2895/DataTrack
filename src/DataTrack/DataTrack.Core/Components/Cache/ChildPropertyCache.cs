@@ -35,7 +35,7 @@ namespace DataTrack.Core.Components.Cache
 			{
 				if (instance == null)
 				{
-					instance = new ChildPropertyCache(cacheSizeLimit, "Child Property Cache", config);
+					instance = new ChildPropertyCache(cacheSizeLimit, "ChildPropertyCache", config);
 				}
 			}
 		}

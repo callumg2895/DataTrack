@@ -32,7 +32,13 @@ namespace DataTrack.Core.Components.Cache
 
 		public static void Init(int cacheSizeLimit, LogConfiguration config)
 		{
-			instance = new CompiledActivatorCache(cacheSizeLimit, "CompiledActivatorCache", config);
+			lock (instanceLock)
+			{
+				if (instance == null)
+				{
+					instance = new CompiledActivatorCache(cacheSizeLimit, "CompiledActivatorCache", config);
+				}
+			}
 		}
 	}
 }
