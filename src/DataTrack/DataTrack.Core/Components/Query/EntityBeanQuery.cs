@@ -1,4 +1,5 @@
 ﻿using DataTrack.Core.Components.Builders;
+using DataTrack.Core.Components.Cache;
 using DataTrack.Core.Components.Execution;
 using DataTrack.Core.Components.Mapping;
 using DataTrack.Core.Enums;
@@ -19,6 +20,7 @@ namespace DataTrack.Core.Components.Query
 	public class EntityBeanQuery<TBase> : Query where TBase : IEntityBean
 	{
 		private static Logger Logger = DataTrackConfiguration.Logger;
+		private CompiledActivatorCache compiledActivatorCache = CompiledActivatorCache.Instance;
 
 		public EntityBeanQuery()
 			: base(typeof(TBase), new EntityBeanMapping<TBase>())
@@ -57,12 +59,12 @@ namespace DataTrack.Core.Components.Query
 
 			stopwatch.Start();
 
-			Func<object> activator = CompiledActivatorCache.RetrieveItem(baseType);
+			Func<object> activator = compiledActivatorCache.RetrieveItem(baseType);
 
 			if (activator == null)
 			{
 				activator = ReflectionUtil.GetActivator(baseType);
-				CompiledActivatorCache.CacheItem(baseType, activator);
+				compiledActivatorCache.CacheItem(baseType, activator);
 			}
 
 			using (SqlDataReader reader = command.ExecuteReader())

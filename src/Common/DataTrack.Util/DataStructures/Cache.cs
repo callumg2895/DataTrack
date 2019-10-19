@@ -25,7 +25,7 @@ namespace DataTrack.Util.DataStructures
 
 		private string cacheName;
 
-		public Cache(int cacheSizeLimit, string name, LogConfiguration config)
+		protected Cache(int cacheSizeLimit, string name, LogConfiguration config)
 		{
 			logger = new Logger(config);
 			cacheDictionary = new Dictionary<TKey, TValue>();
