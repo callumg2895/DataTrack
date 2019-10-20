@@ -1,4 +1,5 @@
-﻿using DataTrack.Core.Components.Mapping;
+﻿using DataTrack.Core.Components.Cache;
+using DataTrack.Core.Components.Mapping;
 using DataTrack.Core.Configuration;
 using DataTrack.Core.Enums;
 using DataTrack.Logging;
@@ -102,10 +103,10 @@ namespace DataTrack.Core
 
 		private void Stop()
 		{
-			MappingCache.Stop();
-			ChildPropertyCache.Stop();
-			NativePropertyCache.Stop();
-			CompiledActivatorCache.Stop();
+			MappingCache.Instance.Stop();
+			ChildPropertyCache.Instance.Stop();
+			NativePropertyCache.Instance.Stop();
+			CompiledActivatorCache.Instance.Stop();
 
 			Logger.Stop();
 		}		

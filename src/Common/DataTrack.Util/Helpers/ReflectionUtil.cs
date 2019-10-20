@@ -10,7 +10,12 @@ namespace DataTrack.Util.Helpers
 	{
 		public static object GetPropertyValue(object instance, string propertyName)
 		{
-			return instance.GetType().GetProperty(propertyName).GetValue(instance);
+			return GetPropertyValue(instance, instance.GetType().GetProperty(propertyName));
+		}
+
+		public static object GetPropertyValue(object instance, PropertyInfo property)
+		{
+			return property.GetValue(instance);
 		}
 
 		public static IEnumerable<PropertyInfo> GetProperties(object instance, Type? attributeFilter = null)

@@ -1,4 +1,5 @@
 ﻿using DataTrack.Core.Attributes;
+using DataTrack.Core.Components.Cache;
 using DataTrack.Core.Exceptions;
 using DataTrack.Core.Interface;
 using DataTrack.Logging;
@@ -13,12 +14,16 @@ namespace DataTrack.Core.Components.Mapping
 	public abstract class Entity<TIdentity> : IEntity where TIdentity : struct
 	{
 		private static Logger Logger = DataTrackConfiguration.Logger;
+		private ChildPropertyCache childPropertyCache = ChildPropertyCache.Instance;
+		private NativePropertyCache nativePropertyCache = NativePropertyCache.Instance;
+		private CompiledActivatorCache compiledActivatorCache = CompiledActivatorCache.Instance;
 
 		[Column("id")]
 		[PrimaryKey]
 		public virtual TIdentity ID { get; set; } = default;
 
 		private static readonly Dictionary<(Type, string), PropertyInfo> properties = new Dictionary<(Type, string), PropertyInfo>();
+		private static readonly Dictionary<string, PropertyInfo> propertiesByName = new Dictionary<string, PropertyInfo>();
 
 		public object GetID()
 		{
@@ -27,6 +32,16 @@ namespace DataTrack.Core.Components.Mapping
 
 		public object GetPropertyValue(string propertyName)
 		{
+			Type type = GetType();
+			Dictionary<string, PropertyInfo> nativeProperties = nativePropertyCache.RetrieveItem(type);
+
+			if (nativeProperties != null && nativeProperties.ContainsKey(propertyName))
+			{
+				Logger.Trace($"Loading value for property '{propertyName}' for Entity '{type.Name}' from cache.");
+				return ReflectionUtil.GetPropertyValue(this, nativeProperties[propertyName]);
+			}
+
+			Logger.Trace($"Loading value for property '{propertyName}' for Entity '{type.Name}'.");
 			return ReflectionUtil.GetPropertyValue(this, propertyName);
 		}
 
@@ -34,28 +49,28 @@ namespace DataTrack.Core.Components.Mapping
 		{
 			List<object> values = new List<object>();
 			Type type = GetType();
-			List<PropertyInfo> nativeProperties = NativePropertyCache.RetrieveItem(type);
+			Dictionary<string, PropertyInfo> nativeProperties = nativePropertyCache.RetrieveItem(type);
 
 			if (nativeProperties != null)
 			{
 				Logger.Trace($"Loading native properties for Entity '{type.Name}' from cache.");
-				foreach (PropertyInfo property in nativeProperties)
+				foreach (PropertyInfo property in nativeProperties.Values)
 				{
-					values.Add(ReflectionUtil.GetPropertyValue(this, property.Name));
+					values.Add(ReflectionUtil.GetPropertyValue(this, property));
 				}
 			}
 			else
 			{
-				nativeProperties = new List<PropertyInfo>();
+				nativeProperties = new Dictionary<string, PropertyInfo>();
 
 				Logger.Trace($"Loading native properties for Entity '{type.Name}'.");
 				foreach (PropertyInfo property in ReflectionUtil.GetProperties(this, typeof(ColumnAttribute)))
 				{
-					values.Add(ReflectionUtil.GetPropertyValue(this, property.Name));
-					nativeProperties.Add(property);
+					values.Add(ReflectionUtil.GetPropertyValue(this, property));
+					nativeProperties.Add(property.Name, property);
 				}
 
-				NativePropertyCache.CacheItem(type, nativeProperties);
+				nativePropertyCache.CacheItem(type, nativeProperties);
 			}
 
 			return values;
@@ -65,13 +80,13 @@ namespace DataTrack.Core.Components.Mapping
 		{
 			PropertyInfo property = GetChildProperty(tableName);
 
-			return GetPropertyValue(property.Name);
+			return ReflectionUtil.GetPropertyValue(this, property);
 		}
 
 		public void InstantiateChildProperties()
 		{
 			Type type = GetType();
-			List<PropertyInfo> childProperties = ChildPropertyCache.RetrieveItem(type);
+			List<PropertyInfo> childProperties = childPropertyCache.RetrieveItem(type);
 
 
 			if (childProperties != null)
@@ -79,12 +94,12 @@ namespace DataTrack.Core.Components.Mapping
 				Logger.Trace($"Instantiating child properties for Entity '{type.Name}' from cache.");
 				foreach (PropertyInfo property in childProperties)
 				{
-					Func<object> activator = CompiledActivatorCache.RetrieveItem(property.PropertyType);
+					Func<object> activator = compiledActivatorCache.RetrieveItem(property.PropertyType);
 
 					if (activator == null)
 					{
 						activator = ReflectionUtil.GetActivator(property.PropertyType);
-						CompiledActivatorCache.CacheItem(property.PropertyType, activator);
+						compiledActivatorCache.CacheItem(property.PropertyType, activator);
 					}
 
 					object instance = activator();
@@ -102,18 +117,18 @@ namespace DataTrack.Core.Components.Mapping
 
 					object instance = activator();
 					property.SetValue(this, instance);
-					CompiledActivatorCache.CacheItem(property.PropertyType, activator);
+					compiledActivatorCache.CacheItem(property.PropertyType, activator);
 					childProperties.Add(property);
 				}
 
-				ChildPropertyCache.CacheItem(type, childProperties);
+				childPropertyCache.CacheItem(type, childProperties);
 			}
 		}
 
 		public void AddChildPropertyValue(string tableName, IEntity entity)
 		{
 			PropertyInfo property = GetChildProperty(tableName);
-			dynamic entityList = GetPropertyValue(property.Name);
+			dynamic entityList = ReflectionUtil.GetPropertyValue(this, property);
 			MethodInfo addItem = entityList.GetType().GetMethod("Add");
 
 			addItem.Invoke(entityList, new object[] { entity });

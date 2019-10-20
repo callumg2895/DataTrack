@@ -12,8 +12,6 @@ namespace DataTrack.Core.Attributes
 		private static Logger Logger = DataTrackConfiguration.Logger;
 
 		public TableAttribute? TableAttribute { get; private set; }
-		public List<TableAttribute> ChildTableAttributes { get; private set; }
-		public List<ParentAttribute> ParentAttributes { get; private set; }
 		public List<ChildAttribute> ChildAttributes { get; private set; }
 		public List<EntityAttribute> EntityAttributes { get; private set; }
 		public List<FormulaAttribute> FormulaAttributes { get; private set; }
@@ -26,8 +24,6 @@ namespace DataTrack.Core.Attributes
 		public AttributeWrapper(Type type)
 		{
 			TableAttribute = null;
-			ChildTableAttributes = new List<TableAttribute>();
-			ParentAttributes = new List<ParentAttribute>();
 			ChildAttributes = new List<ChildAttribute>();
 			ColumnAttributes = new List<ColumnAttribute>();
 			EntityAttributes = new List<EntityAttribute>();
@@ -64,16 +60,6 @@ namespace DataTrack.Core.Attributes
 			if (extractor.UnmappedAttribute != null)
 			{
 				return;
-			}
-
-			if (extractor.TableAttribute != null)
-			{
-				ChildTableAttributes.Add(extractor.TableAttribute);
-			}
-
-			if (extractor.ParentAttribute != null)
-			{
-				ParentAttributes.Add(extractor.ParentAttribute);
 			}
 
 			if (extractor.EntityAttribute != null)
