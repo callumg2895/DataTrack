@@ -134,7 +134,7 @@ namespace DataTrack.Util.DataStructures
 			EvictItem(candidate);
 		}
 
-		public void CacheItem(TKey key, TValue value)
+		public virtual void CacheItem(TKey key, TValue value)
 		{
 			lock (cacheLock)
 			{
@@ -144,7 +144,7 @@ namespace DataTrack.Util.DataStructures
 			}
 		}
 
-		public TValue RetrieveItem(TKey key)
+		public virtual TValue RetrieveItem(TKey key)
 		{
 			TValue value = default(TValue);
 
@@ -162,7 +162,7 @@ namespace DataTrack.Util.DataStructures
 			return value;
 		}
 
-		public void EvictItem(TKey key)
+		public virtual void EvictItem(TKey key)
 		{
 			lock (cacheLock)
 			{
