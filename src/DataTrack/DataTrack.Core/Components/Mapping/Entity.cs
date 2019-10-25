@@ -49,28 +49,11 @@ namespace DataTrack.Core.Components.Mapping
 		{
 			List<object> values = new List<object>();
 			Type type = GetType();
-			Dictionary<string, PropertyInfo> nativeProperties = nativePropertyCache.RetrieveItem(type);
+			Dictionary<string, PropertyInfo> nativeProperties = nativePropertyCache.RetrieveItem(type) ?? GetNativeProperties();
 
-			if (nativeProperties != null)
+			foreach (PropertyInfo property in nativeProperties.Values)
 			{
-				Logger.Trace($"Loading native properties for Entity '{type.Name}' from cache.");
-				foreach (PropertyInfo property in nativeProperties.Values)
-				{
-					values.Add(ReflectionUtil.GetPropertyValue(this, property));
-				}
-			}
-			else
-			{
-				nativeProperties = new Dictionary<string, PropertyInfo>();
-
-				Logger.Trace($"Loading native properties for Entity '{type.Name}'.");
-				foreach (PropertyInfo property in ReflectionUtil.GetProperties(this, typeof(ColumnAttribute)))
-				{
-					values.Add(ReflectionUtil.GetPropertyValue(this, property));
-					nativeProperties.Add(property.Name, property);
-				}
-
-				nativePropertyCache.CacheItem(type, nativeProperties);
+				values.Add(ReflectionUtil.GetPropertyValue(this, property));
 			}
 
 			return values;
@@ -86,42 +69,15 @@ namespace DataTrack.Core.Components.Mapping
 		public void InstantiateChildProperties()
 		{
 			Type type = GetType();
-			List<PropertyInfo> childProperties = childPropertyCache.RetrieveItem(type);
+			List<PropertyInfo> childProperties = childPropertyCache.RetrieveItem(type) ?? GetChildProperties();
 
-
-			if (childProperties != null)
+			foreach (PropertyInfo property in childProperties)
 			{
-				Logger.Trace($"Instantiating child properties for Entity '{type.Name}' from cache.");
-				foreach (PropertyInfo property in childProperties)
-				{
-					Func<object> activator = compiledActivatorCache.RetrieveItem(property.PropertyType);
+				Func<object> activator = compiledActivatorCache.RetrieveItem(property.PropertyType) ?? GetActivator(property);
 
-					if (activator == null)
-					{
-						activator = ReflectionUtil.GetActivator(property.PropertyType);
-						compiledActivatorCache.CacheItem(property.PropertyType, activator);
-					}
+				object instance = activator();
 
-					object instance = activator();
-					property.SetValue(this, instance);
-				}
-			}
-			else
-			{
-				childProperties = new List<PropertyInfo>();
-
-				Logger.Trace($"Instantiating child properties for Entity '{type.Name}'.");
-				foreach (PropertyInfo property in ReflectionUtil.GetProperties(this, typeof(ChildAttribute)))
-				{
-					Func<object> activator = ReflectionUtil.GetActivator(property.PropertyType);
-
-					object instance = activator();
-					property.SetValue(this, instance);
-					compiledActivatorCache.CacheItem(property.PropertyType, activator);
-					childProperties.Add(property);
-				}
-
-				childPropertyCache.CacheItem(type, childProperties);
+				property.SetValue(this, instance);
 			}
 		}
 
@@ -155,6 +111,51 @@ namespace DataTrack.Core.Components.Mapping
 			}
 
 			throw new TableMappingException(type, tableName);
+		}
+
+		private Dictionary<string, PropertyInfo> GetNativeProperties()
+		{
+			Type type = GetType();
+			Dictionary<string, PropertyInfo>  nativeProperties = new Dictionary<string, PropertyInfo>();
+
+			Logger.Trace($"Loading native properties for Entity '{type.Name}'.");
+			foreach (PropertyInfo property in ReflectionUtil.GetProperties(this, typeof(ColumnAttribute)))
+			{
+				nativeProperties.Add(property.Name, property);
+			}
+
+			nativePropertyCache.CacheItem(type, nativeProperties);
+
+			return nativeProperties;
+		}
+
+		private List<PropertyInfo> GetChildProperties()
+		{
+			Type type = GetType();
+			List<PropertyInfo> childProperties = new List<PropertyInfo>();
+
+			Logger.Trace($"Loading child properties for Entity '{type.Name}'.");
+			foreach (PropertyInfo property in ReflectionUtil.GetProperties(this, typeof(ChildAttribute)))
+			{
+				Func<object> activator = ReflectionUtil.GetActivator(property.PropertyType);
+
+				compiledActivatorCache.CacheItem(property.PropertyType, activator);
+
+				childProperties.Add(property);
+			}
+
+			childPropertyCache.CacheItem(type, childProperties);
+
+			return childProperties;
+		}
+
+		private Func<object> GetActivator(PropertyInfo property)
+		{
+			Func<object> activator = ReflectionUtil.GetActivator(property.PropertyType);
+
+			compiledActivatorCache.CacheItem(property.PropertyType, activator);
+
+			return activator;
 		}
 	}
 }
