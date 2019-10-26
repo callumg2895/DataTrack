@@ -22,9 +22,6 @@ namespace DataTrack.Core.Components.Mapping
 		[PrimaryKey]
 		public virtual TIdentity ID { get; set; } = default;
 
-		private static readonly Dictionary<(Type, string), PropertyInfo> properties = new Dictionary<(Type, string), PropertyInfo>();
-		private static readonly Dictionary<string, PropertyInfo> propertiesByName = new Dictionary<string, PropertyInfo>();
-
 		public object GetID()
 		{
 			return ID;
@@ -69,9 +66,9 @@ namespace DataTrack.Core.Components.Mapping
 		public void InstantiateChildProperties()
 		{
 			Type type = GetType();
-			List<PropertyInfo> childProperties = childPropertyCache.RetrieveItem(type) ?? GetChildProperties();
+			Dictionary<string, PropertyInfo> childProperties = childPropertyCache.RetrieveItem(type) ?? GetChildProperties();
 
-			foreach (PropertyInfo property in childProperties)
+			foreach (PropertyInfo property in childProperties.Values)
 			{
 				Func<object> activator = compiledActivatorCache.RetrieveItem(property.PropertyType) ?? GetActivator(property);
 
@@ -93,35 +90,9 @@ namespace DataTrack.Core.Components.Mapping
 		private PropertyInfo GetChildProperty(string tableName)
 		{
 			Type type = GetType();
+			Dictionary<string, PropertyInfo> childProperties = childPropertyCache.RetrieveItem(type) ?? GetChildProperties();
 
-			if (properties.ContainsKey((type, tableName)))
-			{
-				return properties[(type, tableName)];
-			}
-
-			List<PropertyInfo> childProperties = childPropertyCache.RetrieveItem(type) ?? GetChildProperties();
-			PropertyInfo? childProperty = null;
-
-			foreach (PropertyInfo property in childProperties)
-			{
-				ChildAttribute? childAttribute = (ChildAttribute?)property.GetAttribute(typeof(ChildAttribute));
-
-				// The attribute should not be null here
-
-				if (childAttribute.TableName == tableName)
-				{
-					properties[(type, tableName)] = property;
-					Logger.Trace($"Loading property '{property.Name}' for Entity '{type.Name}'. ");
-					childProperty = property;
-				}
-			}
-
-			if (childProperty == null)
-			{
-				throw new TableMappingException(type, tableName);
-			}
-
-			return childProperty;
+			return childProperties[tableName];
 		}
 
 		private Dictionary<string, PropertyInfo> GetNativeProperties()
@@ -140,19 +111,21 @@ namespace DataTrack.Core.Components.Mapping
 			return nativeProperties;
 		}
 
-		private List<PropertyInfo> GetChildProperties()
+		private Dictionary<string, PropertyInfo> GetChildProperties()
 		{
 			Type type = GetType();
-			List<PropertyInfo> childProperties = new List<PropertyInfo>();
+			Dictionary<string, PropertyInfo> childProperties = new Dictionary<string, PropertyInfo>();
 
 			Logger.Trace($"Loading child properties for Entity '{type.Name}'.");
 			foreach (PropertyInfo property in ReflectionUtil.GetProperties(this, typeof(ChildAttribute)))
 			{
 				Func<object> activator = ReflectionUtil.GetActivator(property.PropertyType);
+				ChildAttribute childAttribute = (ChildAttribute)property.GetAttribute(typeof(ChildAttribute));
+				string tableName = childAttribute.TableName;
 
 				compiledActivatorCache.CacheItem(property.PropertyType, activator);
 
-				childProperties.Add(property);
+				childProperties.Add(tableName, property);
 			}
 
 			childPropertyCache.CacheItem(type, childProperties);

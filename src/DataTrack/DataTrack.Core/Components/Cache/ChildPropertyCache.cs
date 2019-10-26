@@ -7,7 +7,7 @@ using System.Text;
 
 namespace DataTrack.Core.Components.Cache
 {
-	public sealed class ChildPropertyCache : Cache<Type, List<PropertyInfo>>
+	public sealed class ChildPropertyCache : Cache<Type, Dictionary<string, PropertyInfo>>
 	{
 		private static ChildPropertyCache instance = null;
 		private static readonly object instanceLock = new object();
