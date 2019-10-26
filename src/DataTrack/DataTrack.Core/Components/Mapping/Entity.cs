@@ -96,21 +96,32 @@ namespace DataTrack.Core.Components.Mapping
 
 			if (properties.ContainsKey((type, tableName)))
 			{
-				PropertyInfo property = properties[(type, tableName)];
-				Logger.Trace($"Loading property '{property.Name}' for Entity '{type.Name}' from cache. ");
-				return property;
+				return properties[(type, tableName)];
 			}
-			else
+
+			List<PropertyInfo> childProperties = childPropertyCache.RetrieveItem(type) ?? GetChildProperties();
+			PropertyInfo? childProperty = null;
+
+			foreach (PropertyInfo property in childProperties)
 			{
-				foreach (PropertyInfo property in ReflectionUtil.GetProperties(this, typeof(ChildAttribute)))
+				ChildAttribute? childAttribute = (ChildAttribute?)property.GetAttribute(typeof(ChildAttribute));
+
+				// The attribute should not be null here
+
+				if (childAttribute.TableName == tableName)
 				{
 					properties[(type, tableName)] = property;
 					Logger.Trace($"Loading property '{property.Name}' for Entity '{type.Name}'. ");
-					return property;
+					childProperty = property;
 				}
 			}
 
-			throw new TableMappingException(type, tableName);
+			if (childProperty == null)
+			{
+				throw new TableMappingException(type, tableName);
+			}
+
+			return childProperty;
 		}
 
 		private Dictionary<string, PropertyInfo> GetNativeProperties()
