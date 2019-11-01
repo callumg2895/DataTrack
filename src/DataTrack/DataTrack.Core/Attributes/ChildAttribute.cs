@@ -4,6 +4,7 @@ using System.Text;
 
 namespace DataTrack.Core.Attributes
 {
+	[AttributeUsage(AttributeTargets.Property)]
 	public class ChildAttribute : Attribute
 	{
 		public string TableName { get; set; }
