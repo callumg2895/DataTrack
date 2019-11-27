@@ -1,12 +1,8 @@
 # ASP.NET Core (.NET Framework)
-- task: NuGetToolInstaller@1
-  inputs:
-    versionSpec: '4.9.1'
-    checkLatest: true
 # Build and test ASP.NET Core projects targeting the full .NET Framework.
 # Add steps that publish symbols, save build artifacts, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
-
+---
 trigger:
 - 1.0.x
 
@@ -22,8 +18,9 @@ variables:
   Patch: '0'
 
 steps:
-- task: NuGetToolInstaller@0
+- task: NuGetToolInstaller@1
   inputs:
+    versionSpec: '4.9.1'
     checkLatest: true
 
 - task: NuGetCommand@2
