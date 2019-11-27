@@ -49,3 +49,13 @@ steps:
     majorVersion: '$(Major)'
     minorVersion: '$(Minor)'
     patchVersion: '$(Patch)'
+
+- task: NuGetAuthenticate@0
+  displayName: 'NuGet Authenticate'
+
+- task: NuGetCommand@2
+  displayName: 'NuGet push'
+  inputs:
+    command: push
+    publishVstsFeed: 'Packages'
+    allowPackageConflicts: true
