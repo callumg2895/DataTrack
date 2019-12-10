@@ -6,8 +6,6 @@
     <RuntimeFrameworkVersion>2.2.0</RuntimeFrameworkVersion>
     <LangVersion>8.0</LangVersion>
     <NullableContextOptions>enable</NullableContextOptions>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>1.1.0</Version>
   </PropertyGroup>
 
 </Project>
