@@ -2,7 +2,7 @@
 
 namespace DataTrack.Core.Attributes
 {
-
+	[AttributeUsage(AttributeTargets.Property)]
 	public class ColumnAttribute : Attribute
 	{
 		public string ColumnName { get; private set; }

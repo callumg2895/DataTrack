@@ -6,6 +6,7 @@
 trigger:
 - 1.0.x
 
+
 pool:
   vmImage: 'windows-latest'
 
