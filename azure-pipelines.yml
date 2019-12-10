@@ -14,7 +14,7 @@ variables:
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
   Major: '1'
-  Minor: '1'
+  Minor: '0'
   Patch: '0'
 
 steps:
@@ -39,7 +39,6 @@ steps:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
 
-
 - task: NuGetCommand@2
   inputs:
     command: 'pack'
@@ -56,6 +55,5 @@ steps:
 - task: NuGetCommand@2
   displayName: 'NuGet push'
   inputs:
-    command: push
+    command: 'push'
     publishVstsFeed: 'Packages'
-    allowPackageConflicts: true
