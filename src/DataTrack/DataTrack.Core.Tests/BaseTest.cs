@@ -37,7 +37,8 @@ namespace DataTrack.Core.Tests
 		[AssemblyInitialize]
 		public static void AssemblyInit(TestContext testContext)
 		{
-			DataTrackConfiguration.Instance.StartAsync(CancellationToken.None).RunSynchronously();
+			DataTrackConfiguration.Initialize(null);
+			DataTrackConfiguration.Instance.StartAsync(CancellationToken.None);
 
 			using (SqlConnection connection = DataTrackConfiguration.Instance.CreateConnection())
 			{
@@ -126,7 +127,7 @@ namespace DataTrack.Core.Tests
 				}
 			}
 
-			DataTrackConfiguration.Instance.StopAsync(CancellationToken.None).RunSynchronously();
+			DataTrackConfiguration.Instance.StopAsync(CancellationToken.None);
 		}
 
 		protected List<Author> GetAuthors(int a, int b = 0, int r = 0)

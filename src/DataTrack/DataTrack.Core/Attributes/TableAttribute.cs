@@ -2,6 +2,7 @@
 
 namespace DataTrack.Core.Attributes
 {
+	[AttributeUsage(AttributeTargets.Class)]
 	public class TableAttribute : Attribute
 	{
 

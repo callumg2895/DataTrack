@@ -4,6 +4,7 @@ using System.Text;
 
 namespace DataTrack.Core.Attributes
 {
+	[AttributeUsage(AttributeTargets.Property)]
 	public class FormulaAttribute : Attribute
 	{
 		public string Query { get; set; }
