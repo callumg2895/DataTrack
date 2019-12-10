@@ -4,9 +4,7 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
 
 trigger:
-- master
-- 1.0.x
-- trunk
+- trunk_dev
 
 pool:
   vmImage: 'windows-latest'
