@@ -38,7 +38,7 @@ namespace DataTrack.Util.Helpers
 				}
 
 				foreach (Attribute attribute in property.GetCustomAttributes())
-				{
+				 {
 					if (attribute.GetType() == attributeFilter)
 					{
 						yield return property;
@@ -73,6 +73,19 @@ namespace DataTrack.Util.Helpers
 		public static Func<object> GetActivator(Type type)
 		{
 			return Expression.Lambda<Func<object>>(Expression.New(type)).Compile();
+		}
+
+		public static Attribute? GetAttribute(this PropertyInfo property, Type attributeFilter)
+		{
+			foreach (Attribute attribute in property.GetCustomAttributes())
+			{
+				if (attribute.GetType() == attributeFilter)
+				{
+					return attribute;
+				}
+			}
+
+			return null;
 		}
 	}
 }

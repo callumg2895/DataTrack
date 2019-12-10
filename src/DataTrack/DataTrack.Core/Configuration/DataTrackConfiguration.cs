@@ -1,4 +1,5 @@
-﻿using DataTrack.Core.Components.Mapping;
+﻿using DataTrack.Core.Components.Cache;
+using DataTrack.Core.Components.Mapping;
 using DataTrack.Core.Configuration;
 using DataTrack.Core.Enums;
 using DataTrack.Logging;
@@ -24,17 +25,36 @@ namespace DataTrack.Core
 		public static string ConnectionString = string.Empty;
 		internal static Logger Logger;
 
-		private static readonly DataTrackConfiguration instance = new DataTrackConfiguration();
+		private static DataTrackConfiguration instance;
 		private static DatabaseConfiguration databaseConfig;
 		private static LogConfiguration loggingConfig;
 		private static CacheConfiguration cacheConfig;
+		
+		public IServiceProvider ServiceProvider { get; }
+
+		public static DataTrackConfiguration Initialize(IServiceProvider serviceProvider)
+		{
+			if (instance == null)
+			{
+				instance = new DataTrackConfiguration(serviceProvider);
+
+				return Instance;
+			}
+
+			throw new InvalidOperationException("Cannot initialize DataTrackConfiguration instance when already initialized.");
+		}
 
 		// Thread safe lazy singleton
 		public static DataTrackConfiguration Instance
 		{
 			get
 			{
-				return instance;
+				if (instance != null)
+				{
+					return instance;
+				}
+
+				throw new NullReferenceException("DataTrackConfiguration has not yet been initialized.");
 			}
 		}
 
@@ -42,9 +62,9 @@ namespace DataTrack.Core
 
 		#region Constructors
 
-		private DataTrackConfiguration()
+		private DataTrackConfiguration(IServiceProvider serviceProvider)
 		{
-
+			ServiceProvider = serviceProvider;
 		}
 
 		#endregion
@@ -65,7 +85,6 @@ namespace DataTrack.Core
 
 		public SqlConnection CreateConnection()
 		{
-
 			SqlConnection connection = new SqlConnection();
 
 			if (!string.IsNullOrEmpty(ConnectionString))
@@ -84,10 +103,10 @@ namespace DataTrack.Core
 
 		private void Stop()
 		{
-			MappingCache.Stop();
-			ChildPropertyCache.Stop();
-			NativePropertyCache.Stop();
-			CompiledActivatorCache.Stop();
+			MappingCache.Instance.Stop();
+			ChildPropertyCache.Instance.Stop();
+			NativePropertyCache.Instance.Stop();
+			CompiledActivatorCache.Instance.Stop();
 
 			Logger.Stop();
 		}		
@@ -103,12 +122,20 @@ namespace DataTrack.Core
 
 		public Task StartAsync(CancellationToken cancellationToken)
 		{
-			return new Task(Instance.Init, cancellationToken);
+			Task task = new Task(Instance.Init, cancellationToken);
+
+			task.RunSynchronously();
+
+			return task;
 		}
 
 		public Task StopAsync(CancellationToken cancellationToken)
 		{
-			return new Task(Instance.Stop, cancellationToken);
+			Task task = new Task(Instance.Stop, cancellationToken);
+
+			task.RunSynchronously();
+
+			return task;
 		}
 
 		#endregion
