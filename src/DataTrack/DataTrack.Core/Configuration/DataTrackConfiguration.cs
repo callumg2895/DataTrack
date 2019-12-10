@@ -3,17 +3,20 @@ using DataTrack.Core.Configuration;
 using DataTrack.Core.Enums;
 using DataTrack.Logging;
 using DataTrack.Util.Helpers;
+using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.IO;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml;
 
 namespace DataTrack.Core
 {
 
-	public static class DataTrackConfiguration
+	public sealed class DataTrackConfiguration : IHostedService
 	{
 
 		#region Members
@@ -21,14 +24,33 @@ namespace DataTrack.Core
 		public static string ConnectionString = string.Empty;
 		internal static Logger Logger;
 
+		private static readonly DataTrackConfiguration instance = new DataTrackConfiguration();
 		private static DatabaseConfiguration databaseConfig;
 		private static LogConfiguration loggingConfig;
 		private static CacheConfiguration cacheConfig;
 
+		// Thread safe lazy singleton
+		public static DataTrackConfiguration Instance
+		{
+			get
+			{
+				return instance;
+			}
+		}
+
+		#endregion
+
+		#region Constructors
+
+		private DataTrackConfiguration()
+		{
+
+		}
+
 		#endregion
 
 		#region Methods
-		public static void Init()
+		private void Init()
 		{
 			LoadConfiguration();
 
@@ -41,7 +63,7 @@ namespace DataTrack.Core
 			ConnectionString = databaseConfig.GetConnectionString();
 		}
 
-		public static SqlConnection CreateConnection()
+		public SqlConnection CreateConnection()
 		{
 
 			SqlConnection connection = new SqlConnection();
@@ -60,7 +82,7 @@ namespace DataTrack.Core
 			return connection;
 		}
 
-		public static void Dispose()
+		private void Stop()
 		{
 			MappingCache.Stop();
 			ChildPropertyCache.Stop();
@@ -70,13 +92,23 @@ namespace DataTrack.Core
 			Logger.Stop();
 		}		
 
-		private static void LoadConfiguration()
+		private void LoadConfiguration()
 		{
 			DataTrackConfigReader reader = new DataTrackConfigReader();
 
 			databaseConfig = new DatabaseConfiguration(reader.GetDatabaseConfigNode());
 			loggingConfig = new LogConfiguration(reader.GetLoggingConfigNode());
 			cacheConfig = new CacheConfiguration(reader.GetCacheConfigNode());
+		}
+
+		public Task StartAsync(CancellationToken cancellationToken)
+		{
+			return new Task(Instance.Init, cancellationToken);
+		}
+
+		public Task StopAsync(CancellationToken cancellationToken)
+		{
+			return new Task(Instance.Stop, cancellationToken);
 		}
 
 		#endregion
