@@ -17,7 +17,7 @@ namespace DataTrack.Core.Attributes
 		public PrimaryKeyAttribute? PrimaryKeyAttribute { get; set; }
 		public ColumnAttribute? ColumnAttribute { get; set; }
 		public UnmappedAttribute? UnmappedAttribute { get; set; }
-
+		public ChildAttribute? ChildAttribute { get; set; }
 		public AttributeExtractor(PropertyInfo property)
 		{
 			Logger.Debug($"Extracting attributes from property '{property.Name}' from class '{property.ReflectedType.Name}'");
@@ -29,6 +29,7 @@ namespace DataTrack.Core.Attributes
 			PrimaryKeyAttribute = null;
 			ColumnAttribute = null;
 			UnmappedAttribute = null;
+			ChildAttribute = null;
 
 			foreach (Attribute attribute in property.GetCustomAttributes())
 			{
@@ -39,12 +40,18 @@ namespace DataTrack.Core.Attributes
 				PrimaryKeyAttribute = attribute as PrimaryKeyAttribute ?? PrimaryKeyAttribute;
 				ColumnAttribute = attribute as ColumnAttribute ?? ColumnAttribute;
 				UnmappedAttribute = attribute as UnmappedAttribute ?? UnmappedAttribute;
+				ChildAttribute = attribute as ChildAttribute ?? ChildAttribute;
 			}
 		}
 
 		public bool PropertyIsMapped()
 		{
-			return !(ColumnAttribute == null && FormulaAttribute == null && EntityAttribute == null && TableAttribute == null && UnmappedAttribute == null);
+			return !(ColumnAttribute == null 
+				&& FormulaAttribute == null 
+				&& EntityAttribute == null 
+				&& TableAttribute == null 
+				&& ChildAttribute == null
+				&& UnmappedAttribute == null);
 		}
 	}
 }

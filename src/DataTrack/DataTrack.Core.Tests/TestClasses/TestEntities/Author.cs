@@ -13,7 +13,7 @@ namespace DataTrack.Core.Tests.TestClasses.TestEntities
 		[Column("last_name")]
 		public virtual string LastName { get; set; }
 
-		[Table("books")]
+		[Child("books")]
 		public virtual List<Book> Books { get; set; }
 
 		[Unmapped] // This property is just a getter, and so does not have a 1:1 database mapping

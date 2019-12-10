@@ -48,12 +48,12 @@ namespace DataTrack.Logging
 		{
 			switch (Level)
 			{
-				case LogLevel.Trace: return "TRC";
-				case LogLevel.Debug: return "DBG";
-				case LogLevel.Info: return "INF";
-				case LogLevel.Warn: return "WRN";
-				case LogLevel.Error:
-				case LogLevel.ErrorFatal: return "ERR";
+				case LogLevel.Trace:		return "TRACE";
+				case LogLevel.Debug:		return "DEBUG";
+				case LogLevel.Info:			return "INFO";
+				case LogLevel.Warn:			return "WARN";
+				case LogLevel.Error:		return "ERROR";
+				case LogLevel.ErrorFatal:	return "CRITICAL";
 				default:
 					return string.Empty;
 			}

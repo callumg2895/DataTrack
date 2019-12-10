@@ -26,12 +26,12 @@ namespace LogTrack
 			LogStats stats = reader.ReadStats();
 
 			Console.WriteLine();
-			Console.WriteLine($"Total TRC: {stats.totalTRC}");
-			Console.WriteLine($"Total DBG: {stats.totalDBG}");
-			Console.WriteLine($"Total INF: {stats.totalINF}");
-			Console.WriteLine($"Total WRN: {stats.totalWRN}");
-			Console.WriteLine($"Total ERR: {stats.totalERR}");
-			Console.WriteLine($"Total ERF: {stats.totalERF}");
+			Console.WriteLine($"Total TRACE: {stats.totalTRC}");
+			Console.WriteLine($"Total DEBUG: {stats.totalDBG}");
+			Console.WriteLine($"Total INFO: {stats.totalINF}");
+			Console.WriteLine($"Total WARN: {stats.totalWRN}");
+			Console.WriteLine($"Total ERROR: {stats.totalERR}");
+			Console.WriteLine($"Total CRITICAL: {stats.totalERF}");
 		}
 	}
 }

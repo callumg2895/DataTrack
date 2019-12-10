@@ -3,6 +3,7 @@ using DataTrack.Core.Enums;
 using DataTrack.Core.Exceptions;
 using DataTrack.Core.Interface;
 using DataTrack.Logging;
+using DataTrack.Util.Helpers;
 using System;
 using System.Collections.Generic;
 
@@ -13,6 +14,7 @@ namespace DataTrack.Core.Components.Mapping
 		private static Logger Logger = DataTrackConfiguration.Logger;
 
 		public Type Type { get; set; }
+		public Func<object> EntityActivator {get; set;}
 		public string Alias { get; set; }
 		public List<IEntity> Entities { get; set; }
 		public StagingTable StagingTable { get; set; }
@@ -27,6 +29,7 @@ namespace DataTrack.Core.Components.Mapping
 			: base()
 		{
 			Type = type;
+			EntityActivator = ReflectionUtil.GetActivator(Type);
 			Name = attributes.TableAttribute?.TableName ?? throw new TableMappingException(type, "Unknown");
 			Alias = type.Name;
 			Entities = new List<IEntity>();

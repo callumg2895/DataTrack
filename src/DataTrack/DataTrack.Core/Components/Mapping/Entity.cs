@@ -19,6 +19,7 @@ namespace DataTrack.Core.Components.Mapping
 		public virtual TIdentity ID { get; set; } = default;
 
 		private static readonly Dictionary<(Type, string), PropertyInfo> properties = new Dictionary<(Type, string), PropertyInfo>();
+		private static readonly Dictionary<string, PropertyInfo> propertiesByName = new Dictionary<string, PropertyInfo>();
 
 		public object GetID()
 		{
@@ -27,6 +28,16 @@ namespace DataTrack.Core.Components.Mapping
 
 		public object GetPropertyValue(string propertyName)
 		{
+			Type type = GetType();
+			Dictionary<string, PropertyInfo> nativeProperties = NativePropertyCache.RetrieveItem(type);
+
+			if (nativeProperties != null && nativeProperties.ContainsKey(propertyName))
+			{
+				Logger.Trace($"Loading value for property '{propertyName}' for Entity '{type.Name}' from cache.");
+				return ReflectionUtil.GetPropertyValue(this, nativeProperties[propertyName]);
+			}
+
+			Logger.Trace($"Loading value for property '{propertyName}' for Entity '{type.Name}'.");
 			return ReflectionUtil.GetPropertyValue(this, propertyName);
 		}
 
@@ -34,25 +45,25 @@ namespace DataTrack.Core.Components.Mapping
 		{
 			List<object> values = new List<object>();
 			Type type = GetType();
-			List<PropertyInfo> nativeProperties = NativePropertyCache.RetrieveItem(type);
+			Dictionary<string, PropertyInfo> nativeProperties = NativePropertyCache.RetrieveItem(type);
 
 			if (nativeProperties != null)
 			{
 				Logger.Trace($"Loading native properties for Entity '{type.Name}' from cache.");
-				foreach (PropertyInfo property in nativeProperties)
+				foreach (PropertyInfo property in nativeProperties.Values)
 				{
-					values.Add(ReflectionUtil.GetPropertyValue(this, property.Name));
+					values.Add(ReflectionUtil.GetPropertyValue(this, property));
 				}
 			}
 			else
 			{
-				nativeProperties = new List<PropertyInfo>();
+				nativeProperties = new Dictionary<string, PropertyInfo>();
 
 				Logger.Trace($"Loading native properties for Entity '{type.Name}'.");
 				foreach (PropertyInfo property in ReflectionUtil.GetProperties(this, typeof(ColumnAttribute)))
 				{
-					values.Add(ReflectionUtil.GetPropertyValue(this, property.Name));
-					nativeProperties.Add(property);
+					values.Add(ReflectionUtil.GetPropertyValue(this, property));
+					nativeProperties.Add(property.Name, property);
 				}
 
 				NativePropertyCache.CacheItem(type, nativeProperties);
@@ -65,7 +76,7 @@ namespace DataTrack.Core.Components.Mapping
 		{
 			PropertyInfo property = GetChildProperty(tableName);
 
-			return GetPropertyValue(property.Name);
+			return ReflectionUtil.GetPropertyValue(this, property);
 		}
 
 		public void InstantiateChildProperties()
@@ -96,7 +107,7 @@ namespace DataTrack.Core.Components.Mapping
 				childProperties = new List<PropertyInfo>();
 
 				Logger.Trace($"Instantiating child properties for Entity '{type.Name}'.");
-				foreach (PropertyInfo property in ReflectionUtil.GetProperties(this, typeof(TableAttribute)))
+				foreach (PropertyInfo property in ReflectionUtil.GetProperties(this, typeof(ChildAttribute)))
 				{
 					Func<object> activator = ReflectionUtil.GetActivator(property.PropertyType);
 
@@ -113,7 +124,7 @@ namespace DataTrack.Core.Components.Mapping
 		public void AddChildPropertyValue(string tableName, IEntity entity)
 		{
 			PropertyInfo property = GetChildProperty(tableName);
-			dynamic entityList = GetPropertyValue(property.Name);
+			dynamic entityList = ReflectionUtil.GetPropertyValue(this, property);
 			MethodInfo addItem = entityList.GetType().GetMethod("Add");
 
 			addItem.Invoke(entityList, new object[] { entity });
@@ -131,7 +142,7 @@ namespace DataTrack.Core.Components.Mapping
 			}
 			else
 			{
-				foreach (PropertyInfo property in ReflectionUtil.GetProperties(this, typeof(TableAttribute)))
+				foreach (PropertyInfo property in ReflectionUtil.GetProperties(this, typeof(ChildAttribute)))
 				{
 					properties[(type, tableName)] = property;
 					Logger.Trace($"Loading property '{property.Name}' for Entity '{type.Name}'. ");

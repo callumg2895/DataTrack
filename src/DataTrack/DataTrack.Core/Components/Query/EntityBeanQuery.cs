@@ -28,7 +28,7 @@ namespace DataTrack.Core.Components.Query
 
 		public override dynamic Execute()
 		{
-			using (SqlConnection connection = DataTrackConfiguration.CreateConnection())
+			using (SqlConnection connection = DataTrackConfiguration.Instance.CreateConnection())
 			{
 				SqlCommand command = connection.CreateCommand();
 

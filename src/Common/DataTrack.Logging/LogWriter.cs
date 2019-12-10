@@ -44,6 +44,11 @@ namespace DataTrack.Logging
 
 		internal static void Log(LogConfiguration config, MethodBase? method, string message, LogLevel level)
 		{
+			if (level < config.LogLevel)
+			{
+				return;
+			}
+
 			lock (configLock)
 			{
 				// If we race, we may hit this lock first. So we should always make sure that the buffer
@@ -52,11 +57,6 @@ namespace DataTrack.Logging
 				{
 					logs.Add(config, new List<LogItem>());
 					logSize.Add(config, 0);
-				}
-
-				if (level < config.LogLevel)
-				{
-					return;
 				}
 
 				logs[config].Add(new LogItem(method, message, level));
