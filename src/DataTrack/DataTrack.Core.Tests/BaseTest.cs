@@ -197,6 +197,23 @@ namespace DataTrack.Core.Tests
 
 			equal &= book1.Title == book2.Title;
 
+			if (equal)
+			{
+				for (int i = 0; i < book1.Reviews.Count; i++)
+				{
+					//equal &= ReviewsAreEqual(book1.Reviews[i], book2.Reviews[i]);
+				}
+			}
+
+			return equal;
+		}
+
+		protected bool ReviewsAreEqual(Review review1, Review review2)
+		{
+			bool equal = true;
+
+			equal &= review1.BookId == review2.BookId;
+
 			return equal;
 		}
 
