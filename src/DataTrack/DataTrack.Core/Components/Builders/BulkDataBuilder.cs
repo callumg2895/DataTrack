@@ -59,13 +59,12 @@ namespace DataTrack.Core.Components.Builders
 			Type type = item.GetType();
 			EntityTable table = Mapping.TypeTableMapping[type];
 
-			Mapping.UpdateTableEntities(table, item);
-			Mapping.UpdateTableDataTable(table);
+			table.Entities.Add(item);
 
-			DataTable dataTable = Mapping.DataTableMapping[table];
+			DataTable dataTable = table.DataTable;
 
-			SetColumns(dataTable);
-			AddRow(dataTable, item);
+			SetColumns(table);
+			AddRow(table, item);
 
 			foreach (EntityTable childTable in Mapping.ParentChildMapping[table])
 			{
@@ -90,15 +89,15 @@ namespace DataTrack.Core.Components.Builders
 
 		}
 
-		private void SetColumns(DataTable dataTable)
+		private void SetColumns(EntityTable table)
 		{
 			/*
-			 * Bulk inserts can only be performed on data that is mapped to a physics column in the database. These are
+			 * Bulk inserts can only be performed on data that is mapped to a physical column in the database. These are
 			 * represented by instances of the EntityColumn class, and contain specific methods which determine key type
 			 * etc.
 			 */
 
-			EntityTable table = Mapping.DataTableMapping[dataTable];
+			DataTable dataTable = table.DataTable;
 			List <EntityColumn> columns = table.EntityColumns;
 
 			foreach (EntityColumn column in columns)
@@ -124,11 +123,11 @@ namespace DataTrack.Core.Components.Builders
 			}
 		}
 
-		private void AddRow(DataTable dataTable, IEntity item)
+		private void AddRow(EntityTable table, IEntity item)
 		{
 			List<object> rowData = item.GetPropertyValues();
 
-			EntityTable table = Mapping.DataTableMapping[dataTable];
+			DataTable dataTable = table.DataTable;
 			DataRow dataRow = dataTable.NewRow();
 
 			for (int i = 0; i < rowData.Count; i++)

@@ -6,6 +6,7 @@ using DataTrack.Logging;
 using DataTrack.Util.Helpers;
 using System;
 using System.Collections.Generic;
+using System.Data;
 
 namespace DataTrack.Core.Components.Mapping
 {
@@ -18,6 +19,7 @@ namespace DataTrack.Core.Components.Mapping
 		public string Alias { get; set; }
 		public List<IEntity> Entities { get; set; }
 		public StagingTable StagingTable { get; set; }
+		public DataTable DataTable { get; set; }
 		internal Mapping Mapping {get; set;}
 
 		private readonly AttributeWrapper _attributes;
@@ -33,6 +35,7 @@ namespace DataTrack.Core.Components.Mapping
 			Name = attributes.TableAttribute?.TableName ?? throw new TableMappingException(type, "Unknown");
 			Alias = type.Name;
 			Entities = new List<IEntity>();
+			DataTable = new DataTable(Name);
 
 			_attributes = attributes;
 			primaryKeyColumn = null;
