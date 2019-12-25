@@ -116,6 +116,7 @@ namespace DataTrack.Core.Components.Execution
 				 * would cause a foreign key exception in SQL.
 				 */
 
+				mapping.UpdateDataTable(table, primaryKey, primaryKeyIndex);
 				mapping.UpdateDataTableForeignKeys(table, primaryKey, primaryKeyIndex++);
 			}
 			

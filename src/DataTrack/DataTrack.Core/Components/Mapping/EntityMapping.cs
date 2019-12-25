@@ -51,6 +51,15 @@ namespace DataTrack.Core.Components.Mapping
 			}
 		}
 
+		internal void UpdateDataTable(EntityTable table, dynamic primaryKey, int primaryKeyIndex)
+		{
+			Logger.Trace($"Updating primary key of '{table.Type.Name}' entity");
+
+			IEntity entity = TableEntityMapping[table][primaryKeyIndex];
+
+			entity.SetID(primaryKey);
+		}
+
 		internal void UpdateDataTableForeignKeys(EntityTable table, dynamic primaryKey, int primaryKeyIndex)
 		{
 			Logger.Trace($"Checking for child entities of '{table.Type.Name}' entity");

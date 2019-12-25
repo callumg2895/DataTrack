@@ -6,6 +6,8 @@ namespace DataTrack.Core.Interface
 	{
 		object GetID();
 
+		void SetID(dynamic value);
+
 		object GetPropertyValue(string propertyName);
 
 		List<object> GetPropertyValues();
