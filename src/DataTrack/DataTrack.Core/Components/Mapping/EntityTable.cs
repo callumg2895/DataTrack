@@ -80,6 +80,8 @@ namespace DataTrack.Core.Components.Mapping
 
 			StagingTable = new StagingTable(this);
 
+			SetDataColumns();
+
 			Logger.Trace($"Loaded database mapping for Entity '{Type.Name}' (Table '{Name}')");
 		}
 
@@ -114,6 +116,31 @@ namespace DataTrack.Core.Components.Mapping
 		{
 			Logger.Trace($"Cloning database mapping for Entity '{Type.Name}' (Table '{Name}')");
 			return new EntityTable(Type, _attributes);
+		}
+
+		private void SetDataColumns()
+		{
+			/*
+			 * Bulk inserts can only be performed on data that is mapped to a physical column in the database. These are
+			 * represented by instances of the EntityColumn class, and contain specific methods which determine key type
+			 * etc.
+			 */
+
+			foreach (EntityColumn column in EntityColumns)
+			{
+				DataColumn dataColumn = column.DataColumn;
+				List<DataColumn> primaryKeys = new List<DataColumn>();
+
+				if (!column.IsPrimaryKey())
+				{
+					DataTable.Columns.Add(dataColumn);
+				}
+
+				if (column.IsPrimaryKey())
+				{
+					primaryKeys.Add(dataColumn);
+				}
+			}
 		}
 	}
 }

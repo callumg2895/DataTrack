@@ -18,7 +18,6 @@ namespace DataTrack.Core.Components.Builders
 		internal List<EntityTable> Tables { get; private set; }
 		internal EntityMapping<TBase> Mapping { get; private set; }
 
-		private readonly Map<EntityColumn, DataColumn> ColumnMap = new Map<EntityColumn, DataColumn>();
 		private readonly Type BaseType = typeof(TBase);
 		#endregion
 
@@ -61,7 +60,6 @@ namespace DataTrack.Core.Components.Builders
 
 			table.Entities.Add(item);
 
-			SetColumns(table);
 			AddRow(table, item);
 
 			foreach (EntityTable childTable in Mapping.ParentChildMapping[table])
@@ -85,40 +83,6 @@ namespace DataTrack.Core.Components.Builders
 				}
 			}
 
-		}
-
-		private void SetColumns(EntityTable table)
-		{
-			/*
-			 * Bulk inserts can only be performed on data that is mapped to a physical column in the database. These are
-			 * represented by instances of the EntityColumn class, and contain specific methods which determine key type
-			 * etc.
-			 */
-
-			DataTable dataTable = table.DataTable;
-			List <EntityColumn> columns = table.EntityColumns;
-
-			foreach (EntityColumn column in columns)
-			{
-				if (ColumnMap.ContainsKey(column))
-				{
-					return;
-				}
-
-				DataColumn dataColumn = new DataColumn(column.Name);
-				List<DataColumn> primaryKeys = new List<DataColumn>();
-
-				if (!column.IsPrimaryKey())
-				{
-					dataTable.Columns.Add(dataColumn);
-					ColumnMap[column] = dataColumn;
-				}
-
-				if (column.IsPrimaryKey())
-				{
-					primaryKeys.Add(dataColumn);
-				}
-			}
 		}
 
 		private void AddRow(EntityTable table, IEntity item)
