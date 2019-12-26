@@ -61,8 +61,6 @@ namespace DataTrack.Core.Components.Builders
 
 			table.Entities.Add(item);
 
-			DataTable dataTable = table.DataTable;
-
 			SetColumns(table);
 			AddRow(table, item);
 
