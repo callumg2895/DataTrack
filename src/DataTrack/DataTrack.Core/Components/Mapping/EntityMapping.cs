@@ -17,38 +17,28 @@ namespace DataTrack.Core.Components.Mapping
 
 		internal Dictionary<IEntity, List<IEntity>> ParentChildEntityMapping { get; set; }
 		internal Dictionary<IEntity, DataRow> EntityDataRowMapping { get; set; }
-		internal Map<EntityTable, DataTable> DataTableMapping { get; set; }
-		internal Dictionary<EntityTable, List<IEntity>> TableEntityMapping { get; set; }
 
 		internal EntityMapping()
 			: base(typeof(TBase))
 		{
 			ParentChildEntityMapping = new Dictionary<IEntity, List<IEntity>>();
 			EntityDataRowMapping = new Dictionary<IEntity, DataRow>();
-			DataTableMapping = new Map<EntityTable, DataTable>();
-			TableEntityMapping = new Dictionary<EntityTable, List<IEntity>>();
 
 			MapEntity(BaseType);
 		}
 
 		internal void UpdateTableEntities(EntityTable table, IEntity entity)
 		{
-			if (TableEntityMapping.ContainsKey(table))
-			{
-				TableEntityMapping[table].Add(entity);
-			}
-			else
-			{
-				TableEntityMapping[table] = new List<IEntity>() { entity };
-			}
+			table.Entities.Add(entity);
 		}
 
-		internal void UpdateTableDataTable(EntityTable table)
+		internal void UpdateDataTable(EntityTable table, dynamic primaryKey, int primaryKeyIndex)
 		{
-			if (!DataTableMapping.ContainsKey(table))
-			{
-				DataTableMapping[table] = new DataTable(table.Name);
-			}
+			Logger.Trace($"Updating primary key of '{table.Type.Name}' entity");
+
+			IEntity entity = table.Entities[primaryKeyIndex];
+
+			entity.SetID(primaryKey);
 		}
 
 		internal void UpdateDataTableForeignKeys(EntityTable table, dynamic primaryKey, int primaryKeyIndex)
@@ -69,7 +59,7 @@ namespace DataTrack.Core.Components.Mapping
 			 * provided by the query executor matches exactly with the position of that entity in the TableEntityMapping list.
 			 */
 
-			IEntity entity = TableEntityMapping[table][primaryKeyIndex];
+			IEntity entity = table.Entities[primaryKeyIndex];
 
 			if (!ParentChildEntityMapping.ContainsKey(entity))
 			{

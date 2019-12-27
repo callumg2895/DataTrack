@@ -28,7 +28,7 @@ namespace DataTrack.Core.Components.Execution
 
 			foreach (EntityTable table in mapping.Tables)
 			{
-				if (mapping.DataTableMapping.ContainsKey(table))
+				if (table.DataTable.Rows.Count > 0)
 				{
 					WriteToServer(table);
 				}
@@ -53,7 +53,7 @@ namespace DataTrack.Core.Components.Execution
 				DestinationTableName = table.StagingTable.Name
 			};
 
-			bulkCopy.WriteToServer(mapping.DataTableMapping[table]);
+			bulkCopy.WriteToServer(table.DataTable);
 
 			InsertFromStagingTable(table);
 		}
@@ -116,6 +116,7 @@ namespace DataTrack.Core.Components.Execution
 				 * would cause a foreign key exception in SQL.
 				 */
 
+				mapping.UpdateDataTable(table, primaryKey, primaryKeyIndex);
 				mapping.UpdateDataTableForeignKeys(table, primaryKey, primaryKeyIndex++);
 			}
 			
