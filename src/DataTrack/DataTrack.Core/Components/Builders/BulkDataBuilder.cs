@@ -18,7 +18,6 @@ namespace DataTrack.Core.Components.Builders
 		internal List<EntityTable> Tables { get; private set; }
 		internal EntityMapping<TBase> Mapping { get; private set; }
 
-		private readonly Map<EntityColumn, DataColumn> ColumnMap = new Map<EntityColumn, DataColumn>();
 		private readonly Type BaseType = typeof(TBase);
 		#endregion
 
@@ -59,13 +58,9 @@ namespace DataTrack.Core.Components.Builders
 			Type type = item.GetType();
 			EntityTable table = Mapping.TypeTableMapping[type];
 
-			Mapping.UpdateTableEntities(table, item);
-			Mapping.UpdateTableDataTable(table);
+			table.Entities.Add(item);
 
-			DataTable dataTable = Mapping.DataTableMapping[table];
-
-			SetColumns(dataTable);
-			AddRow(dataTable, item);
+			AddRow(table, item);
 
 			foreach (EntityTable childTable in Mapping.ParentChildMapping[table])
 			{
@@ -90,45 +85,11 @@ namespace DataTrack.Core.Components.Builders
 
 		}
 
-		private void SetColumns(DataTable dataTable)
-		{
-			/*
-			 * Bulk inserts can only be performed on data that is mapped to a physics column in the database. These are
-			 * represented by instances of the EntityColumn class, and contain specific methods which determine key type
-			 * etc.
-			 */
-
-			EntityTable table = Mapping.DataTableMapping[dataTable];
-			List <EntityColumn> columns = table.EntityColumns;
-
-			foreach (EntityColumn column in columns)
-			{
-				if (ColumnMap.ContainsKey(column))
-				{
-					return;
-				}
-
-				DataColumn dataColumn = new DataColumn(column.Name);
-				List<DataColumn> primaryKeys = new List<DataColumn>();
-
-				if (!column.IsPrimaryKey())
-				{
-					dataTable.Columns.Add(dataColumn);
-					ColumnMap[column] = dataColumn;
-				}
-
-				if (column.IsPrimaryKey())
-				{
-					primaryKeys.Add(dataColumn);
-				}
-			}
-		}
-
-		private void AddRow(DataTable dataTable, IEntity item)
+		private void AddRow(EntityTable table, IEntity item)
 		{
 			List<object> rowData = item.GetPropertyValues();
 
-			EntityTable table = Mapping.DataTableMapping[dataTable];
+			DataTable dataTable = table.DataTable;
 			DataRow dataRow = dataTable.NewRow();
 
 			for (int i = 0; i < rowData.Count; i++)

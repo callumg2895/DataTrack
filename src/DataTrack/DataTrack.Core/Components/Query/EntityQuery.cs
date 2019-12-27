@@ -168,26 +168,40 @@ namespace DataTrack.Core.Components.Query
 				command.Parameters.Add(parameter.ToSqlParameter());
 			}
 
-			if (OperationType == CRUDOperationTypes.Create)
+			try
 			{
-				return new InsertQueryExecutor<TBase>(this, connection, transaction).Execute();
-			}
-
-			command.CommandText = ToString();
-
-			using (SqlDataReader reader = command.ExecuteReader())
-			{
-				switch (OperationType)
+				if (OperationType == CRUDOperationTypes.Create)
 				{
-					case CRUDOperationTypes.Read: return new ReadQueryExecutor<TBase>(this, connection, transaction).Execute(reader);
-					case CRUDOperationTypes.Update: return new UpdateQueryExecutor<TBase>(this, connection, transaction).Execute(reader);
-					case CRUDOperationTypes.Delete: return new DeleteQueryExecutor<TBase>(this, connection, transaction).Execute(reader);
-					default:
-						stopwatch.Stop();
-						Logger.Error(MethodBase.GetCurrentMethod(), "No valid operation to perform.");
-						throw new ArgumentException("No valid operation to perform.", nameof(OperationType));
+					return new InsertQueryExecutor<TBase>(this, connection, transaction).Execute();
 				}
+
+				command.CommandText = ToString();
+
+				using (SqlDataReader reader = command.ExecuteReader())
+				{
+					switch (OperationType)
+					{
+						case CRUDOperationTypes.Read: return new ReadQueryExecutor<TBase>(this, connection, transaction).Execute(reader);
+						case CRUDOperationTypes.Update: return new UpdateQueryExecutor<TBase>(this, connection, transaction).Execute(reader);
+						case CRUDOperationTypes.Delete: return new DeleteQueryExecutor<TBase>(this, connection, transaction).Execute(reader);
+						default:
+							stopwatch.Stop();
+							Logger.Error(MethodBase.GetCurrentMethod(), "No valid operation to perform.");
+							throw new ArgumentException("No valid operation to perform.", nameof(OperationType));
+					}
+				}
+			} 
+			catch (SqlException ex)
+			{
+				Logger.ErrorFatal($"DataTrack encountered a SQL exception - {ex.Message}");
+				throw ex;
 			}
+			catch (Exception ex)
+			{
+				Logger.ErrorFatal($"DataTrack encountered an exception - {ex.Message}");
+				throw ex;
+			}
+
 		}
 
 		public override string ToString()

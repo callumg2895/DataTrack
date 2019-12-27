@@ -176,6 +176,7 @@ namespace DataTrack.Core.Tests
 		{
 			bool equal = true;
 
+			equal &= author1.ID == author2.ID;
 			equal &= author1.FirstName == author2.FirstName;
 			equal &= author1.LastName == author2.LastName;
 			equal &= author1.Books.Count == author2.Books.Count;
@@ -195,7 +196,26 @@ namespace DataTrack.Core.Tests
 		{
 			bool equal = true;
 
+			equal &= book1.ID == book2.ID;
 			equal &= book1.Title == book2.Title;
+
+			if (equal)
+			{
+				for (int i = 0; i < book1.Reviews.Count; i++)
+				{
+					//equal &= ReviewsAreEqual(book1.Reviews[i], book2.Reviews[i]);
+				}
+			}
+
+			return equal;
+		}
+
+		protected bool ReviewsAreEqual(Review review1, Review review2)
+		{
+			bool equal = true;
+
+			equal &= review1.ID == review2.ID;
+			equal &= review1.BookId == review2.BookId;
 
 			return equal;
 		}
