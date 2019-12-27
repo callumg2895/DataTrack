@@ -42,6 +42,49 @@ namespace DataTrack.Core.Components.Mapping
 			foreignKeyColumnsDict = new Dictionary<string, EntityColumn?>();
 			foreignKeyColumns = new List<EntityColumn>();
 
+			InitialiseEntityColumns(attributes);
+			InitiliaseFormulaColumns(attributes);
+
+			StagingTable = new StagingTable(this);
+
+			Logger.Trace($"Loaded database mapping for Entity '{Type.Name}' (Table '{Name}')");
+		}
+
+		public EntityColumn GetPrimaryKeyColumn()
+		{
+			if (primaryKeyColumn == null)
+			{
+				throw new TableMappingException(Type, Name);
+			}
+
+			return primaryKeyColumn;
+		}
+
+		public List<EntityColumn> GetForeignKeyColumns()
+		{
+			return foreignKeyColumns;
+		}
+
+		public EntityColumn GetForeignKeyColumnFor(EntityTable foreignTable)
+		{
+			return foreignKeyColumnsDict[foreignTable.Name] ?? throw new TableMappingException(Type, Name);
+		}
+
+		public EntityTable? GetParentTable()
+		{
+			return Mapping.ChildParentMapping.ContainsKey(this) 
+				? Mapping.ChildParentMapping[this] 
+				: null;
+		}
+
+		public object Clone()
+		{
+			Logger.Trace($"Cloning database mapping for Entity '{Type.Name}' (Table '{Name}')");
+			return new EntityTable(Type, _attributes);
+		}
+
+		private void InitialiseEntityColumns(AttributeWrapper attributes)
+		{
 			foreach (ColumnAttribute columnAttribute in attributes.ColumnAttributes)
 			{
 				EntityColumn column = new EntityColumn(columnAttribute, this);
@@ -81,7 +124,10 @@ namespace DataTrack.Core.Components.Mapping
 				EntityColumns.Add(column);
 				Columns.Add(column);
 			}
+		}
 
+		private void InitiliaseFormulaColumns(AttributeWrapper attributes)
+		{
 			foreach (FormulaAttribute formulaAttribute in attributes.FormulaAttributes)
 			{
 				FormulaColumn column = new FormulaColumn(formulaAttribute, this);
@@ -89,43 +135,6 @@ namespace DataTrack.Core.Components.Mapping
 				FormulaColumns.Add(column);
 				Columns.Add(column);
 			}
-
-			StagingTable = new StagingTable(this);
-
-			Logger.Trace($"Loaded database mapping for Entity '{Type.Name}' (Table '{Name}')");
-		}
-
-		public EntityColumn GetPrimaryKeyColumn()
-		{
-			if (primaryKeyColumn == null)
-			{
-				throw new TableMappingException(Type, Name);
-			}
-
-			return primaryKeyColumn;
-		}
-
-		public List<EntityColumn> GetForeignKeyColumns()
-		{
-			return foreignKeyColumns;
-		}
-
-		public EntityColumn GetForeignKeyColumnFor(EntityTable foreignTable)
-		{
-			return foreignKeyColumnsDict[foreignTable.Name] ?? throw new TableMappingException(Type, Name);
-		}
-
-		public EntityTable? GetParentTable()
-		{
-			return Mapping.ChildParentMapping.ContainsKey(this) 
-				? Mapping.ChildParentMapping[this] 
-				: null;
-		}
-
-		public object Clone()
-		{
-			Logger.Trace($"Cloning database mapping for Entity '{Type.Name}' (Table '{Name}')");
-			return new EntityTable(Type, _attributes);
 		}
 	}
 }
