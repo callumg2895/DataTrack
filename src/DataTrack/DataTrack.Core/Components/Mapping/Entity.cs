@@ -27,6 +27,11 @@ namespace DataTrack.Core.Components.Mapping
 			return ID;
 		}
 
+		public void SetID(dynamic value)
+		{
+			ID = value;
+		}
+
 		public object GetPropertyValue(string propertyName)
 		{
 			Type type = GetType();

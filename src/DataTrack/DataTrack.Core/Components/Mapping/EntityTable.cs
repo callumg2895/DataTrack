@@ -6,6 +6,7 @@ using DataTrack.Logging;
 using DataTrack.Util.Helpers;
 using System;
 using System.Collections.Generic;
+using System.Data;
 
 namespace DataTrack.Core.Components.Mapping
 {
@@ -18,6 +19,7 @@ namespace DataTrack.Core.Components.Mapping
 		public string Alias { get; set; }
 		public List<IEntity> Entities { get; set; }
 		public StagingTable StagingTable { get; set; }
+		public DataTable DataTable { get; set; }
 		internal Mapping Mapping {get; set;}
 
 		private readonly AttributeWrapper _attributes;
@@ -33,47 +35,15 @@ namespace DataTrack.Core.Components.Mapping
 			Name = attributes.TableAttribute?.TableName ?? throw new TableMappingException(type, "Unknown");
 			Alias = type.Name;
 			Entities = new List<IEntity>();
+			DataTable = new DataTable(Name);
 
 			_attributes = attributes;
 			primaryKeyColumn = null;
 			foreignKeyColumnsDict = new Dictionary<string, EntityColumn?>();
 			foreignKeyColumns = new List<EntityColumn>();
 
-			foreach (ColumnAttribute columnAttribute in attributes.ColumnAttributes)
-			{
-				EntityColumn column = new EntityColumn(columnAttribute, this);
-
-				if (attributes.ColumnForeignKeys.ContainsKey(columnAttribute))
-				{
-					ForeignKeyAttribute key = attributes.ColumnForeignKeys[columnAttribute];
-
-					column.ForeignKeyTableMapping = key.ForeignTable;
-					column.KeyType = (byte)KeyTypes.ForeignKey;
-
-					foreignKeyColumns.Add(column);
-					foreignKeyColumnsDict.Add(column.ForeignKeyTableMapping, column);
-				}
-
-				if (attributes.ColumnPrimaryKeys.ContainsKey(columnAttribute))
-				{
-					PrimaryKeyAttribute key = attributes.ColumnPrimaryKeys[columnAttribute];
-
-					column.KeyType = (byte)KeyTypes.PrimaryKey;
-
-					primaryKeyColumn = column;
-				}
-
-				EntityColumns.Add(column);
-				Columns.Add(column);
-			}
-
-			foreach (FormulaAttribute formulaAttribute in attributes.FormulaAttributes)
-			{
-				FormulaColumn column = new FormulaColumn(formulaAttribute, this);
-
-				FormulaColumns.Add(column);
-				Columns.Add(column);
-			}
+			InitialiseEntityColumns(attributes);
+			InitiliaseFormulaColumns(attributes);
 
 			StagingTable = new StagingTable(this);
 
@@ -111,6 +81,60 @@ namespace DataTrack.Core.Components.Mapping
 		{
 			Logger.Trace($"Cloning database mapping for Entity '{Type.Name}' (Table '{Name}')");
 			return new EntityTable(Type, _attributes);
+		}
+
+		private void InitialiseEntityColumns(AttributeWrapper attributes)
+		{
+			foreach (ColumnAttribute columnAttribute in attributes.ColumnAttributes)
+			{
+				EntityColumn column = new EntityColumn(columnAttribute, this);
+				DataColumn dataColumn = column.DataColumn;
+
+				if (attributes.ColumnForeignKeys.ContainsKey(columnAttribute))
+				{
+					ForeignKeyAttribute key = attributes.ColumnForeignKeys[columnAttribute];
+
+					column.ForeignKeyTableMapping = key.ForeignTable;
+					column.KeyType = (byte)KeyTypes.ForeignKey;
+
+					foreignKeyColumns.Add(column);
+					foreignKeyColumnsDict.Add(column.ForeignKeyTableMapping, column);
+				}
+
+				if (attributes.ColumnPrimaryKeys.ContainsKey(columnAttribute))
+				{
+					PrimaryKeyAttribute key = attributes.ColumnPrimaryKeys[columnAttribute];
+
+					column.KeyType = (byte)KeyTypes.PrimaryKey;
+
+					primaryKeyColumn = column;
+				}
+
+				/*
+				 * Bulk inserts can only be performed on data that is mapped to a physical column in the database. These are
+				 * represented by instances of the EntityColumn class, and contain specific methods which determine key type
+				 * etc.
+				 */
+
+				if (!column.IsPrimaryKey())
+				{
+					DataTable.Columns.Add(dataColumn);
+				}
+
+				EntityColumns.Add(column);
+				Columns.Add(column);
+			}
+		}
+
+		private void InitiliaseFormulaColumns(AttributeWrapper attributes)
+		{
+			foreach (FormulaAttribute formulaAttribute in attributes.FormulaAttributes)
+			{
+				FormulaColumn column = new FormulaColumn(formulaAttribute, this);
+
+				FormulaColumns.Add(column);
+				Columns.Add(column);
+			}
 		}
 	}
 }
