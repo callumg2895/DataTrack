@@ -96,7 +96,7 @@ namespace DataTrack.Core.Components.SQL
 				return;
 			}
 
-			EntityTable? parentTable = table.GetParentTable();
+			EntityTable? parentTable = table.ParentTable;
 			string tableName = from != null
 				? table.StagingTable.Name
 				: table.Name;

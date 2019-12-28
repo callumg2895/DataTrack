@@ -108,7 +108,7 @@ namespace DataTrack.Core.Components.Query
 				column.AddParameter(propertyValue);
 			}
 
-			foreach (EntityTable childTable in Mapping.ParentChildMapping[table])
+			foreach (EntityTable childTable in table.ChildTables)
 			{
 				foreach (dynamic childItem in item.GetChildPropertyValues(childTable.Name))
 				{

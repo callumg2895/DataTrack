@@ -21,6 +21,8 @@ namespace DataTrack.Core.Components.Data
 		public StagingTable StagingTable { get; set; }
 		public DataTable DataTable { get; set; }
 		internal Mapping Mapping {get; set;}
+		internal EntityTable? ParentTable { get; set; }
+		internal List<EntityTable> ChildTables { get; set; }
 
 		private readonly AttributeWrapper _attributes;
 		private EntityColumn? primaryKeyColumn;
@@ -37,6 +39,7 @@ namespace DataTrack.Core.Components.Data
 			Alias = type.Name;
 			Entities = new List<IEntity>();
 			DataTable = new DataTable(Name);
+			ChildTables = new List<EntityTable>();
 
 			_attributes = attributes;
 			primaryKeyColumn = null;
@@ -72,13 +75,6 @@ namespace DataTrack.Core.Components.Data
 			return foreignKeyColumnsDict[foreignTable.Name] ?? throw new TableMappingException(Type, Name);
 		}
 
-		public EntityTable? GetParentTable()
-		{
-			return Mapping.ChildParentMapping.ContainsKey(this) 
-				? Mapping.ChildParentMapping[this] 
-				: null;
-		}
-
 		public void StageForInsertion(IEntity entity)
 		{
 			UpdateDataTable(entity);
@@ -97,7 +93,7 @@ namespace DataTrack.Core.Components.Data
 		{
 			Logger.Trace($"Checking for child entities of '{Type.Name}' entity");
 
-			bool hasChildren = Mapping.ParentChildMapping.TryGetValue(this, out List<EntityTable> childTables) && childTables.Count > 0;
+			bool hasChildren = ChildTables.Count > 0;
 
 			if (!hasChildren)
 			{
@@ -206,7 +202,7 @@ namespace DataTrack.Core.Components.Data
 
 		private void SetForeignKeyValue(IEntity item, dynamic foreignKey)
 		{
-			EntityTable? parentTable = GetParentTable();
+			EntityTable? parentTable = ParentTable;
 
 			if (parentTable != null)
 			{
@@ -230,7 +226,7 @@ namespace DataTrack.Core.Components.Data
 			Entities.Add(item);
 			AddDataRow(item);
 
-			foreach (EntityTable childTable in Mapping.ParentChildMapping[this])
+			foreach (EntityTable childTable in ChildTables)
 			{
 				dynamic childItems = item.GetChildPropertyValues(childTable.Name);
 

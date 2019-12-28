@@ -19,19 +19,13 @@ namespace DataTrack.Core.Components.Data
 		internal Type BaseType { get; set; }
 		internal List<EntityTable> Tables { get; set; }
 		internal Dictionary<Type, EntityTable> TypeTableMapping { get; set; }
-		internal Dictionary<EntityTable, List<EntityTable>> ParentChildMapping { get; set; }
-		internal Dictionary<EntityTable, EntityTable> ChildParentMapping { get; set; }
 		internal Dictionary<IEntity, List<IEntity>> ParentChildEntityMapping { get; set; }
 
 		internal Mapping(Type type)
 		{
 			BaseType = type;
-
 			Tables = new List<EntityTable>();
-
 			TypeTableMapping = new Dictionary<Type, EntityTable>();
-			ParentChildMapping = new Dictionary<EntityTable, List<EntityTable>>();
-			ChildParentMapping = new Dictionary<EntityTable, EntityTable>();
 			ParentChildEntityMapping = new Dictionary<IEntity, List<IEntity>>();
 		}
 
@@ -45,7 +39,6 @@ namespace DataTrack.Core.Components.Data
 
 				Tables.Add(table);
 				TypeTableMapping.Add(type, table);
-				ParentChildMapping.Add(table, new List<EntityTable>());
 
 				foreach (PropertyInfo prop in type.GetProperties())
 				{
@@ -67,8 +60,8 @@ namespace DataTrack.Core.Components.Data
 
 				EntityTable mappedTable = TypeTableMapping[genericArgumentType];
 
-				ChildParentMapping[mappedTable] = parentTable;
-				ParentChildMapping[parentTable].Add(mappedTable);
+				mappedTable.ParentTable = parentTable;
+				parentTable.ChildTables.Add(mappedTable);
 			}
 		}
 
