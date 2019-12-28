@@ -79,6 +79,11 @@ namespace DataTrack.Core.Components.Data
 				: null;
 		}
 
+		public void StageForInsertion(IEntity entity)
+		{
+			UpdateDataTable(entity);
+		}
+
 		public void UpdatePrimaryKey(dynamic primaryKey, int entityIndex)
 		{
 			Logger.Trace($"Updating primary key of '{Type.Name}' entity");
@@ -213,6 +218,41 @@ namespace DataTrack.Core.Components.Data
 
 				dataRows[item][column.Name] = foreignKey;
 			}
+		}
+
+		private void UpdateDataTable(IEntity item)
+		{
+			if (item == null)
+			{
+				return;
+			}
+
+			Logger.Trace($"Building DataTable for: {item.GetType().ToString()}");
+
+			Entities.Add(item);
+			AddDataRow(item);
+
+			foreach (EntityTable childTable in Mapping.ParentChildMapping[this])
+			{
+				dynamic childItems = item.GetChildPropertyValues(childTable.Name);
+
+				if (childItems == null)
+				{
+					continue;
+				}
+
+				if (!Mapping.ParentChildEntityMapping.ContainsKey(item))
+				{
+					Mapping.ParentChildEntityMapping[item] = new List<IEntity>();
+				}
+
+				foreach (dynamic childItem in childItems)
+				{
+					childTable.UpdateDataTable(childItem);
+					Mapping.ParentChildEntityMapping[item].Add(childItem);
+				}
+			}
+
 		}
 	}
 }

@@ -19,27 +19,21 @@ namespace DataTrack.Core.Components.Query
 	{
 		private static Logger Logger = DataTrackConfiguration.Logger;
 
-		#region Members
-
-		internal BulkDataBuilder<TBase> BulkDataBuilder { get; set; }
-
-		#endregion
-
 		#region Constructors
 
 		public EntityQuery() 
 			: base(typeof(TBase), new EntityMapping<TBase>())
 		{
 			ValidateMapping(Mapping);
-
-			BulkDataBuilder = new BulkDataBuilder<TBase>(GetMapping());
 		}
 
 		public EntityQuery<TBase> Create(TBase item)
 		{
 			OperationType = CRUDOperationTypes.Create;
 
-			BulkDataBuilder.BuildDataFor(item);
+			EntityTable table = Mapping.TypeTableMapping[baseType];
+
+			table.StageForInsertion(item as IEntity);
 
 			return this;
 		}
@@ -48,7 +42,12 @@ namespace DataTrack.Core.Components.Query
 		{
 			OperationType = CRUDOperationTypes.Create;
 
-			BulkDataBuilder.BuildDataFor(items);
+			EntityTable table = Mapping.TypeTableMapping[baseType];
+
+			foreach (IEntity item in items)
+			{
+				table.StageForInsertion(item as IEntity);
+			}
 
 			return this;
 		}
