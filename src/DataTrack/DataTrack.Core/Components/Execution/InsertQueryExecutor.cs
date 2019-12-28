@@ -1,5 +1,5 @@
 ﻿using DataTrack.Core.Components.Builders;
-using DataTrack.Core.Components.Mapping;
+using DataTrack.Core.Components.Data;
 using DataTrack.Core.Components.Query;
 using DataTrack.Core.Components.SQL;
 using DataTrack.Core.Interface;
@@ -116,8 +116,8 @@ namespace DataTrack.Core.Components.Execution
 				 * would cause a foreign key exception in SQL.
 				 */
 
-				mapping.UpdateDataTable(table, primaryKey, primaryKeyIndex);
-				mapping.UpdateDataTableForeignKeys(table, primaryKey, primaryKeyIndex++);
+				table.UpdatePrimaryKey(primaryKey, primaryKeyIndex);
+				table.UpdateForeignKeys(primaryKey, primaryKeyIndex++);
 			}
 			
 			return primaryKeyIndex;

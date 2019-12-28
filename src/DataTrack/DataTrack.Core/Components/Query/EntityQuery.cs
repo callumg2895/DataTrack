@@ -1,6 +1,6 @@
 ﻿using DataTrack.Core.Components.Builders;
 using DataTrack.Core.Components.Execution;
-using DataTrack.Core.Components.Mapping;
+using DataTrack.Core.Components.Data;
 using DataTrack.Core.Components.SQL;
 using DataTrack.Core.Enums;
 using DataTrack.Core.Interface;
@@ -19,27 +19,21 @@ namespace DataTrack.Core.Components.Query
 	{
 		private static Logger Logger = DataTrackConfiguration.Logger;
 
-		#region Members
-
-		internal BulkDataBuilder<TBase> BulkDataBuilder { get; set; }
-
-		#endregion
-
 		#region Constructors
 
 		public EntityQuery() 
 			: base(typeof(TBase), new EntityMapping<TBase>())
 		{
 			ValidateMapping(Mapping);
-
-			BulkDataBuilder = new BulkDataBuilder<TBase>(GetMapping());
 		}
 
 		public EntityQuery<TBase> Create(TBase item)
 		{
 			OperationType = CRUDOperationTypes.Create;
 
-			BulkDataBuilder.BuildDataFor(item);
+			EntityTable table = Mapping.TypeTableMapping[baseType];
+
+			table.StageForInsertion(item as IEntity);
 
 			return this;
 		}
@@ -48,7 +42,12 @@ namespace DataTrack.Core.Components.Query
 		{
 			OperationType = CRUDOperationTypes.Create;
 
-			BulkDataBuilder.BuildDataFor(items);
+			EntityTable table = Mapping.TypeTableMapping[baseType];
+
+			foreach (IEntity item in items)
+			{
+				table.StageForInsertion(item as IEntity);
+			}
 
 			return this;
 		}
@@ -109,7 +108,7 @@ namespace DataTrack.Core.Components.Query
 				column.AddParameter(propertyValue);
 			}
 
-			foreach (EntityTable childTable in Mapping.ParentChildMapping[table])
+			foreach (EntityTable childTable in table.ChildTables)
 			{
 				foreach (dynamic childItem in item.GetChildPropertyValues(childTable.Name))
 				{

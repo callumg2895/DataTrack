@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Reflection;
 
-namespace DataTrack.Core.Components.Mapping
+namespace DataTrack.Core.Components.Data
 {
 	public abstract class Column : ICloneable
 	{
