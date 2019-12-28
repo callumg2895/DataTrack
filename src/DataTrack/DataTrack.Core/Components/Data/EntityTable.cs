@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 
-namespace DataTrack.Core.Components.Mapping
+namespace DataTrack.Core.Components.Data
 {
 	public class EntityTable : Table, ICloneable
 	{

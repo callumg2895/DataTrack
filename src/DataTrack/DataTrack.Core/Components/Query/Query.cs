@@ -1,5 +1,5 @@
 ﻿using DataTrack.Core.Enums;
-using DataTrack.Core.Components.Mapping;
+using DataTrack.Core.Components.Data;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -21,9 +21,9 @@ namespace DataTrack.Core.Components.Query
 
 		public CRUDOperationTypes OperationType { get; set; }
 		public string QueryString { get; set; }
-		internal Mapping.Mapping Mapping { get; set; }
+		internal Mapping Mapping { get; set; }
 
-		internal Query(Type type, Mapping.Mapping mapping)
+		internal Query(Type type, Mapping mapping)
 		{
 			OperationType = CRUDOperationTypes.Read;
 			QueryString = string.Empty;
@@ -55,7 +55,7 @@ namespace DataTrack.Core.Components.Query
 
 		public abstract override string ToString();
 
-		private protected void ValidateMapping(Mapping.Mapping mapping)
+		private protected void ValidateMapping(Mapping mapping)
 		{
 			// Check for valid Table/Columns
 			if (mapping.Tables.Count == 0 || mapping.Tables.Any(t => t.Columns.Count == 0))

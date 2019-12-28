@@ -1,6 +1,6 @@
 ﻿using DataTrack.Core.Components.Builders;
 using DataTrack.Core.Components.Execution;
-using DataTrack.Core.Components.Mapping;
+using DataTrack.Core.Components.Data;
 using DataTrack.Core.Components.SQL;
 using DataTrack.Core.Enums;
 using DataTrack.Core.Interface;

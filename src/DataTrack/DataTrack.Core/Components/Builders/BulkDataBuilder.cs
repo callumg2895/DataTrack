@@ -1,4 +1,4 @@
-﻿using DataTrack.Core.Components.Mapping;
+﻿using DataTrack.Core.Components.Data;
 using DataTrack.Core.Interface;
 using DataTrack.Logging;
 using DataTrack.Util.DataStructures;

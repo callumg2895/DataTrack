@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 
-namespace DataTrack.Core.Components.Mapping
+namespace DataTrack.Core.Components.Data
 {
 	internal abstract class Mapping
 	{
