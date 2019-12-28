@@ -26,6 +26,7 @@ namespace DataTrack.Core.Components.Mapping
 		private EntityColumn? primaryKeyColumn;
 		private readonly Dictionary<string, EntityColumn?> foreignKeyColumnsDict;
 		private readonly List<EntityColumn> foreignKeyColumns;
+		private Dictionary<IEntity, DataRow> dataRows { get; set; }
 
 		internal EntityTable(Type type, AttributeWrapper attributes)
 			: base()
@@ -41,6 +42,7 @@ namespace DataTrack.Core.Components.Mapping
 			primaryKeyColumn = null;
 			foreignKeyColumnsDict = new Dictionary<string, EntityColumn?>();
 			foreignKeyColumns = new List<EntityColumn>();
+			dataRows = new Dictionary<IEntity, DataRow>();
 
 			InitialiseEntityColumns(attributes);
 			InitiliaseFormulaColumns(attributes);
@@ -75,6 +77,68 @@ namespace DataTrack.Core.Components.Mapping
 			return Mapping.ChildParentMapping.ContainsKey(this) 
 				? Mapping.ChildParentMapping[this] 
 				: null;
+		}
+
+		public void UpdatePrimaryKey(dynamic primaryKey, int entityIndex)
+		{
+			Logger.Trace($"Updating primary key of '{Type.Name}' entity");
+
+			IEntity entity = Entities[entityIndex];
+
+			entity.SetID(primaryKey);
+		}
+
+		internal void UpdateForeignKeys(dynamic primaryKey, int primaryKeyIndex)
+		{
+			Logger.Trace($"Checking for child entities of '{Type.Name}' entity");
+
+			bool hasChildren = Mapping.ParentChildMapping.TryGetValue(this, out List<EntityTable> childTables) && childTables.Count > 0;
+
+			if (!hasChildren)
+			{
+				Logger.Trace($"No child tables found for '{Type.Name}' entity");
+				return;
+			}
+
+			/*
+			 * It is guaranteed that entities are processed by the bulk data builder in the same order that their respective
+			 * primary keys are read out from the database after a bulk insert. Hence it is safe to assume that the index 
+			 * provided by the query executor matches exactly with the position of that entity in the TableEntityMapping list.
+			 */
+
+			IEntity entity = Entities[primaryKeyIndex];
+
+			if (!Mapping.ParentChildEntityMapping.ContainsKey(entity))
+			{
+				Logger.Trace($"No child entities found for '{Type.Name}' entity");
+				return;
+			}
+
+			foreach (IEntity childEntity in Mapping.ParentChildEntityMapping[entity])
+			{
+				Type type = childEntity.GetType();
+				EntityTable table = Mapping.TypeTableMapping[type];
+				table.SetForeignKeyValue(childEntity, primaryKey);
+			}
+		}
+
+		public void AddDataRow(IEntity item)
+		{
+			List<object> rowData = item.GetPropertyValues();
+
+			DataRow dataRow = DataTable.NewRow();
+
+			for (int i = 0; i < rowData.Count; i++)
+			{
+				EntityColumn column = EntityColumns[i];
+				if (!column.IsPrimaryKey())
+				{
+					dataRow[column.Name] = rowData[i];
+				}
+			}
+
+			DataTable.Rows.Add(dataRow);
+			dataRows.Add(item, dataRow);
 		}
 
 		public object Clone()
@@ -134,6 +198,20 @@ namespace DataTrack.Core.Components.Mapping
 
 				FormulaColumns.Add(column);
 				Columns.Add(column);
+			}
+		}
+
+		private void SetForeignKeyValue(IEntity item, dynamic foreignKey)
+		{
+			EntityTable? parentTable = GetParentTable();
+
+			if (parentTable != null)
+			{
+				Logger.Trace($"Updating foreign key value for '{Type.Name}' child entity of newly inserted '{parentTable.Type.Name}' entity");
+
+				Column column = GetForeignKeyColumnFor(parentTable);
+
+				dataRows[item][column.Name] = foreignKey;
 			}
 		}
 	}

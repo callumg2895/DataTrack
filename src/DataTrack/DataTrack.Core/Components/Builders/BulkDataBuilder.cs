@@ -59,8 +59,7 @@ namespace DataTrack.Core.Components.Builders
 			EntityTable table = Mapping.TypeTableMapping[type];
 
 			table.Entities.Add(item);
-
-			AddRow(table, item);
+			table.AddDataRow(item);
 
 			foreach (EntityTable childTable in Mapping.ParentChildMapping[table])
 			{
@@ -83,26 +82,6 @@ namespace DataTrack.Core.Components.Builders
 				}
 			}
 
-		}
-
-		private void AddRow(EntityTable table, IEntity item)
-		{
-			List<object> rowData = item.GetPropertyValues();
-
-			DataTable dataTable = table.DataTable;
-			DataRow dataRow = dataTable.NewRow();
-
-			for (int i = 0; i < rowData.Count; i++)
-			{
-				EntityColumn column = table.EntityColumns[i];
-				if (!column.IsPrimaryKey())
-				{
-					dataRow[column.Name] = rowData[i];
-				}
-			}
-
-			dataTable.Rows.Add(dataRow);
-			Mapping.EntityDataRowMapping.Add(item, dataRow);
 		}
 		#endregion
 	}

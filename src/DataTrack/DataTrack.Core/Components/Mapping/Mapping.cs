@@ -21,6 +21,7 @@ namespace DataTrack.Core.Components.Mapping
 		internal Dictionary<Type, EntityTable> TypeTableMapping { get; set; }
 		internal Dictionary<EntityTable, List<EntityTable>> ParentChildMapping { get; set; }
 		internal Dictionary<EntityTable, EntityTable> ChildParentMapping { get; set; }
+		internal Dictionary<IEntity, List<IEntity>> ParentChildEntityMapping { get; set; }
 
 		internal Mapping(Type type)
 		{
@@ -31,6 +32,7 @@ namespace DataTrack.Core.Components.Mapping
 			TypeTableMapping = new Dictionary<Type, EntityTable>();
 			ParentChildMapping = new Dictionary<EntityTable, List<EntityTable>>();
 			ChildParentMapping = new Dictionary<EntityTable, EntityTable>();
+			ParentChildEntityMapping = new Dictionary<IEntity, List<IEntity>>();
 		}
 
 		protected void MapEntity(Type type)
