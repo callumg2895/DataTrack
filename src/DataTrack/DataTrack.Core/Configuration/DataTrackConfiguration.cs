@@ -74,7 +74,7 @@ namespace DataTrack.Core
 		{
 			LoadConfiguration();
 
-			MappingCache.Init(cacheConfig.CacheSizeLimit, loggingConfig);
+			EntityTableCache.Init(cacheConfig.CacheSizeLimit, loggingConfig);
 			ChildPropertyCache.Init(cacheConfig.CacheSizeLimit, loggingConfig);
 			NativePropertyCache.Init(cacheConfig.CacheSizeLimit, loggingConfig);
 			CompiledActivatorCache.Init(cacheConfig.CacheSizeLimit, loggingConfig);
@@ -103,7 +103,7 @@ namespace DataTrack.Core
 
 		private void Stop()
 		{
-			MappingCache.Instance.Stop();
+			EntityTableCache.Instance.Stop();
 			ChildPropertyCache.Instance.Stop();
 			NativePropertyCache.Instance.Stop();
 			CompiledActivatorCache.Instance.Stop();

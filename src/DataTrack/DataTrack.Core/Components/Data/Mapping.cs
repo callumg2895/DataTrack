@@ -14,7 +14,7 @@ namespace DataTrack.Core.Components.Data
 	internal abstract class Mapping
 	{
 		private static Logger Logger = DataTrackConfiguration.Logger;
-		private MappingCache mappingCache = MappingCache.Instance;
+		private EntityTableCache entityTableCache = EntityTableCache.Instance;
 
 		internal Type BaseType { get; set; }
 		internal List<EntityTable> Tables { get; set; }
@@ -73,7 +73,7 @@ namespace DataTrack.Core.Components.Data
 
 		protected EntityTable GetTableByType(Type type)
 		{
-			EntityTable? entityTable = mappingCache.RetrieveItem(type);
+			EntityTable? entityTable = entityTableCache.RetrieveItem(type);
 
 			if (entityTable != null)
 			{
@@ -89,7 +89,7 @@ namespace DataTrack.Core.Components.Data
 		{
 			if (TryGetTable(type, out EntityTable? table) && table != null)
 			{
-				mappingCache.CacheItem(type, (EntityTable)table.Clone());
+				entityTableCache.CacheItem(type, (EntityTable)table.Clone());
 
 				return (EntityTable)table.Clone();
 			}
