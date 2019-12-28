@@ -29,12 +29,13 @@ namespace DataTrack.Core.Components.Data
 			ParentChildEntityMapping = new Dictionary<IEntity, List<IEntity>>();
 		}
 
-		internal void ProvideMapping(IEntity entity)
+		internal void MapEntity(IEntity entity)
 		{
 			entity.Mapping = this;
+			ParentChildEntityMapping[entity] = new List<IEntity>();
 		}
 
-		protected void MapEntity(Type type)
+		protected void MapType(Type type)
 		{
 			if (!TypeTableMapping.ContainsKey(type))
 			{
@@ -61,7 +62,7 @@ namespace DataTrack.Core.Components.Data
 			{
 				Type genericArgumentType = propertyType.GetGenericArguments()[0];
 
-				MapEntity(genericArgumentType);
+				MapType(genericArgumentType);
 
 				EntityTable mappedTable = TypeTableMapping[genericArgumentType];
 

@@ -33,27 +33,12 @@ namespace DataTrack.Core.Components.Data
 
 		List<IEntity> IEntity.GetChildren()
 		{
-			bool hasChildren = mapping.ParentChildEntityMapping.ContainsKey(this);
-			Type type = this.GetType();
-
-			if (!hasChildren)
-			{
-				Logger.Trace($"No child entities found for '{type.Name}' entity");
-				return new List<IEntity>();
-			}
-
 			return mapping.ParentChildEntityMapping[this];
 		}
 
 		void IEntity.MapChild(IEntity entity)
 		{
-			bool hasChildren = mapping.ParentChildEntityMapping.ContainsKey(this);
 			Type type = this.GetType();
-
-			if (!hasChildren)
-			{
-				mapping.ParentChildEntityMapping[this] = new List<IEntity>();
-			}
 
 			Logger.Trace($"Mapping '{entity.GetType()}' child entity for '{type.Name}' entity");
 			mapping.ParentChildEntityMapping[this].Add(entity);

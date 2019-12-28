@@ -85,7 +85,7 @@ namespace DataTrack.Core.Components.Data
 			Logger.Trace($"Building DataTable for: {entity.GetType().ToString()}");
 
 			Entities.Add(entity);
-			Mapping.ProvideMapping(entity);
+			Mapping.MapEntity(entity);
 			AddDataRow(entity);
 
 			foreach (EntityTable childTable in ChildTables)
@@ -114,11 +114,11 @@ namespace DataTrack.Core.Components.Data
 			entity.SetID(primaryKey);
 		}
 
-		internal void UpdateForeignKeys(dynamic primaryKey, int primaryKeyIndex)
+		internal void UpdateForeignKeys(dynamic primaryKey, int entityIndex)
 		{
 			Logger.Trace($"Updating foreign keys of child entities of '{Type.Name}' entity");
 
-			IEntity entity = Entities[primaryKeyIndex];
+			IEntity entity = Entities[entityIndex];
 
 			foreach (IEntity childEntity in entity.GetChildren())
 			{

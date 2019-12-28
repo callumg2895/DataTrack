@@ -22,12 +22,7 @@ namespace DataTrack.Core.Components.Data
 		{
 			EntityDataRowMapping = new Dictionary<IEntity, DataRow>();
 
-			MapEntity(BaseType);
-		}
-
-		internal void UpdateTableEntities(EntityTable table, IEntity entity)
-		{
-			table.Entities.Add(entity);
+			MapType(BaseType);
 		}
 	}
 }
