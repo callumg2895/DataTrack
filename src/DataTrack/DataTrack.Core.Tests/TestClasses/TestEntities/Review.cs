@@ -1,6 +1,6 @@
 ﻿using DataTrack.Core.Attributes;
 using System;
-using DataTrack.Core.Components.Mapping;
+using DataTrack.Core.Components.Data;
 
 namespace DataTrack.Core.Tests.TestClasses.TestEntities
 {

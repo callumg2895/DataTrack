@@ -1,4 +1,4 @@
-﻿using DataTrack.Core.Components.Mapping;
+﻿using DataTrack.Core.Components.Data;
 using DataTrack.Core.Components.Query;
 using DataTrack.Core.Interface;
 using DataTrack.Logging;
@@ -69,7 +69,7 @@ namespace DataTrack.Core.Components.Execution
 
 		private void AddResult(IEntity entity, EntityTable table)
 		{
-			if (mapping.ChildParentMapping.ContainsKey(table))
+			if (table.ParentTable != null)
 			{
 				AssociateWithParent(entity, table);
 			}
@@ -81,7 +81,7 @@ namespace DataTrack.Core.Components.Execution
 
 		private void AssociateWithParent(IEntity entity, EntityTable table)
 		{
-			EntityTable parentTable = mapping.ChildParentMapping[table];
+			EntityTable parentTable = table.ParentTable;
 			EntityColumn foreignKeyColumn = table.GetForeignKeyColumnFor(parentTable);
 			object foreignKey = entity.GetPropertyValue(foreignKeyColumn.PropertyName);
 			IEntity parentEntity = entityPrimaryKeyDictionary[parentTable][foreignKey];

@@ -1,4 +1,4 @@
-﻿namespace DataTrack.Core.Components.Mapping
+﻿namespace DataTrack.Core.Components.Data
 {
 	public class StagingTable : Table
 	{

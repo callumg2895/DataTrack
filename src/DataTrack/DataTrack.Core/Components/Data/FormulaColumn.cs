@@ -7,7 +7,7 @@ using DataTrack.Logging;
 using System.Data;
 using System.Reflection;
 
-namespace DataTrack.Core.Components.Mapping
+namespace DataTrack.Core.Components.Data
 {
 	public class FormulaColumn : Column, ICloneable
 	{

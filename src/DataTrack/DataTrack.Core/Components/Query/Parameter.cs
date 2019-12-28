@@ -1,4 +1,4 @@
-﻿using DataTrack.Core.Components.Mapping;
+﻿using DataTrack.Core.Components.Data;
 using System;
 using System.Collections.Generic;
 using System.Data;
