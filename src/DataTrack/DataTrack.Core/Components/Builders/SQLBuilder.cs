@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DataTrack.Core.Components.Data;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -7,10 +8,10 @@ namespace DataTrack.Core.Components.Builders
 	internal abstract class SQLBuilder
 	{
 		private protected readonly Type _baseType;
-		private protected readonly Mapping.Mapping _mapping;
+		private protected readonly Mapping _mapping;
 		private protected readonly StringBuilder _sql;
 
-		internal SQLBuilder(Type type, Mapping.Mapping mapping)
+		internal SQLBuilder(Type type, Mapping mapping)
 		{
 			_baseType = type;
 			_mapping = mapping;

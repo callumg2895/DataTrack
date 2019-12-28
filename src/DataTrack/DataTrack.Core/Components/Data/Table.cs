@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace DataTrack.Core.Components.Mapping
+namespace DataTrack.Core.Components.Data
 {
 	public abstract class Table
 	{

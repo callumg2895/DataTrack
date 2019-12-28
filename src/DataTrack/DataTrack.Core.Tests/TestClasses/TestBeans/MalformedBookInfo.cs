@@ -1,4 +1,4 @@
-﻿using DataTrack.Core.Components.Mapping;
+﻿using DataTrack.Core.Components.Data;
 using DataTrack.Core.Attributes;
 using DataTrack.Core.Tests.TestClasses.TestEntities;
 using System;
