@@ -130,16 +130,14 @@ namespace DataTrack.Core.Components.Data
 		public void AddDataRow(IEntity item)
 		{
 			List<object> rowData = item.GetPropertyValues();
-
 			DataRow dataRow = DataTable.NewRow();
 
 			for (int i = 0; i < rowData.Count; i++)
 			{
 				EntityColumn column = EntityColumns[i];
-				if (!column.IsPrimaryKey())
-				{
-					dataRow[column.Name] = rowData[i];
-				}
+				object data = rowData[i];
+
+				column.UpdateDataRow(dataRow, data);
 			}
 
 			DataTable.Rows.Add(dataRow);

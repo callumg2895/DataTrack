@@ -79,6 +79,17 @@ namespace DataTrack.Core.Components.Data
 			return Alias;
 		}
 
+		public void UpdateDataRow(DataRow dataRow, object data)
+		{
+			if (IsPrimaryKey())
+			{
+				Logger.Trace($"Data for column '{Name}' was skipped due to being a primary key");
+				return;
+			}
+
+			dataRow[Name] = data;
+		}
+
 		public override bool Equals(object obj)
 		{
 			if ((obj as EntityColumn) == null)
