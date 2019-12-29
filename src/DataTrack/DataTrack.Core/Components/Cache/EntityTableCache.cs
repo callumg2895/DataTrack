@@ -37,7 +37,7 @@ namespace DataTrack.Core.Components.Cache
 			{
 				if (instance == null)
 				{
-					instance = new EntityTableCache(cacheSizeLimit, "MappingCache", config);
+					instance = new EntityTableCache(cacheSizeLimit, "EntityTableCache", config);
 				}
 			}
 		}
