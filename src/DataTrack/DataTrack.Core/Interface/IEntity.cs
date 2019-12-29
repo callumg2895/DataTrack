@@ -5,11 +5,9 @@ namespace DataTrack.Core.Interface
 {
 	public interface IEntity
 	{
-		internal Mapping Mapping { set; }
+		internal List<IEntity> GetChildren(Mapping mapping);
 
-		internal List<IEntity> GetChildren();
-
-		internal void MapChild(IEntity entity);
+		internal void MapChild(IEntity entity, Mapping mapping);
 
 		object GetID();
 

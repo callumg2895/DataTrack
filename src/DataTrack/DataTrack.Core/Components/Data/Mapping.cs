@@ -29,12 +29,6 @@ namespace DataTrack.Core.Components.Data
 			ParentChildEntityMapping = new Dictionary<IEntity, List<IEntity>>();
 		}
 
-		internal void MapEntity(IEntity entity)
-		{
-			entity.Mapping = this;
-			ParentChildEntityMapping[entity] = new List<IEntity>();
-		}
-
 		protected void MapType(Type type)
 		{
 			if (!TypeTableMapping.ContainsKey(type))

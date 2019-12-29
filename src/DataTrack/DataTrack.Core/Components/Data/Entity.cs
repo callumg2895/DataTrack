@@ -17,30 +17,32 @@ namespace DataTrack.Core.Components.Data
 		private ChildPropertyCache childPropertyCache = ChildPropertyCache.Instance;
 		private NativePropertyCache nativePropertyCache = NativePropertyCache.Instance;
 		private CompiledActivatorCache compiledActivatorCache = CompiledActivatorCache.Instance;
-		private Mapping mapping = null;
 
 		[Column("id")]
 		[PrimaryKey]
 		public virtual TIdentity ID { get; set; } = default;
 
-		Mapping IEntity.Mapping
+		List<IEntity> IEntity.GetChildren(Mapping mapping)
 		{
-			set 
+			if (!mapping.ParentChildEntityMapping.ContainsKey(this))
 			{
-				mapping = value;
+				return new List<IEntity>();
 			}
-		}
 
-		List<IEntity> IEntity.GetChildren()
-		{
 			return mapping.ParentChildEntityMapping[this];
 		}
 
-		void IEntity.MapChild(IEntity entity)
+		void IEntity.MapChild(IEntity entity, Mapping mapping)
 		{
 			Type type = this.GetType();
 
 			Logger.Trace($"Mapping '{entity.GetType()}' child entity for '{type.Name}' entity");
+
+			if (!mapping.ParentChildEntityMapping.ContainsKey(this))
+			{
+				mapping.ParentChildEntityMapping[this] = new List<IEntity>();
+			}
+
 			mapping.ParentChildEntityMapping[this].Add(entity);
 		}
 

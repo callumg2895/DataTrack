@@ -85,7 +85,6 @@ namespace DataTrack.Core.Components.Data
 			Logger.Trace($"Building DataTable for: {entity.GetType().ToString()}");
 
 			Entities.Add(entity);
-			Mapping.MapEntity(entity);
 			AddDataRow(entity);
 
 			foreach (EntityTable childTable in ChildTables)
@@ -100,7 +99,7 @@ namespace DataTrack.Core.Components.Data
 				foreach (IEntity childEntity in childEntities)
 				{
 					childTable.StageForInsertion(childEntity);
-					entity.MapChild(childEntity);
+					entity.MapChild(childEntity, Mapping);
 				}
 			}
 		}
@@ -120,7 +119,7 @@ namespace DataTrack.Core.Components.Data
 
 			IEntity entity = Entities[entityIndex];
 
-			foreach (IEntity childEntity in entity.GetChildren())
+			foreach (IEntity childEntity in entity.GetChildren(Mapping))
 			{
 				Type type = childEntity.GetType();
 				EntityTable table = Mapping.TypeTableMapping[type];
