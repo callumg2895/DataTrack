@@ -31,7 +31,7 @@ namespace DataTrack.Core.Components.Data
 
 			foreach (EntityAttribute entityAttribute in wrapper.EntityAttributes)
 			{
-				MapEntity(entityAttribute.EntityType);
+				MapType(entityAttribute.EntityType);
 				MapToBean(entityAttribute);
 			}
 		}

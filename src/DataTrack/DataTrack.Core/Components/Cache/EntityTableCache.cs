@@ -9,12 +9,12 @@ using System.Threading;
 
 namespace DataTrack.Core.Components.Cache
 {
-	public sealed class MappingCache : Cache<Type, EntityTable>
+	public sealed class EntityTableCache : Cache<Type, EntityTable>
 	{
-		private static MappingCache instance = null;
+		private static EntityTableCache instance = null;
 		private static readonly object instanceLock = new object();
 
-		public static MappingCache Instance
+		public static EntityTableCache Instance
 		{
 			get
 			{
@@ -25,7 +25,7 @@ namespace DataTrack.Core.Components.Cache
 			}
 		}
 
-		private MappingCache(int cacheSizeLimit, string cacheName, LogConfiguration config)
+		private EntityTableCache(int cacheSizeLimit, string cacheName, LogConfiguration config)
 			: base(cacheSizeLimit, cacheName, config)
 		{
 
@@ -37,7 +37,7 @@ namespace DataTrack.Core.Components.Cache
 			{
 				if (instance == null)
 				{
-					instance = new MappingCache(cacheSizeLimit, "MappingCache", config);
+					instance = new EntityTableCache(cacheSizeLimit, "EntityTableCache", config);
 				}
 			}
 		}

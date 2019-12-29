@@ -1,9 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using DataTrack.Core.Components.Data;
+using System.Collections.Generic;
 
 namespace DataTrack.Core.Interface
 {
 	public interface IEntity
 	{
+		internal Mapping Mapping { set; }
+
+		internal List<IEntity> GetChildren();
+
+		internal void MapChild(IEntity entity);
+
 		object GetID();
 
 		void SetID(dynamic value);

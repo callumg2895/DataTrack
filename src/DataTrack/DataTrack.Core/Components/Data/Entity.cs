@@ -17,10 +17,33 @@ namespace DataTrack.Core.Components.Data
 		private ChildPropertyCache childPropertyCache = ChildPropertyCache.Instance;
 		private NativePropertyCache nativePropertyCache = NativePropertyCache.Instance;
 		private CompiledActivatorCache compiledActivatorCache = CompiledActivatorCache.Instance;
+		private Mapping mapping = null;
 
 		[Column("id")]
 		[PrimaryKey]
 		public virtual TIdentity ID { get; set; } = default;
+
+		Mapping IEntity.Mapping
+		{
+			set 
+			{
+				mapping = value;
+			}
+		}
+
+		List<IEntity> IEntity.GetChildren()
+		{
+			return mapping.ParentChildEntityMapping[this];
+		}
+
+		void IEntity.MapChild(IEntity entity)
+		{
+			Type type = this.GetType();
+
+			Logger.Trace($"Mapping '{entity.GetType()}' child entity for '{type.Name}' entity");
+			mapping.ParentChildEntityMapping[this].Add(entity);
+		}
+
 
 		public object GetID()
 		{

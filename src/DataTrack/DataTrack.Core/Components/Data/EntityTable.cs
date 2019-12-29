@@ -77,7 +77,32 @@ namespace DataTrack.Core.Components.Data
 
 		public void StageForInsertion(IEntity entity)
 		{
-			UpdateDataTable(entity);
+			if (entity == null)
+			{
+				return;
+			}
+
+			Logger.Trace($"Building DataTable for: {entity.GetType().ToString()}");
+
+			Entities.Add(entity);
+			Mapping.MapEntity(entity);
+			AddDataRow(entity);
+
+			foreach (EntityTable childTable in ChildTables)
+			{
+				dynamic childEntities = entity.GetChildPropertyValues(childTable.Name);
+
+				if (childEntities == null)
+				{
+					continue;
+				}
+
+				foreach (IEntity childEntity in childEntities)
+				{
+					childTable.StageForInsertion(childEntity);
+					entity.MapChild(childEntity);
+				}
+			}
 		}
 
 		public void UpdatePrimaryKey(dynamic primaryKey, int entityIndex)
@@ -89,33 +114,13 @@ namespace DataTrack.Core.Components.Data
 			entity.SetID(primaryKey);
 		}
 
-		internal void UpdateForeignKeys(dynamic primaryKey, int primaryKeyIndex)
+		internal void UpdateForeignKeys(dynamic primaryKey, int entityIndex)
 		{
-			Logger.Trace($"Checking for child entities of '{Type.Name}' entity");
+			Logger.Trace($"Updating foreign keys of child entities of '{Type.Name}' entity");
 
-			bool hasChildren = ChildTables.Count > 0;
+			IEntity entity = Entities[entityIndex];
 
-			if (!hasChildren)
-			{
-				Logger.Trace($"No child tables found for '{Type.Name}' entity");
-				return;
-			}
-
-			/*
-			 * It is guaranteed that entities are processed by the bulk data builder in the same order that their respective
-			 * primary keys are read out from the database after a bulk insert. Hence it is safe to assume that the index 
-			 * provided by the query executor matches exactly with the position of that entity in the TableEntityMapping list.
-			 */
-
-			IEntity entity = Entities[primaryKeyIndex];
-
-			if (!Mapping.ParentChildEntityMapping.ContainsKey(entity))
-			{
-				Logger.Trace($"No child entities found for '{Type.Name}' entity");
-				return;
-			}
-
-			foreach (IEntity childEntity in Mapping.ParentChildEntityMapping[entity])
+			foreach (IEntity childEntity in entity.GetChildren())
 			{
 				Type type = childEntity.GetType();
 				EntityTable table = Mapping.TypeTableMapping[type];
@@ -212,41 +217,6 @@ namespace DataTrack.Core.Components.Data
 
 				dataRows[item][column.Name] = foreignKey;
 			}
-		}
-
-		private void UpdateDataTable(IEntity item)
-		{
-			if (item == null)
-			{
-				return;
-			}
-
-			Logger.Trace($"Building DataTable for: {item.GetType().ToString()}");
-
-			Entities.Add(item);
-			AddDataRow(item);
-
-			foreach (EntityTable childTable in ChildTables)
-			{
-				dynamic childItems = item.GetChildPropertyValues(childTable.Name);
-
-				if (childItems == null)
-				{
-					continue;
-				}
-
-				if (!Mapping.ParentChildEntityMapping.ContainsKey(item))
-				{
-					Mapping.ParentChildEntityMapping[item] = new List<IEntity>();
-				}
-
-				foreach (dynamic childItem in childItems)
-				{
-					childTable.UpdateDataTable(childItem);
-					Mapping.ParentChildEntityMapping[item].Add(childItem);
-				}
-			}
-
 		}
 	}
 }
